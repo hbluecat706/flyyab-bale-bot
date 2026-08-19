@@ -1,11 +1,11 @@
 {
   "name": "flyyab-bale-bot",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "scripts": {
-    "deploy": "wrangler deploy"
+    "deploy": "wrangler deploy --keep-vars"
   },
   "devDependencies": {
-    "wrangler": "^4.0.0"
+    "wrangler": "^4.124.0"
   }
 }
