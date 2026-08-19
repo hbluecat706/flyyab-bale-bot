@@ -17,7 +17,7 @@ import { NIGHT_DESTINATIONS, NIGHT_DESTINATION_CATALOG_REVISION, nightDestinatio
 import { HERITAGE_CATALOG_VERSION, HERITAGE_CATALOG, heritageCatalogItem, heritageCatalogStats } from "./heritage-catalog.mjs";
 import { IRAN_WEATHER_DESTINATIONS, WEATHER_CATALOG_VERSION, weatherCatalogStats } from "./weather-catalog.mjs";
 import { WEATHER_VERSION, WEATHER_RULES, assessWeather, weatherReason as weatherReasonV2, selectWeatherPicks, candidateSeasonScore, stableWeatherHash } from "./weather-core.mjs";
-const FLYYAB_BUILD_ID = "FlyYab-Bale-1.0.2-20260820-RC3-LIVE-SAFE-V6.9.1";
+const FLYYAB_BUILD_ID = "FlyYab-Bale-1.0.3-20260820-RC3.1-GATE-DIAG-V6.9.1";
 const INTERNATIONAL_FARES_POST_VERSION = "international-fares-v2.0-homepage-parity";
 const SCHEDULER_RESILIENCE_VERSION = "scheduler-resilience-v3.1-self-healing-coordinator";
 const FREE_TIER_DELIVERY_VERSION = "free-tier-delivery-v2.1-self-healing-coordinator";
@@ -8647,8 +8647,29 @@ const BALE_GATE_PHOTO_2 = "https://upload.wikimedia.org/wikipedia/commons/thumb/
 
 function baleLiveGateAuthorized(env, url) {
   const configured = String(env.BALE_TEST_KEY || "").trim();
-  const supplied = String(url.searchParams.get("key") || "");
+  const supplied = String(url.searchParams.get("key") || "").trim();
   return Boolean(configured) && supplied === configured;
+}
+function baleLiveGateDebug(env, url) {
+  const configuredRaw = env.BALE_TEST_KEY;
+  const configured = String(configuredRaw || "").trim();
+  const suppliedRaw = String(url.searchParams.get("key") || "");
+  const supplied = suppliedRaw.trim();
+  return Response.json({
+    ok: true,
+    diagnostic: "bale-live-gate-auth-v1",
+    buildId: FLYYAB_BUILD_ID,
+    configuredPresent: Boolean(configured),
+    configuredType: typeof configuredRaw,
+    configuredLength: configured.length,
+    suppliedPresent: Boolean(supplied),
+    suppliedLength: supplied.length,
+    exactMatch: Boolean(configured) && supplied === configured,
+    trimmedInputChanged: suppliedRaw !== supplied,
+    baleBotTokenPresent: Boolean(String(env.BALE_BOT_TOKEN || "").trim()),
+    baleChannelIdPresent: Boolean(String(env.BALE_CHANNEL_ID || "").trim()),
+    automationEnabled: baleAutomationEnabled(env)
+  }, { headers:{"cache-control":"no-store"} });
 }
 function baleLiveGateChannel(env) {
   return env.BALE_TEST_CHANNEL_ID || env.BALE_CHANNEL_ID || "5254814488";
@@ -8797,6 +8818,7 @@ var worker_default = {
         nightStateSchema: 6
       }, { headers: { "cache-control": "no-store" } });
     }
+    if (url.pathname === "/__bale-gate-debug") return baleLiveGateDebug(env, url);
     if (url.pathname === "/__bale-gate") return runBaleLiveGate(request, env, ctx, url);
     if (url.pathname === "/setup") return setup(env, request);
     if (url.pathname === "/heritage/sources") return heritageSourcesResponse(env, request);
