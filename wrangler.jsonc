@@ -1,7 +1,52 @@
 {
-  "$schema": "./node_modules/wrangler/config-schema.json",
+  "$schema": "node_modules/wrangler/config-schema.json",
   "name": "flyyab-bale-bot",
   "main": "worker.js",
   "compatibility_date": "2026-08-19",
-  "preview_urls": false
+  "compatibility_flags": [
+    "global_fetch_strictly_public"
+  ],
+  "workers_dev": true,
+  "keep_vars": true,
+  "vars": {
+    "AI_PROVIDER": "gapgpt",
+    "GAPGPT_MODEL": "gpt-4o",
+    "AI_FALLBACK": "cloudflare",
+    "BALE_CHANNEL_ID": "5254814488",
+    "BALE_AUTOMATION_ENABLED": "0"
+  },
+  "ai": {
+    "binding": "AI"
+  },
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "BOT_CONTROL",
+        "class_name": "BotControl"
+      },
+      {
+        "name": "FREE_TIER_EXECUTOR",
+        "class_name": "FreeTierExecutor"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "bale-bot-control-v1",
+      "new_sqlite_classes": [
+        "BotControl"
+      ]
+    },
+    {
+      "tag": "bale-free-tier-executor-v1",
+      "new_sqlite_classes": [
+        "FreeTierExecutor"
+      ]
+    }
+  ],
+  "triggers": {
+    "crons": [
+      "*/5 * * * *"
+    ]
+  }
 }

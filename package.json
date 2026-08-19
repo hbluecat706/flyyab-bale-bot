@@ -1,11 +1,18 @@
 {
   "name": "flyyab-bale-bot",
-  "version": "0.1.1",
+  "version": "1.0.2-rc3",
+  "type": "module",
   "private": true,
   "scripts": {
-    "deploy": "wrangler deploy --keep-vars"
+    "build": "node build-worker-entry.mjs",
+    "deploy": "wrangler deploy --keep-vars",
+    "test": "npm run test:core",
+    "test:live-morning": "RUN_LIVE_WIKIPEDIA_TESTS=1 node morning-wikipedia.test.mjs",
+    "test:core": "npm run build && node bale-api.contract.test.mjs && node bale-webhook.integration.test.mjs && node weather-catalog.test.mjs && node weather-core.test.mjs && node radar-core.test.mjs && node international-radar-core.test.mjs && node night-destination-core.test.mjs && node night-destination-catalog.test.mjs && node night-destination-selection.test.mjs && node heritage-catalog.test.mjs && node occasion-core.test.mjs && node bale-live-gate.integration.test.mjs && node bale-safety-gate.contract.test.mjs && node bale-delivery-schedule.contract.test.mjs && node bale-regression-delivery-health.integration.test.mjs && node bale-regression-morning-scheduler.integration.test.mjs && node bale-regression-weather-pipeline.integration.test.mjs && node bale-regression-occasion-scheduler.integration.test.mjs && node bale-regression-scheduler-resilience.integration.test.mjs",
+    "test:telegram-reference": "echo \"Reference integration tests are retained from V6.9.1; transport-specific tests target Telegram and are not the Bale deployment gate.\""
   },
   "devDependencies": {
-    "wrangler": "^4.124.0"
+    "esbuild": "^0.25.0",
+    "wrangler": "^4.0.0"
   }
 }

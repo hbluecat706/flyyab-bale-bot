@@ -1,0 +1,118 @@
+{
+  "version": "FlyYab-Heritage365-Catalog-v4.0-QA",
+  "generated_on": "2026-08-17",
+  "overall_status": "PASS",
+  "checks": {
+    "record_count": {
+      "expected": 365,
+      "actual": 365,
+      "status": "PASS"
+    },
+    "day_sequence": {
+      "expected": "1..365",
+      "actual": "1..365",
+      "status": "PASS"
+    },
+    "unique_unesco_ids": {
+      "expected": 365,
+      "actual": 365,
+      "status": "PASS"
+    },
+    "criteria_nonempty": {
+      "expected": 365,
+      "actual": 365,
+      "status": "PASS"
+    },
+    "criteria_allowed_set": {
+      "status": "PASS"
+    },
+    "category_criteria_consistency": {
+      "status": "PASS"
+    },
+    "fixed_destination_count": {
+      "expected": 365,
+      "actual": 365,
+      "status": "PASS"
+    },
+    "runtime_substitution_disabled_count": {
+      "expected": 365,
+      "actual": 365,
+      "status": "PASS"
+    },
+    "country_count": 116,
+    "minimum_same_country_gap": 6
+  },
+  "distributions": {
+    "official_category": {
+      "Cultural": 243,
+      "Mixed": 21,
+      "Natural": 101
+    },
+    "unesco_region_code": {
+      "ARB": 25,
+      "APA": 116,
+      "LAC": 57,
+      "EUR": 129,
+      "AFR": 38
+    },
+    "criteria_frequency": {
+      "i": 93,
+      "iii": 136,
+      "iv": 159,
+      "vi": 73,
+      "ii": 125,
+      "vii": 79,
+      "ix": 65,
+      "viii": 47,
+      "x": 75,
+      "v": 56
+    },
+    "criteria_per_property": {
+      "1": 61,
+      "2": 149,
+      "3": 97,
+      "4": 39,
+      "5": 14,
+      "6": 3,
+      "7": 2
+    }
+  },
+  "category_corrections_from_draft": [
+    {
+      "day": 23,
+      "title": "Mount Huangshan",
+      "draft": "Natural",
+      "official": "Mixed"
+    },
+    {
+      "day": 28,
+      "title": "Mosi-oa-Tunya / Victoria Falls",
+      "draft": "Mixed",
+      "official": "Natural"
+    },
+    {
+      "day": 172,
+      "title": "Laponian Area",
+      "draft": "Natural",
+      "official": "Mixed"
+    },
+    {
+      "day": 320,
+      "title": "Danube Delta",
+      "draft": "Cultural",
+      "official": "Natural"
+    }
+  ],
+  "issues": [],
+  "pending_next_stage": [
+    "standardized Persian title",
+    "Wikidata QID",
+    "Wikipedia URL",
+    "Wikimedia Commons category",
+    "visual priority / image-source readiness"
+  ],
+  "notes": [
+    "Bot code has not been modified in this stage.",
+    "Runtime destination substitution remains disabled for all 365 entries."
+  ]
+}
