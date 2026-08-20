@@ -17,7 +17,7 @@ import { NIGHT_DESTINATIONS, NIGHT_DESTINATION_CATALOG_REVISION, nightDestinatio
 import { HERITAGE_CATALOG_VERSION, HERITAGE_CATALOG, heritageCatalogItem, heritageCatalogStats } from "./heritage-catalog.mjs";
 import { IRAN_WEATHER_DESTINATIONS, WEATHER_CATALOG_VERSION, weatherCatalogStats } from "./weather-catalog.mjs";
 import { WEATHER_VERSION, WEATHER_RULES, assessWeather, weatherReason as weatherReasonV2, selectWeatherPicks, candidateSeasonScore, stableWeatherHash } from "./weather-core.mjs";
-const FLYYAB_BUILD_ID = "FlyYab-Bale-1.2.2-20260820-CONTROL-ROOM-BROWSER-JS-FIX-V6.9.1";
+const FLYYAB_BUILD_ID = "FlyYab-Bale-1.3.0-20260820-RATES-WEATHER-DIAGNOSTICS-V6.9.1";
 const INTERNATIONAL_FARES_POST_VERSION = "international-fares-v2.0-homepage-parity";
 const SCHEDULER_RESILIENCE_VERSION = "scheduler-resilience-v3.1-self-healing-coordinator";
 const FREE_TIER_DELIVERY_VERSION = "free-tier-delivery-v2.1-self-healing-coordinator";
@@ -828,6 +828,41 @@ async function sendBundledPhoto(env, chatId, image, filename, caption = "", repl
   }
   throw lastError;
 }
+
+async function fetchRemoteImageForBale(url, { timeoutMs = 12000, maxBytes = 8 * 1024 * 1024 } = {}) {
+  const source = String(url || "").trim();
+  if (!/^https:\/\//i.test(source)) throw new Error("REMOTE_IMAGE_URL_INVALID");
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort("REMOTE_IMAGE_TIMEOUT"), timeoutMs);
+  try {
+    const response = await fetch(source, {
+      redirect: "follow",
+      signal: controller.signal,
+      headers: { "user-agent": "FlyYab-Bale/1.3" }
+    });
+    if (!response.ok) {
+      const error = new Error(`REMOTE_IMAGE_HTTP_${response.status}`);
+      error.status = response.status;
+      throw error;
+    }
+    const contentType = String(response.headers.get("content-type") || "image/jpeg").split(";")[0].trim();
+    if (!/^image\//i.test(contentType)) throw new Error(`REMOTE_IMAGE_CONTENT_TYPE_${contentType || "UNKNOWN"}`);
+    const declared = Number(response.headers.get("content-length") || 0);
+    if (declared && declared > maxBytes) throw new Error(`REMOTE_IMAGE_TOO_LARGE_${declared}`);
+    const bytes = new Uint8Array(await response.arrayBuffer());
+    if (!bytes.length) throw new Error("REMOTE_IMAGE_EMPTY");
+    if (bytes.length > maxBytes) throw new Error(`REMOTE_IMAGE_TOO_LARGE_${bytes.length}`);
+    const ext = contentType.includes("png") ? "png" : contentType.includes("webp") ? "webp" : "jpg";
+    return { bytes, contentType, filename:`flyyab-remote.${ext}`, source };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+async function sendRemotePhotoMultipart(env, chatId, photoUrl, caption = "", replyMarkup = null) {
+  const media = await fetchRemoteImageForBale(photoUrl);
+  return sendBundledPhoto(env, chatId, media.bytes, media.filename, caption, replyMarkup, media.contentType);
+}
+
 
 var MANAGED_POST_MEDIA = {
   international: { title: "کمترین نرخ پرواز خارجی", command: "international", defaultLabel: "تصویر ثابت پرواز خارجی" }
@@ -2534,13 +2569,12 @@ async function ratesMessage(env, now = /* @__PURE__ */ new Date(), photo = null)
 async function sendRates(env, chatId, now = /* @__PURE__ */ new Date(), fresh = false) {
   const photo = await dailyRatesPhoto(env, now, fresh);
   const caption = await ratesMessage(env, now, photo);
-  return bale(env, "sendPhoto", {
-    chat_id: chatId,
-    photo: photo.src,
-    caption,
-    parse_mode: "HTML",
-    reply_markup: publicSiteButton("daily_rates")
-  });
+  try {
+    return await sendRemotePhotoMultipart(env, chatId, photo.src, caption, publicSiteButton("daily_rates"));
+  } catch (error) {
+    console.error("RATES_MEDIA_MULTIPART_FAILED", String(error?.message || error));
+    return send(env, chatId, caption, publicSiteButton("daily_rates"));
+  }
 }
 function jalaliIso(gregorian) {
   const [year, month, day] = gregorian.split("-").map(Number);
@@ -6756,7 +6790,12 @@ async function sendLockedFreeTierScheduledPackage(env, slotId, channel, now = ne
   if (record.kind === "text") {
     result = await send(env, channel, record.text, record.keyboard || null);
   } else if (record.kind === "photo_url") {
-    result = await bale(env, "sendPhoto", { chat_id: channel, photo: record.photoUrl, caption: record.caption, parse_mode: "HTML", ...(record.keyboard ? { reply_markup: record.keyboard } : {}) });
+    try {
+      result = await sendRemotePhotoMultipart(env, channel, record.photoUrl, record.caption, record.keyboard || null);
+    } catch (error) {
+      console.error("LOCKED_REMOTE_PHOTO_MULTIPART_FAILED", String(error?.message || error));
+      result = await send(env, channel, record.caption, record.keyboard || null);
+    }
   } else if (record.kind === "international") {
     const keyboard = record.keyboard || publicSiteButton("lowest_international_fares");
     result = baleVisibleUtf16Length(record.text) <= 1024
@@ -6764,7 +6803,7 @@ async function sendLockedFreeTierScheduledPackage(env, slotId, channel, now = ne
       : await send(env, channel, record.text, keyboard);
   } else if (record.kind === "article") {
     if (record.imageUrl) {
-      try { result = await bale(env, "sendPhoto", { chat_id: channel, photo: record.imageUrl, caption: record.caption, parse_mode: "HTML", reply_markup: record.keyboard }); }
+      try { result = await sendRemotePhotoMultipart(env, channel, record.imageUrl, record.caption, record.keyboard || null); }
       catch { result = await send(env, channel, record.caption, record.keyboard); }
     } else result = await send(env, channel, record.caption, record.keyboard);
     await persistFreeTierArticleHistory(env, record).catch(() => null);
@@ -9081,8 +9120,8 @@ const w=$("testWarn"); if(!s.testChannel||!s.testCanPostMessages){w.style.displa
 function esc(v){return String(v??"").replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]))}
 async function setMode(mode){if(mode==="live"&&!confirm("حالت ربات روی LIVE قرار بگیرد؟"))return;try{const d=await api("/admin/api/mode",{method:"POST",body:JSON.stringify({mode})});toast("حالت ربات: "+d.mode);refreshAll()}catch(e){toast(e.message)}}
 async function checkAi(){const el=$("aiHealth");el.textContent="در حال تست واقعی هر دو Provider…";try{const d=await api("/admin/api/ai-health",{method:"POST",body:"{}"});el.innerHTML='<div class="kv"><b>Primary</b><span>'+esc(d.primary)+'</span><b>Arvan</b><span>'+(d.arvan.ok?"✅ ":"❌ ")+esc(d.arvan.model||d.arvan.error||"")+'</span><b>Cloudflare</b><span>'+(d.cloudflare.ok?"✅ ":"❌ ")+esc(d.cloudflare.model||d.cloudflare.error||"")+'</span><b>Operational</b><span>'+(d.operational?"✅ آماده":"❌ نیاز به بررسی")+'</span></div>'}catch(e){el.textContent="خطا: "+e.message}}
-async function diagnosePost(type){try{const d=await api("/admin/api/diagnose-post",{method:"POST",body:JSON.stringify({type})});const summary=(d.pipeline||[]).map(x=>(x.ok?"✅ ":"❌ ")+x.stage+" — "+(x.detail||"")).join("\\n");$("health").textContent="عیب‌یابی "+type+"\\n\\n"+summary+(d.error?"\\n\\nخطا: "+d.error:"");toast(d.ready?"پیش‌نیازهای "+type+" آماده‌اند":"پیش‌نیاز ناقص است")}catch(e){toast("خطا: "+e.message)}}
-async function testPost(type){if(!confirm("پست «"+type+"» اکنون به مقصد تست فعلی ارسال شود؟"))return;try{const d=await api("/admin/api/test-post",{method:"POST",body:JSON.stringify({type})});toast("تست "+type+" پذیرفته شد → "+d.targetChannel)}catch(e){toast("خطا: "+e.message)}}
+async function diagnosePost(type){try{const d=await api("/admin/api/diagnose-post",{method:"POST",body:JSON.stringify({type})});const summary=(d.pipeline||[]).map(x=>(x.ok?"✅ ":"❌ ")+x.stage+" — "+(x.detail||"")).join("\\n");const extra=d.state?"\\n\\nSTATE\\n"+JSON.stringify(d.state,null,2):"";$("health").textContent="عیب‌یابی "+type+"\\n\\n"+summary+extra+(d.error?"\\n\\nخطا: "+d.error:"");toast(d.ready?"مسیر "+type+" آماده است":"مسیر "+type+" هنوز آماده نیست")}catch(e){toast("خطا: "+e.message)}}
+async function testPost(type){if(!confirm("پست «"+type+"» اکنون به مقصد تست فعلی ارسال/اجرا شود؟"))return;try{const d=await api("/admin/api/test-post",{method:"POST",body:JSON.stringify({type})});let msg="تست "+type+" → "+(d.delivered?"✅ ارسال شد":"⏳ در حال آماده‌سازی");if(d.messageId)msg+=" • Message #"+d.messageId;if(d.action)msg+="\\n"+d.action+" • "+(d.processed||0)+"/"+(d.total||0)+" • "+(d.coveragePct||0)+"%";if(d.message)msg+="\\n"+d.message;$("health").textContent=msg;toast(d.delivered?"ارسال "+type+" موفق بود":"تست "+type+" شروع شد")}catch(e){$("health").textContent="خطای تست "+type+"\\n\\n"+e.message;toast("خطا: "+e.message)}}
 async function testAll(){if(!confirm("تمام پست‌های قابل تست یکی‌یکی اجرا شوند؟ این کار چند پیام در کانال ایجاد می‌کند."))return;try{const d=await api("/admin/api/test-all",{method:"POST",body:"{}"});toast("تست همه پست‌ها شروع شد: "+d.count+" مورد")}catch(e){toast(e.message)}}
 async function loadHealth(){try{const d=await api("/admin/api/health");$("health").textContent=d.report||"گزارشی وجود ندارد"}catch(e){$("health").textContent="خطا: "+e.message}}
 async function fixWebhook(){try{const d=await api("/admin/api/webhook",{method:"POST",body:"{}"});toast(d.ok?"Webhook بازسازی شد":"Webhook ناموفق")}catch(e){toast(e.message)}}
@@ -9159,6 +9198,115 @@ function adminWebConfigReadiness(env) {
       : name === "FREE_TIER_EXECUTOR" ? Boolean(env.FREE_TIER_EXECUTOR)
       : Boolean(String(env[name] || "").trim())
   }));
+}
+
+async function adminWebRatesDiagnostic(env) {
+  const pipeline = [];
+  const push = (stage, ok, detail = "", extra = {}) => pipeline.push({stage,ok:Boolean(ok),detail:String(detail || ""),...extra});
+
+  const hasNavasan = Boolean(String(env.NAVASAN_API_KEY || "").trim());
+  push("NAVASAN_KEY", hasNavasan, hasNavasan ? "Secret تنظیم شده" : "NAVASAN_API_KEY تنظیم نشده");
+  if (!hasNavasan) return {ok:true,type:"rates",ready:false,pipeline};
+
+  let data = null;
+  try {
+    const response = await fetch(`https://api.navasan.tech/latest/?api_key=${encodeURIComponent(env.NAVASAN_API_KEY)}`);
+    push("NAVASAN_HTTP", response.ok, `HTTP ${response.status}`, {status:response.status});
+    if (!response.ok) return {ok:true,type:"rates",ready:false,pipeline};
+    data = await response.json();
+  } catch (error) {
+    push("NAVASAN_HTTP", false, String(error?.message || error));
+    return {ok:true,type:"rates",ready:false,pipeline};
+  }
+
+  const available = RATE_ITEMS.filter(([key]) => data?.[key] && Number(data[key].value)).map(([key,,name]) => ({key,name,value:Number(data[key].value)}));
+  push("RATE_DATA", available.length === RATE_ITEMS.length, `${available.length}/${RATE_ITEMS.length} نرخ معتبر`, {available:available.map(x=>x.key)});
+
+  push("PEXELS_KEY", Boolean(String(env.PEXELS_API_KEY || "").trim()),
+       env.PEXELS_API_KEY ? "Pexels فعال است" : "PEXELS_API_KEY تنظیم نشده؛ fallback تصویر استفاده می‌شود");
+
+  let photo = null;
+  try {
+    photo = await dailyRatesPhoto(env, new Date(), false);
+    push("PHOTO_SELECT", Boolean(photo?.src), photo?.label || "تصویر انتخاب نشد", {source:photo?.page || ""});
+  } catch (error) {
+    push("PHOTO_SELECT", false, String(error?.message || error));
+  }
+
+  if (photo?.src) {
+    try {
+      const media = await fetchRemoteImageForBale(photo.src, {timeoutMs:10000});
+      push("PHOTO_FETCH", true, `${media.contentType} • ${media.bytes.length} bytes`);
+    } catch (error) {
+      push("PHOTO_FETCH", false, `${String(error?.message || error)} • ارسال متن fallback خواهد شد`, {nonFatal:true});
+    }
+  }
+
+  try {
+    const caption = await ratesMessage(env, new Date(), photo);
+    push("CAPTION", Boolean(String(caption || "").trim()), `${baleVisibleUtf16Length(caption)} UTF-16 chars`);
+  } catch (error) {
+    push("CAPTION", false, String(error?.message || error));
+  }
+
+  const fatal = pipeline.filter(x => !x.ok && !x.nonFatal && x.stage !== "PEXELS_KEY");
+  return {ok:true,type:"rates",ready:fatal.length===0,pipeline};
+}
+
+async function adminWebWeatherDiagnostic(env) {
+  const pipeline = [];
+  const push = (stage, ok, detail = "", extra = {}) => pipeline.push({stage,ok:Boolean(ok),detail:String(detail || ""),...extra});
+  push("BALE", Boolean(String(env.BALE_BOT_TOKEN || "").trim()), "توکن بازو");
+  push("TEST_CHANNEL", Boolean(String(env.BALE_TEST_CHANNEL_ID || "").trim()), String(env.BALE_TEST_CHANNEL_ID || "تعریف نشده"));
+  push("STATE_BINDING", Boolean(env.BOT_CONTROL), env.BOT_CONTROL ? "BOT_CONTROL متصل" : "BOT_CONTROL متصل نیست");
+
+  let state;
+  try {
+    state = await getWeatherState(env);
+    push("WEATHER_STATE", true, `schema ${state?.version || "?"}`);
+  } catch (error) {
+    push("WEATHER_STATE", false, String(error?.message || error));
+    return {ok:true,type:"weather",ready:false,pipeline};
+  }
+
+  const scan = state?.scan || null;
+  const progress = weatherScanProgress(scan || {});
+  const scanStatus = String(scan?.status || "NOT_STARTED");
+  push("SCAN", scanStatus !== "NOT_STARTED",
+       `${scanStatus} • ${progress.processed || 0}/${progress.total || WEATHER_RULES.targetForecasts} • ${progress.coveragePct || 0}%`,
+       {status:scanStatus,processed:progress.processed||0,total:progress.total||WEATHER_RULES.targetForecasts,coveragePct:progress.coveragePct||0});
+
+  push("FORECAST_DATA", Number(scan?.forecastOk || 0) > 0,
+       `${Number(scan?.forecastOk || 0)} forecast معتبر • ${Number(scan?.failedFinal || 0)} خطای نهایی`);
+
+  push("ELIGIBLE_POOL", Number(scan?.eligiblePool?.length || 0) > 0,
+       `${Number(scan?.eligiblePool?.length || 0)} نامزد واجد شرایط`);
+
+  const pkg = state?.preparedPackage || null;
+  push("PACKAGE", Boolean(pkg && pkg.date === currentTehranIso(new Date()) && ["READY","PUBLISHED","SKIPPED"].includes(pkg.status)),
+       pkg ? `${pkg.status || "UNKNOWN"} • ${pkg.date || "بدون تاریخ"}` : "پرونده امروز ساخته نشده");
+
+  push("FINAL_LOCK", Boolean(pkg?.status === "PUBLISHED" || pkg?.status === "SKIPPED" || pkg?.finalLockStatus === "LOCKED"),
+       String(pkg?.finalLockStatus || (pkg?.status === "PUBLISHED" ? "PUBLISHED" : "NOT_LOCKED")));
+
+  push("PICKS", Boolean(pkg?.picks?.length),
+       pkg?.picks?.length ? pkg.picks.map(x=>x.name).join("، ") : "هنوز مقصد نهایی انتخاب نشده");
+
+  const ready = Boolean(pkg && pkg.date === currentTehranIso(new Date()) && ["READY","PUBLISHED"].includes(pkg.status) && pkg.picks?.length);
+  return {
+    ok:true,type:"weather",ready,pipeline,
+    state:{
+      scanStatus,
+      processed:progress.processed||0,
+      total:progress.total||WEATHER_RULES.targetForecasts,
+      coveragePct:progress.coveragePct||0,
+      forecastOk:Number(scan?.forecastOk||0),
+      failedFinal:Number(scan?.failedFinal||0),
+      eligible:Number(scan?.eligiblePool?.length||0),
+      packageStatus:String(pkg?.status||"NOT_PREPARED"),
+      finalLockStatus:String(pkg?.finalLockStatus||"NOT_LOCKED")
+    }
+  };
 }
 function adminWebPostConfig(env, type) {
   const common = [
@@ -9247,6 +9395,8 @@ async function handleAdminWeb(request, env, ctx, url) {
     const body = await request.json().catch(()=>({}));
     const type = String(body.type || "").toLowerCase();
     if (!TESTABLE_POST_TYPES.has(type)) return Response.json({ok:false,error:"INVALID_POST_TYPE"},{status:400});
+    if (type === "rates") return Response.json(await adminWebRatesDiagnostic(env),{headers:{"cache-control":"no-store"}});
+    if (type === "weather") return Response.json(await adminWebWeatherDiagnostic(env),{headers:{"cache-control":"no-store"}});
     const pipeline = adminWebPostConfig(env,type);
     return Response.json({ok:true,type,ready:pipeline.every(x=>x.ok),pipeline},{headers:{"cache-control":"no-store"}});
   }
@@ -9274,6 +9424,44 @@ async function handleAdminWeb(request, env, ctx, url) {
     let targetChannel;
     try { targetChannel = adminWebTestTarget(env); }
     catch (error) { return Response.json({ok:false,error:String(error?.message||error)},{status:409}); }
+
+    if (type === "rates") {
+      try {
+        const result = await runAdminWebTest(env,type,targetChannel);
+        return Response.json({
+          ok:true,accepted:true,delivered:true,type,targetChannel,
+          messageId:baleMessageIdFromResult(result) || null,
+          scope:`sandbox-web-control-${type}`
+        },{headers:{"cache-control":"no-store"}});
+      } catch (error) {
+        return Response.json({ok:false,type,targetChannel,error:String(error?.message||error),code:String(error?.code||"RATES_TEST_FAILED")},{status:502,headers:{"cache-control":"no-store"}});
+      }
+    }
+
+    if (type === "weather") {
+      try {
+        const sandboxEnv = withFlyYabExecutionScope({...env,BALE_TEST_CHANNEL_ID:String(targetChannel)}, "sandbox-web-control-weather");
+        const state = await getWeatherState(sandboxEnv);
+        const pkg = state?.preparedPackage;
+        if (pkg?.date===currentTehranIso(new Date()) && ["READY","PUBLISHED"].includes(pkg?.status)) {
+          const result = await sendWeatherPackage(sandboxEnv,targetChannel,pkg,new Date());
+          return Response.json({ok:true,accepted:true,delivered:true,type,targetChannel,messageId:baleMessageIdFromResult(result)||null},{headers:{"cache-control":"no-store"}});
+        }
+        await startWeatherScan(sandboxEnv,new Date(),{fresh:!state?.scan || state.scan?.date!==currentTehranIso(new Date()),mode:"MANUAL_WEB"});
+        const latest = await getWeatherState(sandboxEnv);
+        const p = weatherScanProgress(latest?.scan || {});
+        return Response.json({
+          ok:true,accepted:true,delivered:false,type,targetChannel,
+          action:"WEATHER_SCAN_STARTED_OR_RESUMED",
+          scanStatus:String(latest?.scan?.status||"RUNNING"),
+          processed:p.processed||0,total:p.total||WEATHER_RULES.targetForecasts,coveragePct:p.coveragePct||0,
+          message:"رصد Weather شروع/ادامه داده شد. برای دیدن وضعیت، عیب‌یابی Weather را بزن."
+        },{status:202,headers:{"cache-control":"no-store"}});
+      } catch (error) {
+        return Response.json({ok:false,type,targetChannel,error:String(error?.message||error),code:String(error?.code||"WEATHER_TEST_FAILED")},{status:502,headers:{"cache-control":"no-store"}});
+      }
+    }
+
     ctx.waitUntil(runAdminWebTest(env,type,targetChannel).catch((error)=>console.error("ADMIN_WEB_TEST_FAILED",type,error)));
     return Response.json({ok:true,accepted:true,type,targetChannel,scope:`sandbox-web-control-${type}`},{status:202});
   }
