@@ -17,7 +17,7 @@ import { NIGHT_DESTINATIONS, NIGHT_DESTINATION_CATALOG_REVISION, nightDestinatio
 import { HERITAGE_CATALOG_VERSION, HERITAGE_CATALOG, heritageCatalogItem, heritageCatalogStats } from "./heritage-catalog.mjs";
 import { IRAN_WEATHER_DESTINATIONS, WEATHER_CATALOG_VERSION, weatherCatalogStats } from "./weather-catalog.mjs";
 import { WEATHER_VERSION, WEATHER_RULES, assessWeather, weatherReason as weatherReasonV2, selectWeatherPicks, candidateSeasonScore, stableWeatherHash } from "./weather-core.mjs";
-const FLYYAB_BUILD_ID = "FlyYab-Bale-1.0.9-20260820-FINAL-V6.9.1";
+const FLYYAB_BUILD_ID = "FlyYab-Bale-1.1.0-20260820-CONTROL-ROOM-FINAL-V6.9.1";
 const INTERNATIONAL_FARES_POST_VERSION = "international-fares-v2.0-homepage-parity";
 const SCHEDULER_RESILIENCE_VERSION = "scheduler-resilience-v3.1-self-healing-coordinator";
 const FREE_TIER_DELIVERY_VERSION = "free-tier-delivery-v2.1-self-healing-coordinator";
@@ -8939,10 +8939,231 @@ async function handleBaleGateCallback(env, callback) {
   return true;
 }
 
+
+const ADMIN_WEB_FALLBACK_PASSWORD_SHA256 = "fae48608f11c49d4138ddd16ce0ffb9ae739b756082338b899a71e22910884ce";
+const ADMIN_WEB_COOKIE = "flyyab_bale_admin";
+const ADMIN_WEB_SESSION_SECONDS = 60 * 60 * 12;
+const ADMIN_POST_SCHEDULE = [
+  { time:"08:00", title:"صبح‌بخیر فلای‌یاب", type:"morning" },
+  { time:"09:30", title:"مقصدهای خوش‌آب‌وهوا", type:"weather" },
+  { time:"10:15", title:"مناسبت‌های امروز", type:"occasion" },
+  { time:"11:00", title:"نرخ ارز", type:"rates" },
+  { time:"11:30", title:"کمترین نرخ پروازهای داخلی", type:"flights" },
+  { time:"13:30", title:"FlyYab Radar | فرصت‌های خرید امروز", type:"deal" },
+  { time:"16:00", title:"کمترین نرخ پروازهای خارجی", type:"international" },
+  { time:"18:00", title:"به‌روزرسانی پروازهای داخلی", type:"flights" },
+  { time:"19:15", title:"خواندنی امروز از مجله فلای‌یاب", type:"article" },
+  { time:"20:30", title:"مقصد امشب فلای‌یاب", type:"album" },
+  { time:"21:00", title:"سفر 365 | میراث جهان", type:"heritage" }
+];
+
+function adminWebCookie(request) {
+  const cookie = String(request.headers.get("cookie") || "");
+  for (const part of cookie.split(";")) {
+    const [key, ...rest] = part.trim().split("=");
+    if (key === ADMIN_WEB_COOKIE) return decodeURIComponent(rest.join("="));
+  }
+  return "";
+}
+function adminWebHex(bytes) {
+  return [...new Uint8Array(bytes)].map((b)=>b.toString(16).padStart(2,"0")).join("");
+}
+async function adminWebSha256(value) {
+  return adminWebHex(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(String(value))));
+}
+function adminWebSigningSecret(env) {
+  return String(env.BALE_ADMIN_WEB_KEY || env.WEBHOOK_SECRET || env.BALE_TEST_KEY || "");
+}
+async function adminWebSign(env, value) {
+  const secret = adminWebSigningSecret(env);
+  if (!secret) return "";
+  const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(secret), {name:"HMAC",hash:"SHA-256"}, false, ["sign"]);
+  return adminWebHex(await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(String(value))));
+}
+async function adminWebAuthenticated(request, env) {
+  const raw = adminWebCookie(request);
+  const [expiryRaw, signature] = raw.split(".");
+  const expiry = Number(expiryRaw);
+  if (!expiry || expiry < Math.floor(Date.now()/1000) || !signature) return false;
+  const expected = await adminWebSign(env, expiryRaw);
+  return Boolean(expected) && expected === signature;
+}
+async function adminWebPasswordValid(env, password) {
+  const configured = String(env.BALE_ADMIN_WEB_KEY || "");
+  if (configured) return String(password) === configured;
+  return (await adminWebSha256(password)) === ADMIN_WEB_FALLBACK_PASSWORD_SHA256;
+}
+function adminWebSessionCookie(env, expiry, signature) {
+  return `${ADMIN_WEB_COOKIE}=${encodeURIComponent(`${expiry}.${signature}`)}; Path=/admin; Max-Age=${ADMIN_WEB_SESSION_SECONDS}; HttpOnly; Secure; SameSite=Strict`;
+}
+function adminWebNoSessionCookie() {
+  return `${ADMIN_WEB_COOKIE}=; Path=/admin; Max-Age=0; HttpOnly; Secure; SameSite=Strict`;
+}
+function adminWebPlainText(value) {
+  return String(value || "")
+    .replace(/<br\s*\/?>/gi,"\n")
+    .replace(/<\/?(?:b|strong|i|em|code|pre)>/gi,"")
+    .replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&amp;/g,"&");
+}
+function adminWebHtmlResponse(html, status = 200, headers = {}) {
+  return new Response(html, {status, headers:{"content-type":"text/html; charset=UTF-8","cache-control":"no-store",...headers}});
+}
+function adminLoginHtml(message = "") {
+  const note = message ? `<div class="error">${String(message).replace(/[<>&]/g,(m)=>({"<":"&lt;",">":"&gt;","&":"&amp;"}[m]))}</div>` : "";
+  return `<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>FlyYab Bale Control Room</title>
+  <style>
+  *{box-sizing:border-box}body{margin:0;background:#07152b;color:#eef5ff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Tahoma,sans-serif;min-height:100vh;display:grid;place-items:center;padding:20px}
+  .box{width:min(440px,100%);background:#0d2242;border:1px solid #1c3f6d;border-radius:24px;padding:26px;box-shadow:0 24px 70px #0007}.brand{font-size:29px;font-weight:900;margin-bottom:6px}.sub{color:#9eb4cf;margin-bottom:24px;line-height:1.8}
+  input{width:100%;border:1px solid #31547f;background:#091a32;color:#fff;border-radius:14px;padding:15px;font-size:18px;outline:none}button{width:100%;margin-top:13px;border:0;border-radius:14px;padding:15px;font-size:17px;font-weight:800;background:#1177ff;color:#fff}
+  .error{background:#4a1620;border:1px solid #8e3343;color:#ffd9df;padding:12px;border-radius:12px;margin:0 0 14px}.hint{font-size:12px;color:#7792b4;margin-top:18px;line-height:1.8}
+  </style></head><body><form class="box" method="post" action="/admin/login"><div class="brand">✈️ FlyYab Control Room</div><div class="sub">مدیریت و تست مستقل ربات بله فلای‌یاب</div>${note}<input name="password" type="password" autocomplete="current-password" placeholder="رمز ورود" autofocus><button type="submit">ورود به پنل مدیریت</button><div class="hint">در صورت تعریف‌نشدن BALE_ADMIN_WEB_KEY، رمز پیش‌فرض همین نسخه استفاده می‌شود. برای محیط اصلی بهتر است Secret در Cloudflare تعریف شود.</div></form></body></html>`;
+}
+function adminControlRoomHtml() {
+  return `<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#07152b"><title>FlyYab Bale Control Room</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#07152b;color:#eaf2ff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Tahoma,sans-serif}.wrap{max-width:1180px;margin:auto;padding:16px 14px 70px}
+header{position:sticky;top:0;z-index:20;background:#07152bf2;backdrop-filter:blur(14px);padding:12px 0 14px;border-bottom:1px solid #173456}.head{display:flex;align-items:center;gap:12px}.logo{width:45px;height:45px;border-radius:15px;background:#1177ff;display:grid;place-items:center;font-size:24px}.title{font-weight:900;font-size:21px}.muted{color:#8da6c4;font-size:13px}.head .spacer{flex:1}
+.btn{border:1px solid #2a4c73;background:#102949;color:#eaf2ff;border-radius:12px;padding:10px 13px;font-weight:750;font-size:14px;cursor:pointer}.btn.primary{background:#1177ff;border-color:#1177ff}.btn.good{background:#0b7448;border-color:#159462}.btn.danger{background:#7e2432;border-color:#a23b4c}.btn.warn{background:#72520b;border-color:#9a7218}.btn:disabled{opacity:.45}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px;margin-top:14px}.card{grid-column:span 4;background:#0d2242;border:1px solid #1b3a63;border-radius:18px;padding:16px;min-width:0}.wide{grid-column:span 12}.half{grid-column:span 6}
+.card h2{font-size:16px;margin:0 0 12px}.stat{font-size:27px;font-weight:900}.pill{display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border-radius:99px;font-size:12px;background:#183557;color:#bcd1e9}.pill.ok{background:#0a4d37;color:#a7efd1}.pill.bad{background:#541d29;color:#ffd2da}.pill.warn{background:#594211;color:#ffe3a0}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.kv{display:grid;grid-template-columns:120px 1fr;gap:8px;font-size:13px;margin-top:7px}.kv b{color:#8da6c4;font-weight:600}.table{overflow:auto;border-radius:14px;border:1px solid #1b3a63}.post{display:grid;grid-template-columns:70px minmax(180px,1fr) 105px;border-bottom:1px solid #173456;align-items:center;padding:10px;background:#0a1d38}.post:last-child{border-bottom:0}.post .time{font-family:ui-monospace,Menlo,monospace;color:#86b8ff}.post .name{font-weight:750}.post .btn{padding:8px}
+pre{white-space:pre-wrap;word-break:break-word;background:#08182f;border:1px solid #173456;border-radius:14px;padding:13px;color:#cfe1f6;font:12px/1.9 ui-monospace,SFMono-Regular,Menlo,monospace;max-height:420px;overflow:auto}
+.toast{position:fixed;left:16px;bottom:16px;background:#102949;border:1px solid #31547f;border-radius:14px;padding:12px 16px;max-width:360px;display:none;z-index:50}.toast.show{display:block}.notice{background:#382d0d;border:1px solid #6c5816;color:#ffe4a1;padding:11px;border-radius:12px;font-size:13px;line-height:1.8;margin-bottom:12px}
+@media(max-width:800px){.card,.half{grid-column:span 12}.kv{grid-template-columns:105px 1fr}.post{grid-template-columns:60px 1fr 80px}.head .muted{display:none}.btn{font-size:13px;padding:9px 10px}}
+</style></head><body><header><div class="wrap" style="padding-top:0;padding-bottom:0"><div class="head"><div class="logo">✈️</div><div><div class="title">FlyYab Bale Control Room</div><div class="muted" id="build">در حال خواندن وضعیت…</div></div><div class="spacer"></div><button class="btn" onclick="refreshAll()">↻ بروزرسانی</button><button class="btn danger" onclick="logout()">خروج</button></div></div></header>
+<div class="wrap">
+<div id="testWarn" class="notice" style="display:none"></div>
+<div class="grid">
+<section class="card"><h2>وضعیت ربات</h2><div class="stat" id="mode">—</div><div class="row" style="margin-top:12px"><button class="btn" onclick="setMode('test')">🧪 حالت تست</button><button class="btn good" onclick="setMode('live')">🟢 حالت اصلی</button></div></section>
+<section class="card"><h2>Automation / Cron</h2><div class="stat" id="automation">—</div><div class="muted" style="margin-top:8px">Cron هر 5 دقیقه Dispatcher را اجرا می‌کند.</div></section>
+<section class="card"><h2>اتصال بله</h2><div class="stat" id="bale">—</div><div class="row" style="margin-top:12px"><button class="btn primary" onclick="fixWebhook()">بازسازی Webhook</button></div></section>
+
+<section class="card half"><h2>مشخصات اتصال</h2><div id="connection"></div></section>
+<section class="card half"><h2>کنترل سریع</h2><div class="row"><button class="btn primary" onclick="testAll()">⚡ تست همه پست‌ها</button><button class="btn" onclick="loadHealth()">🩺 سلامت ارسال</button></div><div class="muted" style="margin-top:10px">تست‌ها در Scope مستقل اجرا می‌شوند و State اصلی را تغییر نمی‌دهند.</div></section>
+
+<section class="card wide"><h2>پست‌های روزانه — تهران</h2><div id="posts" class="table"></div></section>
+<section class="card wide"><h2>Delivery Health امروز</h2><pre id="health">برای مشاهده گزارش روی «سلامت ارسال» بزنید.</pre></section>
+<section class="card wide"><h2>راهنمای عملیاتی</h2><div class="kv"><b>Automation</b><span>روشن/خاموش‌بودن انتشار زمان‌بندی‌شده با Secret/Variable کلادفلر <code>BALE_AUTOMATION_ENABLED</code> کنترل می‌شود.</span><b>حالت TEST/LIVE</b><span>از همین پنل قابل تغییر است. حتی با حالت LIVE، اگر Automation خاموش باشد Cron پست عمومی نمی‌فرستد.</span><b>کانال تست</b><span id="testHelp">—</span><b>مدیریت بازو</b><span>پنل وب مرجع اصلی مدیریت است؛ فرمان‌های داخل بازو به‌عنوان مسیر پشتیبان باقی می‌مانند.</span></div></section>
+</div></div><div id="toast" class="toast"></div>
+<script>
+const $=id=>document.getElementById(id);
+function toast(msg){const t=$("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),3500)}
+async function api(path,opts={}){const r=await fetch(path,{headers:{"content-type":"application/json",...(opts.headers||{})},...opts});if(r.status===401){location.href="/admin";throw new Error("SESSION_EXPIRED")}const d=await r.json().catch(()=>({}));if(!r.ok||d.ok===false)throw new Error(d.error||("HTTP "+r.status));return d}
+function renderPosts(s){$("posts").innerHTML=s.schedule.map(p=>'<div class="post"><div class="time">'+p.time+'</div><div class="name">'+p.title+'</div><button class="btn" onclick="testPost(\\''+p.type+'\\')">تست</button></div>').join("")}
+async function refreshAll(){try{const s=await api("/admin/api/status");$("build").textContent=s.buildId;$("mode").innerHTML=s.mode==="live"?'<span class="pill ok">🟢 اصلی</span>':'<span class="pill warn">🧪 آزمایشی</span>';$("automation").innerHTML=s.automationEnabled?'<span class="pill ok">فعال</span>':'<span class="pill bad">خاموش</span>';$("bale").innerHTML=s.baleOk?'<span class="pill ok">متصل</span>':'<span class="pill bad">خطا</span>';
+$("connection").innerHTML='<div class="kv"><b>بازو</b><span>'+esc(s.botUsername||"—")+'</span><b>کانال اصلی</b><span>'+esc(s.productionChannel)+'</span><b>کانال تست</b><span>'+esc(s.testChannel||"تعریف نشده")+'</span><b>Webhook</b><span>'+esc(s.webhookUrl||"ثبت نشده")+'</span><b>دسترسی ارسال</b><span>'+(s.canPostMessages?"✅":"❌")+'</span><b>زمان تهران</b><span>'+esc(s.tehranTime)+'</span></div>';
+$("testHelp").textContent=s.testChannel?"تست‌های پنل به کانال تست "+s.testChannel+" می‌روند.":"BALE_TEST_CHANNEL_ID تعریف نشده؛ تست‌های پنل با تأیید صریح به کانال اصلی می‌روند.";
+const w=$("testWarn"); if(!s.testChannel){w.style.display="block";w.textContent="⚠️ کانال تست جداگانه تعریف نشده است. بنابراین دکمه‌های «تست» در همین کانال اصلی بله منتشر می‌شوند."}else w.style.display="none";renderPosts(s)}catch(e){toast("خطا: "+e.message)}}
+function esc(v){return String(v??"").replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]))}
+async function setMode(mode){if(mode==="live"&&!confirm("حالت ربات روی LIVE قرار بگیرد؟"))return;try{const d=await api("/admin/api/mode",{method:"POST",body:JSON.stringify({mode})});toast("حالت ربات: "+d.mode);refreshAll()}catch(e){toast(e.message)}}
+async function testPost(type){if(!confirm("پست «"+type+"» اکنون به مقصد تست فعلی ارسال شود؟"))return;try{const d=await api("/admin/api/test-post",{method:"POST",body:JSON.stringify({type})});toast("تست "+type+" پذیرفته شد → "+d.targetChannel)}catch(e){toast("خطا: "+e.message)}}
+async function testAll(){if(!confirm("تمام پست‌های قابل تست یکی‌یکی اجرا شوند؟ این کار چند پیام در کانال ایجاد می‌کند."))return;try{const d=await api("/admin/api/test-all",{method:"POST",body:"{}"});toast("تست همه پست‌ها شروع شد: "+d.count+" مورد")}catch(e){toast(e.message)}}
+async function loadHealth(){try{const d=await api("/admin/api/health");$("health").textContent=d.report||"گزارشی وجود ندارد"}catch(e){$("health").textContent="خطا: "+e.message}}
+async function fixWebhook(){try{const d=await api("/admin/api/webhook",{method:"POST",body:"{}"});toast(d.ok?"Webhook بازسازی شد":"Webhook ناموفق")}catch(e){toast(e.message)}}
+async function logout(){await fetch("/admin/logout",{method:"POST"});location.href="/admin"}
+refreshAll();setInterval(refreshAll,60000);
+</script></body></html>`;
+}
+async function adminWebStatus(env) {
+  const safe = async (method, payload={}) => {
+    try { return await bale(env, method, payload); } catch (error) { return {ok:false,error:String(error?.message||error)}; }
+  };
+  const mode = await getBotMode(env).catch(()=>"test");
+  const me = await safe("getMe");
+  const production = String(productionChannel(env));
+  const test = String(env.BALE_TEST_CHANNEL_ID || "").trim();
+  const chat = await safe("getChat", {chat_id:production});
+  const botId = me?.result?.id || null;
+  const member = botId ? await safe("getChatMember", {chat_id:production,user_id:botId}) : {ok:false};
+  const webhook = await safe("getWebhookInfo");
+  return {
+    ok:true,
+    buildId:FLYYAB_BUILD_ID,
+    botVersion:BOT_VERSION,
+    mode,
+    automationEnabled:baleAutomationEnabled(env),
+    cron:"*/5 * * * *",
+    timezone:"Asia/Tehran",
+    tehranTime:`${currentTehranIso(new Date())} ${clock(new Date())}`,
+    productionChannel:production,
+    testChannel:test || null,
+    botUsername:me?.result?.username ? `@${me.result.username}` : null,
+    baleOk:Boolean(me?.ok && chat?.ok),
+    canPostMessages:Boolean(member?.result?.can_post_messages || member?.result?.status === "administrator"),
+    webhookUrl:String(webhook?.result?.url || ""),
+    schedule:ADMIN_POST_SCHEDULE
+  };
+}
+function adminWebTestTarget(env) {
+  return String(env.BALE_TEST_CHANNEL_ID || productionChannel(env));
+}
+async function runAdminWebTest(env, type, targetChannel) {
+  const sandboxEnv = withFlyYabExecutionScope({...env, BALE_TEST_CHANNEL_ID:String(targetChannel)}, `sandbox-web-control-${type}`);
+  return publish(sandboxEnv, type, {channel:String(targetChannel),fresh:true});
+}
+async function handleAdminWeb(request, env, ctx, url) {
+  if (url.pathname === "/admin/login" && request.method === "POST") {
+    const form = await request.formData().catch(()=>new FormData());
+    const password = String(form.get("password") || "");
+    if (!(await adminWebPasswordValid(env, password))) return adminWebHtmlResponse(adminLoginHtml("رمز ورود صحیح نیست."), 401);
+    const expiry = String(Math.floor(Date.now()/1000) + ADMIN_WEB_SESSION_SECONDS);
+    const signature = await adminWebSign(env, expiry);
+    if (!signature) return adminWebHtmlResponse(adminLoginHtml("Secret امضای پنل تنظیم نشده است. WEBHOOK_SECRET یا BALE_ADMIN_WEB_KEY را تنظیم کنید."), 500);
+    return new Response(null, {status:303,headers:{"location":"/admin","set-cookie":adminWebSessionCookie(env,expiry,signature),"cache-control":"no-store"}});
+  }
+  if (url.pathname === "/admin/logout") return new Response(null,{status:303,headers:{"location":"/admin","set-cookie":adminWebNoSessionCookie(),"cache-control":"no-store"}});
+  const authenticated = await adminWebAuthenticated(request, env);
+  if (!authenticated) {
+    if (url.pathname.startsWith("/admin/api/")) return Response.json({ok:false,error:"UNAUTHORIZED"},{status:401});
+    return adminWebHtmlResponse(adminLoginHtml());
+  }
+  if (url.pathname === "/admin" || url.pathname === "/admin/") return adminWebHtmlResponse(adminControlRoomHtml());
+  if (url.pathname === "/admin/api/status" && request.method === "GET") return Response.json(await adminWebStatus(env),{headers:{"cache-control":"no-store"}});
+  if (url.pathname === "/admin/api/health" && request.method === "GET") {
+    try {
+      const report = await buildDailyDeliveryHealthReport(env, currentTehranIso(new Date()), new Date());
+      return Response.json({ok:true,report:adminWebPlainText(report)},{headers:{"cache-control":"no-store"}});
+    } catch (error) { return Response.json({ok:false,error:String(error?.message||error)},{status:500}); }
+  }
+  if (url.pathname === "/admin/api/mode" && request.method === "POST") {
+    const body = await request.json().catch(()=>({}));
+    const mode = body.mode === "live" ? "live" : "test";
+    return Response.json({ok:true,mode:await setBotMode(env,mode)});
+  }
+  if (url.pathname === "/admin/api/webhook" && request.method === "POST") {
+    try {
+      const result = await configureBaleWebhook(env, url.origin, {dropPending:false});
+      return Response.json({ok:true,result});
+    } catch (error) { return Response.json({ok:false,error:String(error?.message||error)},{status:500}); }
+  }
+  if (url.pathname === "/admin/api/test-post" && request.method === "POST") {
+    const body = await request.json().catch(()=>({}));
+    const type = String(body.type || "").toLowerCase();
+    if (!TESTABLE_POST_TYPES.has(type)) return Response.json({ok:false,error:"INVALID_POST_TYPE"},{status:400});
+    const targetChannel = adminWebTestTarget(env);
+    ctx.waitUntil(runAdminWebTest(env,type,targetChannel).catch((error)=>console.error("ADMIN_WEB_TEST_FAILED",type,error)));
+    return Response.json({ok:true,accepted:true,type,targetChannel,scope:`sandbox-web-control-${type}`},{status:202});
+  }
+  if (url.pathname === "/admin/api/test-all" && request.method === "POST") {
+    const targetChannel = adminWebTestTarget(env);
+    const types = [...TESTABLE_POST_TYPES];
+    ctx.waitUntil((async()=>{
+      for (const type of types) {
+        try { await runAdminWebTest(env,type,targetChannel); }
+        catch (error) { console.error("ADMIN_WEB_TEST_ALL_ITEM_FAILED",type,error); }
+      }
+    })());
+    return Response.json({ok:true,accepted:true,count:types.length,types,targetChannel},{status:202});
+  }
+  return Response.json({ok:false,error:"ADMIN_ROUTE_NOT_FOUND"},{status:404});
+}
+
+
 var worker_default = {
   async fetch(request, env, ctx) {
     env = withAiProvider(env);
     const url = new URL(request.url);
+    if (url.pathname === "/admin" || url.pathname === "/admin/" || url.pathname === "/admin/login" || url.pathname === "/admin/logout" || url.pathname.startsWith("/admin/api/")) return handleAdminWeb(request, env, ctx, url);
     // Activation is independent from Cron: the first HTTP/Bale request after deploy starts monitoring.
     // This lets Delivery Health detect a broken Cron instead of depending on that same Cron to initialize itself.
     ctx.waitUntil(ensureDeliveryHealthActivation(env, new Date(), "WORKER_FETCH"));

@@ -1,4 +1,3 @@
-FlyYab-Bale-1.0.9-20260820-FINAL-V6.9.1
-Reference: FlyYab Telegram V6.9.1
-Release: FINAL
-Default automation: OFF
+FlyYab-Bale-1.1.0-20260820-CONTROL-ROOM-FINAL-V6.9.1
+Control Room: /admin
+Automation default: controlled by BALE_AUTOMATION_ENABLED
