@@ -17,7 +17,7 @@ import { NIGHT_DESTINATIONS, NIGHT_DESTINATION_CATALOG_REVISION, nightDestinatio
 import { HERITAGE_CATALOG_VERSION, HERITAGE_CATALOG, heritageCatalogItem, heritageCatalogStats } from "./heritage-catalog.mjs";
 import { IRAN_WEATHER_DESTINATIONS, WEATHER_CATALOG_VERSION, weatherCatalogStats } from "./weather-catalog.mjs";
 import { WEATHER_VERSION, WEATHER_RULES, assessWeather, weatherReason as weatherReasonV2, selectWeatherPicks, candidateSeasonScore, stableWeatherHash } from "./weather-core.mjs";
-const FLYYAB_BUILD_ID = "FlyYab-Bale-1.3.0-20260820-RATES-WEATHER-DIAGNOSTICS-V6.9.1";
+const FLYYAB_BUILD_ID = "FlyYab-Bale-1.4.0-20260820-CONTROL-ROOM-V2-AUTOMATION-V6.9.1";
 const INTERNATIONAL_FARES_POST_VERSION = "international-fares-v2.0-homepage-parity";
 const SCHEDULER_RESILIENCE_VERSION = "scheduler-resilience-v3.1-self-healing-coordinator";
 const FREE_TIER_DELIVERY_VERSION = "free-tier-delivery-v2.1-self-healing-coordinator";
@@ -1710,7 +1710,7 @@ async function runDailyDeliveryWatchdog(env, now = new Date()) {
       `وضعیت: <code>${esc(event.status)}</code>`,
       `کد: <code>${esc(event.code)}</code>`,
       `علت: ${esc(event.reason)}`
-    ].join("\n"));
+    ] .join("\\n"));
   }
   return alerts;
 }
@@ -1858,7 +1858,7 @@ async function buildDailyDeliveryHealthReport(env, date = currentTehranIso(new D
     problemCount ? "⚠️ حداقل یک مشکل واقعی در اتوماسیون امروز ثبت شده است." : "✅ تا این لحظه مشکل قطعی ثبت‌شده‌ای در Slotهای بررسی‌شده وجود ندارد.",
     "",
     "ℹ️ «SKIPPED» خطا نیست؛ یعنی مثلاً امروز فرصت زیر سقف قیمت یا مناسبت واجد شرایط وجود نداشته است. «MISSED» یعنی زمان Slot گذشته ولی Cron شروع آن را ثبت نکرده است."
-  ].join("\n").slice(0, 3900);
+  ] .join("\\n").slice(0, 3900);
 }
 async function sendDailyDeliverySummary(env, now = new Date()) {
   const date = currentTehranIso(now);
@@ -1910,7 +1910,7 @@ async function reportMorningFailure(env, now, phase, error, title = "پست صب
     `کد خطا: <code>${esc(failure.code)}</code>`,
     `علت اصلی: ${esc(failure.reason)}`,
     incident?.id ? `شناسه رخداد: <code>${esc(incident.id)}</code>` : "⚠️ ذخیره رخداد مرکزی نیز در دسترس نبود"
-  ].join("\n"));
+  ] .join("\\n"));
   return failure;
 }
 async function reportScheduledPostFailure(env, postType, now, phase, error, alertText) {
@@ -1992,7 +1992,7 @@ function morningAdminReport(record) {
       `علت اصلی: ${esc(record.lastFailure.reason || "—")}`,
       `زمان: <code>${esc(record.lastFailure.at || "—")}</code>`
     ] : [])
-  ].join("\n").slice(0, 3900);
+  ] .join("\\n").slice(0, 3900);
 }
 async function dailyRatesPhoto(env, now = /* @__PURE__ */ new Date(), fresh = false) {
   const seed = freshSeed(now, fresh, "rates-city");
@@ -2461,7 +2461,7 @@ function morningCaption(featured, now = /* @__PURE__ */ new Date()) {
     "\u0644\u0645\u0633 \u06A9\u0646\u060C \u0622\u0633\u0645\u0627\u0646 \u0648 \u0632\u0645\u06CC\u0646 \u0627\u0632 \u0622\u0646 \u062A\u0648\u0633\u062A.",
     "@FlyYab"
   ];
-  return lines.join("\n");
+  return lines .join("\\n");
 }
 async function sendMorning(env, chatId, now = /* @__PURE__ */ new Date(), fresh = false) {
   const featured = await fetchWikipediaFeaturedPicture();
@@ -2564,7 +2564,7 @@ async function ratesMessage(env, now = /* @__PURE__ */ new Date(), photo = null)
     "\u{1F499} <b>\u0641\u0644\u0627\u06CC\u200C\u06CC\u0627\u0628\u061B \u0647\u0645\u0631\u0627\u0647 \u0647\u0648\u0634\u0645\u0646\u062F \u0633\u0641\u0631</b>",
     "@FlyYab"
   );
-  return lines.join("\n");
+  return lines .join("\\n");
 }
 async function sendRates(env, chatId, now = /* @__PURE__ */ new Date(), fresh = false) {
   const photo = await dailyRatesPhoto(env, now, fresh);
@@ -2659,7 +2659,7 @@ function flightsMessageFromData(data, now = /* @__PURE__ */ new Date()) {
     "\u{1F499} <b>\u0641\u0644\u0627\u06CC\u200C\u06CC\u0627\u0628\u061B \u0644\u0645\u0633 \u06A9\u0646\u060C \u0622\u0633\u0645\u0627\u0646 \u0648 \u0632\u0645\u06CC\u0646 \u0627\u0632 \u0622\u0646 \u062A\u0648\u0633\u062A.</b>",
     "@FlyYab"
   );
-  return lines.join("\n");
+  return lines .join("\\n");
 }
 async function flightsMessage(now = /* @__PURE__ */ new Date()) {
   const data = await fetchFlightPrices();
@@ -3016,7 +3016,7 @@ function radarAdminStatusText(data, env, botMode = "test") {
     `آخرین Flash موفق: ${data?.meta?.lastPublished ? `<code>${esc(new Date(data.meta.lastPublished.at).toISOString())}</code>` : "—"}`,
     `آخرین Board: ${data?.meta?.lastBoard ? `<code>${esc(data.meta.lastBoard.status || "—")}</code> • ${data.meta.lastBoard.verifiedCount || 0} فرصت` : "—"}`,
     `قفل ارسال نامشخص: <b>${Array.isArray(data?.meta?.unknownLocks) ? data.meta.unknownLocks.length : 0}</b>`
-  ].join("\n");
+  ] .join("\\n");
 }
 function radarCandidateAdminText(candidate) {
   if (!candidate) return "ℹ️ هنوز Candidate معتبری در Radar ثبت نشده است.";
@@ -3029,7 +3029,7 @@ function radarCandidateAdminText(candidate) {
     `تأیید خرید: ${Number(parts.verification || 0)} | صرفه‌جویی: ${Number(parts.saving || 0)} | زمان سفر: ${Number(parts.travelWindow || 0)} | اعتماد: ${Number(parts.confidence || 0)}`,
     "",
     radarPostText(candidate)
-  ].join("\n");
+  ] .join("\\n");
 }
 function radarReasonLabel(reason) {
   return ({
@@ -3069,7 +3069,7 @@ async function radarProbeText(env) {
     ...(sample.length ? sample : ["—"]),
     "",
     "این Probe فقط شاخه minPrice داخلی را می‌خواند؛ gminPrice و پرواز خارجی وارد این Radar نمی‌شوند و State نیز تغییر نمی‌کند."
-  ].join("\n");
+  ] .join("\\n");
 }
 function radarCalendarReferenceLabel(candidate) {
   const scope = String(candidate.calendarReferenceScope || "");
@@ -3206,7 +3206,7 @@ function radarBoardText(board, now = new Date()) {
     "",
     "@FlyYab"
   );
-  return lines.join("\n");
+  return lines .join("\\n");
 }
 function radarBoardKeyboard() {
   return {
@@ -3759,7 +3759,7 @@ function internationalRadarAdminStatusText(data, env, botMode = "test") {
     `آخرین اعلان موفق: ${data?.meta?.lastPublished ? `<b>${esc(data.meta.lastPublished.checkedAtTehran || "—")}</b> · <code>${esc(data.meta.lastPublished.origin)}-${esc(data.meta.lastPublished.destination)}</code>` : "—"}`,
     `آخرین رد راستی‌آزمایی: ${data?.meta?.lastRejected ? `<code>${esc(data.meta.lastRejected.reason)}</code>` : "—"}`,
     `آخرین خطای فنی: ${data?.meta?.lastFailure ? `<code>${esc(data.meta.lastFailure)}</code>` : "—"}`
-  ].join("\n");
+  ] .join("\\n");
 }
 function internationalRadarCandidateAdminText(candidate) {
   if (!candidate) return "ℹ️ هنوز فرصت راستی‌آزمایی‌شده‌ای ثبت نشده است.";
@@ -3777,7 +3777,7 @@ function internationalRadarCandidateAdminText(candidate) {
     `مسیر لینک رزرو: <code>${esc(candidate.bookingOrigin || candidate.origin)}-${esc(candidate.bookingDestination || candidate.destination)}</code>`,
     "",
     internationalRadarPostText(candidate)
-  ].join("\n");
+  ] .join("\\n");
 }
 async function internationalRadarProbeText(env) {
   const data = await fetchFlightPrices();
@@ -3798,7 +3798,7 @@ async function internationalRadarProbeText(env) {
     ...(sample.length ? sample : ["—"]),
     "",
     "این گزارش فقط Feed را می‌خواند؛ پیام عمومی نمی‌فرستد و قیمت دقیق خرید را تأیید نمی‌کند."
-  ].join("\n");
+  ] .join("\\n");
 }
 
 function flightOffer(data, origin, destination) {
@@ -4018,7 +4018,7 @@ function internationalFlightsMessageFromData(data, catalog, now = /* @__PURE__ *
     "🌐 FlyYab.ir",
     "@FlyYab"
   ];
-  let message = [...header, ...rows, ...footer].join("\n");
+  let message = [...header, ...rows, ...footer] .join("\\n");
 
   // sendMessage supports 4096 UTF-16 units. This fallback is only for an
   // unexpectedly huge homepage catalog; all valid destinations are retained.
@@ -4029,7 +4029,7 @@ function internationalFlightsMessageFromData(data, catalog, now = /* @__PURE__ *
       "✨ <b>کمترین نرخ‌های فعلی</b>"
     ];
     const compactFooter = ["⚡ آخرین به‌روزرسانی فلای‌یاب • @FlyYab"];
-    message = [...compactHeader, ...compactRows, ...compactFooter].join("\n");
+    message = [...compactHeader, ...compactRows, ...compactFooter] .join("\\n");
   }
   const visibleLength = baleVisibleUtf16Length(message);
   if (visibleLength > 4096) throw new Error(`متن پرواز خارجی بیش از حد مجاز بله است (${visibleLength})`);
@@ -4342,13 +4342,13 @@ async function createNightDestinationEditorial(env, entity) {
   if (!env.AI) throw nightEditorialQualityError("هوش مصنوعی برای ساخت کپشن مقصد متصل نیست");
   const evidence = buildNightEditorialEvidence(entity); const wikiEvidence = evidence.filter((item) => /^wikipedia-/.test(item.kind));
   if (wikiEvidence.length < 5 || new Set(wikiEvidence.map((item) => normalizeDestinationText(item.text))).size < 5) throw nightEditorialQualityError("Evidence کافی برای یک کپشن باکیفیت وجود ندارد");
-  const evidenceText = evidence.map((item) => `${item.id} | ${item.kind} | ${item.text}`).join("\n"); const type = String(entity?.configured?.type || "CITY"); const allowedKeys = nightAllowedSectionKeys(type); const models = ["@cf/zai-org/glm-4.7-flash", "@cf/meta/llama-3.1-8b-instruct-fast"];
+  const evidenceText = evidence.map((item) => `${item.id} | ${item.kind} | ${item.text}`) .join("\\n"); const type = String(entity?.configured?.type || "CITY"); const allowedKeys = nightAllowedSectionKeys(type); const models = ["@cf/zai-org/glm-4.7-flash", "@cf/meta/llama-3.1-8b-instruct-fast"];
   let plan = null; let planError = null;
   const planSchema = { type: "object", additionalProperties: false, required: ["angle","leadEvidence","section1Key","section1Evidence","section2Key","section2Evidence"], properties: { angle: { type: "string" }, leadEvidence: { type: "array", items: { type: "string" } }, section1Key: { type: "string", enum: allowedKeys }, section1Evidence: { type: "array", items: { type: "string" } }, section2Key: { type: "string", enum: allowedKeys }, section2Evidence: { type: "array", items: { type: "string" } } } };
   const planPrompt = `تو سردبیر «مقصد امشب فلای‌یاب» هستی. هنوز کپشن ننویس. از میان شواهد قفل‌شده، یک زاویه روایی مشخص و سه مجموعه شاهد مستقل برای Lead و دو بخش انتخاب کن. هدف این است که مخاطب در کمتر از یک دقیقه واقعاً مکان را بشناسد، نه اینکه تعریف دانشنامه‌ای بخواند.\nنوع مقصد: ${type}\nکلیدهای مجاز دو بخش: ${allowedKeys.join(", ")}\nقواعد: واقعیت عینی، معماری، طبیعت، داستان تاریخی و جزئیات مشخص بر آمار اداری اولویت دارند؛ دو بخش باید متفاوت باشند؛ حداقل چهار شاهد یکتا در کل طرح؛ هیچ دانش بیرونی اضافه نکن. فقط JSON مطابق Schema.\n\nEVIDENCE LOCK:\n${evidenceText}`;
   for (const model of models) { try { const result = await env.AI.run(model, { messages: [{ role: "system", content: "تو سردبیر دقیق یک رسانه سفر هستی؛ اول زاویه و شواهد را انتخاب می‌کنی، بعد نویسنده جداگانه متن می‌سازد." }, { role: "user", content: planPrompt }], response_format: { type: "json_schema", json_schema: planSchema }, max_tokens: 620, temperature: 0.15 }); plan = validateNightEditorialPlan(cleanAiJson(aiResponsePayload(result)), evidence, type); break; } catch (error) { planError = error; } }
   if (!plan) throw nightEditorialQualityError("مرحله انتخاب زاویه تحریریه تأیید نشد", planError);
-  const selectedEvidence = [...new Set([...plan.refs.lead,...plan.refs.section1,...plan.refs.section2])].map((ref) => evidence.find((item) => item.id.toUpperCase() === ref)).filter(Boolean); const selectedText = selectedEvidence.map((item) => `${item.id} | ${item.kind} | ${item.text}`).join("\n");
+  const selectedEvidence = [...new Set([...plan.refs.lead,...plan.refs.section1,...plan.refs.section2])].map((ref) => evidence.find((item) => item.id.toUpperCase() === ref)).filter(Boolean); const selectedText = selectedEvidence.map((item) => `${item.id} | ${item.kind} | ${item.text}`) .join("\\n");
   const writerSchema = { type: "object", additionalProperties: false, required: ["lead","section1","section2"], properties: { lead: { type: "string", minLength: 150, maxLength: 300 }, section1: { type: "string", minLength: 110, maxLength: 220 }, section2: { type: "string", minLength: 110, maxLength: 220 } } };
   const writerBase = `برای «مقصد امشب فلای‌یاب» یک مینی‌روایت فارسی بنویس. زاویه از قبل قفل شده و حق تغییر واقعیت‌ها را نداری.\nزاویه: ${plan.angle}\nLead فقط از این شواهد: ${plan.refs.lead.join(", ")}\nبخش اول (${NIGHT_SECTION_TITLES[plan.section1Key]}) فقط از: ${plan.refs.section1.join(", ")}\nبخش دوم (${NIGHT_SECTION_TITLES[plan.section2Key]}) فقط از: ${plan.refs.section2.join(", ")}\n\nسبک: راوی سفر باسواد، کنجکاو و دقیق؛ فارسی طبیعی و تصویری، بدون اغراق و بدون لحن دانشنامه‌ای یا فروش تور. Lead باید مخاطب را وارد مکان کند. هر بخش باید چیزی تازه اضافه کند. جمله کامل باشد؛ «…» و سه‌نقطه ممنوع. هیچ عدد، تاریخ، نام، لقب، علت یا ادعایی خارج از شاهد نساز. تیتر و ایموجی و HTML داخل متن نیاور. فقط JSON مطابق Schema.\n\nSELECTED EVIDENCE:\n${selectedText}`;
   let lastError = null;
@@ -4564,7 +4564,7 @@ function nightImageAiJson(content = "") {
 async function nightAiVisualCheckBatch(env, candidate, images = []) {
   const list = (Array.isArray(images) ? images : []).slice(0, NIGHT_LITE_MAX_IMAGES);
   if (!list.length || !env.ARVAN_AI_API_KEY || !env.ARVAN_AI_ENDPOINT) return new Map(list.map((image) => [String(image.id), { status: "UNAVAILABLE", confidence: 0 }]));
-  const labels = list.map((image, index) => `${index + 1}. id=${image.id} | source=${image.source || "—"} | file=${image.fileName || "—"} | meta=${String(image.description || image.alt || "").slice(0, 260)}`).join("\n");
+  const labels = list.map((image, index) => `${index + 1}. id=${image.id} | source=${image.source || "—"} | file=${image.fileName || "—"} | meta=${String(image.description || image.alt || "").slice(0, 260)}`) .join("\\n");
   const content = [
     { type: "text", text: `تو کنترل کیفیت تصویری کانال رسمی گردشگری FlyYab هستی. مقصد دقیق: «${candidate.name}» در ${candidate.country} (${candidate.query}).\nبرای هر تصویر فقط بررسی کن آیا خودِ تصویر با احتمال بالا همین مقصد/مکان را نشان می‌دهد، نه صرفاً مکانی شبیه آن در همان کشور یا منطقه. پرچم، لوگو، نقشه، فرودگاه، تصاویر آرشیوی نامرتبط یا مکان مشابه باید رد شوند. اگر اطمینان نداری رد کن.\nفهرست تصاویر به ترتیب:\n${labels}\n\nفقط JSON برگردان با شکل {"results":[{"id":"...","same_place":true,"confidence":0-100,"reason":"کوتاه"}]}.` }
   ];
@@ -4750,7 +4750,7 @@ function nightPackageText(pkg) {
     nightPexelsAttribution(pkg),
     `🌐 <a href="https://flyyab.ir/">FlyYab.ir</a> | @FlyYab`,
     "#مقصد_امشب"
-  ].filter((line, index, lines) => !(line === "" && lines[index - 1] === "")).join("\n");
+  ].filter((line, index, lines) => !(line === "" && lines[index - 1] === "")) .join("\\n");
 }
 const NIGHT_DESTINATION_CAPTION_LIMIT = 1024;
 const NIGHT_DESTINATION_EDITORIAL_CEILING = 1024;
@@ -4859,7 +4859,7 @@ async function nightDestinationAdminPanel(env, pkg, note = "") {
     `🎛 حالت ربات: <b>${mode === "live" ? "اصلی 🟢" : "آزمایشی 🧪"}</b>`,
     `🎯 مقصد انتشار: <code>${esc(automaticChannel)}</code>`,
     ...(note ? ["", note] : [])
-  ].join("\n");
+  ] .join("\\n");
 }
 
 function editableNightPackage(state, now = new Date()) {
@@ -5323,7 +5323,7 @@ function nightDestinationStatusText(state) {
     `تلاش‌های ساخت: ${attempts.length}`,
     `آخرین نتیجه: ${report?.ok ? "✅" : report ? `⚠️ ${esc(report.code || report.status || "ERROR")}` : "—"}`,
     ...report?.error ? [`علت: ${esc(report.error)}`] : []
-  ].join("\n");
+  ] .join("\\n");
 }
 
 // سفر 365 | میراث جهان — کاتالوگ ثابت و تأییدشده UNESCO
@@ -5472,7 +5472,7 @@ async function officialUnesco(candidate) {
       description ? `Short description: ${description}` : "",
       extracted.synthesis ? `Brief synthesis: ${extracted.synthesis}` : "",
       extracted.criteriaText ? `Criteria rationale: ${extracted.criteriaText}` : ""
-    ].filter(Boolean).join("\n"));
+    ].filter(Boolean) .join("\\n"));
     return {
       url,
       description,
@@ -5750,7 +5750,7 @@ function heritageEditorialEvidencePack(candidate, official) {
   return [...unesco, ...wiki].slice(0, 24);
 }
 function heritageEvidenceBlock(cards = []) {
-  return cards.map((x) => `[${x.id}] ${x.text}`).join("\n");
+  return cards.map((x) => `[${x.id}] ${x.text}`) .join("\\n");
 }
 function heritageNormalizeEvidenceIds(value, validIds = new Set()) {
   const raw = Array.isArray(value) ? value : String(value || "").split(/[،,\s]+/);
@@ -5911,7 +5911,7 @@ async function createHeritageEditorialCopy(env, candidate, official, context = {
 
 فقط JSON معتبر با همین سه کلید برگردان: title, story, look.`;
 
-  const user = `DESTINATION\nنام فارسی: ${candidate.fa}\nنام رسمی: ${candidate.en}\nکشور: ${candidate.country}\nنوع اثر: ${candidate.kind}\nسال ثبت جهانی: ${candidate.year || "—"}\nمعیارها: ${candidate.criteria || "—"}\n\nSOURCE\n${sourceText || "فقط از متادیتای قطعی بالا استفاده کن و جزئیات نامطمئن نساز."}\n\nIMAGE HINTS\n${imageHints.length ? imageHints.map((x)=>`- ${x}`).join("\n") : "تصاویر همان مقصد هستند؛ فقط چیزی را پیشنهاد کن که از عنوان فایل‌ها یا خود اطلاعات مقصد قابل اتکا باشد."}`;
+  const user = `DESTINATION\nنام فارسی: ${candidate.fa}\nنام رسمی: ${candidate.en}\nکشور: ${candidate.country}\nنوع اثر: ${candidate.kind}\nسال ثبت جهانی: ${candidate.year || "—"}\nمعیارها: ${candidate.criteria || "—"}\n\nSOURCE\n${sourceText || "فقط از متادیتای قطعی بالا استفاده کن و جزئیات نامطمئن نساز."}\n\nIMAGE HINTS\n${imageHints.length ? imageHints.map((x)=>`- ${x}`) .join("\\n") : "تصاویر همان مقصد هستند؛ فقط چیزی را پیشنهاد کن که از عنوان فایل‌ها یا خود اطلاعات مقصد قابل اتکا باشد."}`;
 
   let lastError;
   for (let attempt = 0; attempt < 2; attempt++) {
@@ -5974,7 +5974,7 @@ function buildHeritageCaption(candidate, dayNumber, links = {}, sourcesUrl = "",
     "", dayNumber === 1 ? "💙 شب اول تمام شد؛ 364 داستان دیگر روی نقشه ایران و جهان باقی مانده است." : `💙 شب ${night} تمام شد؛ فردا، یک داستان تازه از نقطه‌ای دیگر روی نقشه.`,
     "", sourceLinks ? `🔗 <b>منابع:</b> ${sourceLinks}` : "", "@FlyYab"
   );
-  return rows.filter((x)=>x!==null && x!==undefined).join("\n").replace(/\n{3,}/g,"\n\n");
+  return rows.filter((x)=>x!==null && x!==undefined) .join("\\n").replace(/\n{3,}/g,"\n\n");
 }
 function heritageCaption(candidate, dayNumber, links = {}, sourcesUrl = "") {
   let working = { ...candidate };
@@ -6108,7 +6108,7 @@ function heritageUpcomingSummary(state, count = 4) {
     const item=heritageCatalogItem(day); if (!item) continue;
     rows.push(`${day===state.nextDayNumber?"▶️":"▫️"} شب <code>${String(day).padStart(3,"0")}</code> · ${esc(item.titleEn)} · ${esc(heritageCountryFa(item))} · UNESCO <code>${esc(item.unescoId)}</code>`);
   }
-  return rows.join("\n") || "پروژه کامل شده است.";
+  return rows .join("\\n") || "پروژه کامل شده است.";
 }
 var BLOG_SITEMAP_URL = "https://flyyab.ir/sitemap-blog.xml";
 var ARTICLE_EDITORIAL_VERSION = "article-v2.0-arvan-editorial-pick";
@@ -6419,7 +6419,7 @@ function validateArticleCopy(value, article = {}) {
   const takeaways=raw.map((x)=>articleSentenceFit(cleanArticleEditorialText(x).replace(/\n+/g," "),130,1)).filter((x)=>x.length>=8).slice(0,3);
   if (headline.length<8) throw new Error("عنوان تولیدشده توسط AI ناقص است");
   if (body.length<100) throw new Error("متن اصلی تولیدشده توسط AI بیش از حد کوتاه است");
-  const all=`${headline}\n${body}\n${takeaways.join("\n")}`;
+  const all=`${headline}\n${body}\n${takeaways .join("\\n")}`;
   if (/(?:\bGPT\b|\bAI\b|\bAPI\b|prompt|json|مدل زبانی|هوش مصنوعی|پرامپت)/i.test(all)) throw new Error("خروجی AI شامل توضیح فنی است");
   const forbidden=[/(?:با خواندن|در این مقاله|در این مطلب|در ادامه همراه|همراه ما باشید)/i,/(?:تجربه[‌ ]?ای بی[‌ ]?نظیر|سفری فراموش[‌ ]?نشدنی|بهترین انتخاب|انتخابی ایده[‌ ]?آل|پروازهای بی[‌ ]?دردسر|کیفیت و تعهد)/i,/(?:نکات طلایی|راهنمای جامع|همه چیز درباره)/i];
   if (forbidden.some((p)=>p.test(all))) throw new Error("خروجی AI لحن قالبی یا تبلیغاتی دارد");
@@ -6456,7 +6456,7 @@ function articleCaption(article, copy) {
   paragraphs.forEach((p,i)=>{ if(i) lines.push(""); lines.push(esc(p)); });
   if (copy.takeaways?.length) lines.push("",articleTakeawayTitle(article.category),...copy.takeaways.map((x)=>`▫️ ${esc(x)}`));
   lines.push("",`⏱ <b>زمان مطالعه: حدود ${article.readingMinutes} دقیقه</b>`,"","━━━━━━━━━━━━━━","","🧭 <b>بیشتر بدانید؛ هوشمندانه‌تر سفر کنید.</b>","","#بلاگ","@FlyYab");
-  return lines.join("\n");
+  return lines .join("\\n");
 }
 function articleAutofit(article, copy, target=970) {
   const fitted={...copy,takeaways:[...(copy.takeaways||[])]}; let caption=articleCaption(article,fitted), length=articleVisibleCaptionLength(caption);
@@ -6674,7 +6674,7 @@ function occasionDecisionReport(record) {
     `ارائه‌دهنده: <code>${esc(record.storyWriterProvider || "—")}</code>`,
     `مدل: <code>${esc(record.storyWriterModel || "—")}</code>`,
     record.storyWriterError ? `گزارش: <code>${esc(String(record.storyWriterError).slice(0, 600))}</code>` : "گزارش خطا: ندارد"
-  ].join("\n").slice(0, 3900);
+  ] .join("\\n").slice(0, 3900);
 }
 function occasionAdminStatus(record) {
   if (!record) return `📌 <b>وضعیت مناسبت روز</b>\n\nنسخه: <code>${esc(BOT_VERSION)}</code> / <code>${esc(OCCASION_VERSION)}</code>\nپرونده‌ای برای تاریخ موردنظر پیدا نشد.`;
@@ -7149,6 +7149,73 @@ async function runScheduledNightDestinationPublication(env, now = new Date(), { 
 function baleAutomationEnabled(env) {
   return /^(?:1|true|yes|on)$/i.test(String(env?.BALE_AUTOMATION_ENABLED || "").trim());
 }
+async function getAutomationControl(env) {
+  const bootDefault = baleAutomationEnabled(env);
+  if (!env?.BOT_CONTROL) return {
+    enabled:bootDefault,
+    bootDefault,
+    source:"ENV_FALLBACK",
+    updatedAt:null,
+    updatedBy:null
+  };
+  try {
+    const id = env.BOT_CONTROL.idFromName("flyyab-bale-global-control-v1");
+    const response = await env.BOT_CONTROL.get(id).fetch("https://bot-control/automation");
+    if (!response.ok) throw new Error(`AUTOMATION_STATE_HTTP_${response.status}`);
+    const data = await response.json().catch(()=>({}));
+    if (!data.configured) return {
+      enabled:bootDefault,
+      bootDefault,
+      source:"ENV_DEFAULT",
+      updatedAt:null,
+      updatedBy:null
+    };
+    return {
+      enabled:data.enabled === true,
+      bootDefault,
+      source:"BOT_CONTROL",
+      updatedAt:data.updatedAt || null,
+      updatedBy:data.updatedBy || null
+    };
+  } catch (error) {
+    return {
+      enabled:bootDefault,
+      bootDefault,
+      source:"ENV_ERROR_FALLBACK",
+      error:String(error?.message || error),
+      updatedAt:null,
+      updatedBy:null
+    };
+  }
+}
+async function effectiveAutomationEnabled(env) {
+  return Boolean((await getAutomationControl(env)).enabled);
+}
+async function setAutomationControl(env, enabled, updatedBy = "control-room") {
+  if (!env?.BOT_CONTROL) throw new Error("BOT_CONTROL_AUTOMATION_STATE_MISSING");
+  const id = env.BOT_CONTROL.idFromName("flyyab-bale-global-control-v1");
+  const response = await env.BOT_CONTROL.get(id).fetch("https://bot-control/automation", {
+    method:"POST",
+    headers:{"content-type":"application/json"},
+    body:JSON.stringify({
+      enabled:Boolean(enabled),
+      updatedBy:String(updatedBy || "control-room"),
+      updatedAt:new Date().toISOString(),
+      buildId:FLYYAB_BUILD_ID
+    })
+  });
+  if (!response.ok) throw new Error(`AUTOMATION_STATE_WRITE_${response.status}`);
+  const result = await response.json().catch(()=>({}));
+  if (!enabled && env.FREE_TIER_EXECUTOR) {
+    try {
+      const cid = env.FREE_TIER_EXECUTOR.idFromName("flyyab-bale-coordinator-v1");
+      await env.FREE_TIER_EXECUTOR.get(cid).fetch("https://free-tier-executor/control/stop",{method:"POST"});
+    } catch {}
+  }
+  if (enabled) await bootstrapFreeTierCoordinator(env);
+  return result;
+}
+
 function productionChannel(env) {
   return env.BALE_PRODUCTION_CHANNEL_ID || env.BALE_CHANNEL_ID || "5254814488";
 }
@@ -7206,7 +7273,7 @@ function statusMessage(env, mode) {
     `🩺 سلامت ارسال روزانه: ${DELIVERY_HEALTH_VERSION} · گزارش نهایی 21:10`,
     "",
     "\u{1F570} \u0645\u0646\u0637\u0642\u0647 \u0632\u0645\u0627\u0646\u06CC: \u062A\u0647\u0631\u0627\u0646"
-  ].join("\n");
+  ] .join("\\n");
 }
 var TESTABLE_POST_TYPES = /* @__PURE__ */ new Set(["morning", "weather", "rates", "flights", "deal", "international", "album", "heritage", "article", "occasion"]);
 var BOT_COMMANDS = [
@@ -7321,7 +7388,7 @@ function buttonPreviewText(note = "") {
     "",
     "آلبوم‌های «مقصد امشب» و «سفر ۳۶۰» عمداً بدون دکمه منتشر می‌شوند.",
     ...(note ? ["", note] : [])
-  ].join("\n");
+  ] .join("\\n");
 }
 function adminBackKeyboard(rows = []) {
   return { inline_keyboard: [...rows, [{ text: "🏠 منوی اصلی", callback_data: "admin:home" }]] };
@@ -7352,7 +7419,7 @@ async function managedMediaControlPage(env, type, note = "") {
       "",
       "برای تغییر تصویر، دکمه بارگذاری را بزنید و سپس عکس را همین‌جا برای ربات بفرستید. تصویر فعلی داخل فایل حذف نمی‌شود و همیشه نسخه پشتیبان است.",
       ...(note ? ["", note] : [])
-    ].join("\n"),
+    ] .join("\\n"),
     keyboard: managedMediaKeyboard(normalized)
   };
 }
@@ -7469,7 +7536,7 @@ async function morningControlPage(env, offset = 0, note = "") {
     ...(latestFailure !== "—" ? ["", `🚨 آخرین علت عدم موفقیت: ${esc(latestFailure)}`] : []),
     ...(note ? ["", note] : [])
   ];
-  return { text: lines.join("\n").slice(0, 3900), keyboard: morningAdminKeyboard(selected), date, record, incidents };
+  return { text: lines .join("\\n").slice(0, 3900), keyboard: morningAdminKeyboard(selected), date, record, incidents };
 }
 function morningIncidentReport(date, incidents = []) {
   if (!incidents.length) return `🚨 <b>گزارش خطاهای پست صبح</b>\n\nتاریخ: <code>${esc(date)}</code>\n\n✅ هیچ خطایی برای این تاریخ ثبت نشده است.`;
@@ -7487,7 +7554,7 @@ function morningIncidentReport(date, incidents = []) {
       `شناسه: <code>${esc(item.id || "—")}</code>`,
       ""
     ])
-  ].join("\n").slice(0, 3900);
+  ] .join("\\n").slice(0, 3900);
 }
 function adminPage(page) {
   const pages = {
@@ -7657,7 +7724,7 @@ async function handleAdminCallback(env, callback, workerOrigin) {
         "🎨 <b>آزمون دکمه‌های رنگی فلای‌یاب</b>",
         "",
         "این پیام فقط برای کنترل ظاهر و عملکرد دکمه‌ها در کانال آزمایشی است."
-      ].join("\n"), morningServiceButtons("button_test"));
+      ] .join("\\n"), morningServiceButtons("button_test"));
       await editAdminMessage(env, callback, buttonPreviewText(`✅ نمونه به <code>${esc(testChannel(env))}</code> ارسال شد.`), buttonPreviewKeyboard());
     } catch (error) {
       await editAdminMessage(env, callback, buttonPreviewText(`❌ ارسال نمونه انجام نشد: ${esc(error.message)}`), buttonPreviewKeyboard());
@@ -7685,7 +7752,7 @@ async function handleAdminCallback(env, callback, workerOrigin) {
           "⏱ این درخواست ۱۰ دقیقه اعتبار دارد.",
           "📦 حداکثر حجم امن: ۹٫۵ مگابایت.",
           "🛟 تا پیش از ثبت موفق، تصویر فعلی تغییر نمی‌کند."
-        ].join("\n"), managedMediaUploadKeyboard(type));
+        ] .join("\\n"), managedMediaUploadKeyboard(type));
         return true;
       }
       if (action === "cancel") {
@@ -7986,7 +8053,7 @@ async function handleCommand(env, message, workerOrigin) {
         `پاسخ مدل: ${esc(result.content)}`,
         "",
         "🔒 هیچ کلید API در این گزارش نمایش داده نمی‌شود."
-      ].join("\n"));
+      ] .join("\\n"));
     } catch (error) {
       return send(env, chatId, [
         "❌ <b>اتصال ArvanCloud AI برقرار نشد</b>",
@@ -7996,7 +8063,7 @@ async function handleCommand(env, message, workerOrigin) {
         "Secretهای لازم در Cloudflare:",
         "<code>ARVAN_AI_API_KEY</code>",
         "<code>ARVAN_AI_ENDPOINT</code>"
-      ].join("\n"));
+      ] .join("\\n"));
     }
   }
   if (command === "/daily_health") {
@@ -8027,7 +8094,7 @@ async function handleCommand(env, message, workerOrigin) {
       "",
       `\u062A\u0645\u0627\u0645 \u0627\u0646\u062A\u0634\u0627\u0631\u0647\u0627\u06CC \u0632\u0645\u0627\u0646\u200C\u0628\u0646\u062F\u06CC\u200C\u0634\u062F\u0647 \u0628\u0647 ${esc(testChannel(env))} \u0645\u06CC\u200C\u0631\u0648\u0646\u062F.`,
       `\u0647\u06CC\u0686 \u067E\u0633\u062A\u06CC \u062F\u0631 ${esc(productionChannel(env))} \u0645\u0646\u062A\u0634\u0631 \u0646\u062E\u0648\u0627\u0647\u062F \u0634\u062F.`
-    ].join("\n"));
+    ] .join("\\n"));
   }
   if (command === "/live_mode") {
     await setBotMode(env, "live");
@@ -8036,7 +8103,7 @@ async function handleCommand(env, message, workerOrigin) {
       "",
       `\u0627\u0646\u062A\u0634\u0627\u0631\u0647\u0627\u06CC \u0632\u0645\u0627\u0646\u200C\u0628\u0646\u062F\u06CC\u200C\u0634\u062F\u0647 \u0627\u0632 \u0627\u06CC\u0646 \u0644\u062D\u0638\u0647 \u0628\u0647 ${esc(productionChannel(env))} \u0645\u06CC\u200C\u0631\u0648\u0646\u062F.`,
       `\u0641\u0631\u0645\u0627\u0646\u200C\u0647\u0627\u06CC \u062F\u0633\u062A\u06CC \u0648 /publish_all \u0647\u0645\u0686\u0646\u0627\u0646 \u0641\u0642\u0637 \u062F\u0631 ${esc(testChannel(env))} \u0645\u0646\u062A\u0634\u0631 \u0645\u06CC\u200C\u0634\u0648\u0646\u062F.`
-    ].join("\n"));
+    ] .join("\\n"));
   }
   if (command === "/help") {
     return send(env, chatId, [
@@ -8097,7 +8164,7 @@ async function handleCommand(env, message, workerOrigin) {
       "/weather_preview — پیش‌نمایش خصوصی پست آماده آب‌وهوا",
       "/version — نمایش نسخه فعال",
       "/menu \u2014 \u0628\u0627\u0632\u0633\u0627\u0632\u06CC \u0645\u0646\u0648\u06CC \u0641\u0631\u0645\u0627\u0646\u200C\u0647\u0627"
-    ].join("\n"));
+    ] .join("\\n"));
   }
 
   if (command === "/button_preview") {
@@ -8233,7 +8300,7 @@ ${radarAdminStatusText(data, env, botMode)}`);
         `آزمون حداقل 24 ساعته: ✅`,
         `حالت کلی ربات: <b>${botMode === "live" ? "LIVE" : "TEST"}</b>`,
         botMode === "live" ? `Flashهای استثنایی بعدی می‌توانند به <code>${esc(productionChannel(env))}</code> بروند.` : `تا وقتی /live_mode فعال نشود، Flash Radar برای ایمنی همچنان به <code>${esc(testChannel(env))}</code> می‌رود.`
-      ].join("\n"));
+      ] .join("\\n"));
     } catch (error) {
       if (error?.data?.error === "MIN_24H_TEST_REQUIRED") {
         return send(env, chatId, `⏳ <b>Radar هنوز اجازه Live ندارد</b>\n\nحداقل 24 ساعت آزمون واقعی اجباری است.\nزمان باقی‌مانده: <code>${esc(radarDurationText(error.data.remainingTestMs))}</code>`);
@@ -8292,7 +8359,7 @@ ${radarAdminStatusText(data, env, botMode)}`);
         "آزمون زنده حداقل ۷۲ ساعته: ✅",
         `حالت کلی ربات: <b>${botMode === "live" ? "LIVE" : "TEST"}</b>`,
         botMode === "live" ? `اعلان‌های بعدی می‌توانند به <code>${esc(productionChannel(env))}</code> بروند.` : `تا فعال‌شدن حالت اصلی ربات، اعلان‌ها همچنان به <code>${esc(testChannel(env))}</code> می‌روند.`
-      ].join("\n"));
+      ] .join("\\n"));
     } catch (error) {
       if (error?.data?.error === "MIN_72H_TEST_REQUIRED") {
         return send(env, chatId, `⏳ <b>رادار خارجی هنوز اجازه Live ندارد</b>\n\nآزمون زنده ۷۲ ساعته اجباری است.\nزمان باقی‌مانده: <b>${esc(internationalRadarDurationText(error.data.remainingTestMs))}</b>`);
@@ -8547,7 +8614,7 @@ ${await nightDestinationAdminPanel(env, pkg?.date === currentTehranIso(new Date(
       "",
       "هر 11 پست به‌صورت مستقل اجرا می‌شوند و ممکن است با چند ثانیه فاصله در کانال دیده شوند.",
       "\u0627\u06AF\u0631 \u06CC\u06A9\u06CC \u0627\u0632 \u0628\u062E\u0634\u200C\u0647\u0627 \u062E\u0637\u0627 \u062F\u0627\u0634\u062A\u0647 \u0628\u0627\u0634\u062F\u060C \u06AF\u0632\u0627\u0631\u0634 \u0647\u0645\u0627\u0646 \u0628\u062E\u0634 \u062C\u062F\u0627\u06AF\u0627\u0646\u0647 \u0628\u0631\u0627\u06CC \u0645\u062F\u06CC\u0631 \u0627\u0631\u0633\u0627\u0644 \u0645\u06CC\u200C\u0634\u0648\u062F."
-    ].join("\n"));
+    ] .join("\\n"));
   }
   return send(env, chatId, "\u0641\u0631\u0645\u0627\u0646 \u0634\u0646\u0627\u062E\u062A\u0647 \u0646\u0634\u062F. \u0628\u0631\u0627\u06CC \u0645\u0634\u0627\u0647\u062F\u0647 \u0631\u0627\u0647\u0646\u0645\u0627 /help \u0631\u0627 \u0628\u0632\u0646\u06CC\u062F.");
 }
@@ -9095,7 +9162,7 @@ pre{white-space:pre-wrap;word-break:break-word;background:#08182f;border:1px sol
 <div id="testWarn" class="notice" style="display:none"></div>
 <div class="grid">
 <section class="card"><h2>وضعیت ربات</h2><div class="stat" id="mode">—</div><div class="row" style="margin-top:12px"><button class="btn" onclick="setMode('test')">🧪 حالت تست</button><button class="btn good" onclick="setMode('live')">🟢 حالت اصلی</button></div></section>
-<section class="card"><h2>Automation / Cron</h2><div class="stat" id="automation">—</div><div class="muted" style="margin-top:8px">Cron هر 5 دقیقه Dispatcher را اجرا می‌کند.</div></section>
+<section class="card"><h2>Automation / Cron</h2><div class="stat" id="automation">—</div><div class="muted" id="automationMeta" style="margin-top:8px">در حال خواندن کنترل زمان‌بندی…</div><div class="row" style="margin-top:12px"><button class="btn good" onclick="startAutomation()">▶ فعال‌سازی</button><button class="btn danger" onclick="stopAutomation()">■ توقف</button><button class="btn" onclick="automationPreview()">🧭 پیش‌نمایش Dispatcher</button></div></section>
 <section class="card"><h2>اتصال بله</h2><div class="stat" id="bale">—</div><div class="row" style="margin-top:12px"><button class="btn primary" onclick="fixWebhook()">بازسازی Webhook</button></div></section>
 
 <section class="card half"><h2>مشخصات اتصال</h2><div id="connection"></div></section>
@@ -9103,26 +9170,44 @@ pre{white-space:pre-wrap;word-break:break-word;background:#08182f;border:1px sol
 <section class="card half"><h2>سلامت زیرساخت</h2><div id="readiness"></div></section>
 <section class="card half"><h2>کنترل سریع</h2><div class="row"><button class="btn primary" onclick="testAll()">⚡ تست همه پست‌ها</button><button class="btn" onclick="loadHealth()">🩺 سلامت ارسال</button></div><div class="muted" style="margin-top:10px">تمام تست‌های دستی فقط به کانال تست می‌روند. کانال اصلی برای Automation رزرو شده است.</div></section>
 
+<section class="card wide"><h2>Scheduler / Dispatcher</h2><div id="scheduler"></div><div class="row" style="margin-top:12px"><button class="btn" onclick="automationPreflight()">🧪 Preflight Automation</button><button class="btn" onclick="automationPreview()">🧭 Jobهای Tick فعلی</button></div></section>
+<section class="card wide"><h2>وضعیت Slotهای امروز</h2><div id="slots" class="table"></div></section>
 <section class="card wide"><h2>پست‌های روزانه — تهران</h2><div id="posts" class="table"></div></section>
 <section class="card wide"><h2>Delivery Health امروز</h2><pre id="health">برای مشاهده گزارش روی «سلامت ارسال» بزنید.</pre></section>
-<section class="card wide"><h2>راهنمای عملیاتی</h2><div class="kv"><b>Automation</b><span>روشن/خاموش‌بودن انتشار زمان‌بندی‌شده با Secret/Variable کلادفلر <code>BALE_AUTOMATION_ENABLED</code> کنترل می‌شود.</span><b>مقصد Automation</b><span>انتشار زمان‌بندی‌شده همیشه کانال اصلی است؛ حالت تعاملی پنل مسیر Cron را عوض نمی‌کند.</span><b>کانال تست</b><span id="testHelp">—</span><b>مدیریت بازو</b><span>پنل وب مرجع اصلی مدیریت است؛ فرمان‌های داخل بازو به‌عنوان مسیر پشتیبان باقی می‌مانند.</span></div></section>
+<section class="card wide"><h2>راهنمای عملیاتی</h2><div class="kv"><b>Automation</b><span>از همین Control Room روشن/خاموش می‌شود. <code>BALE_AUTOMATION_ENABLED</code> فقط مقدار پیش‌فرضِ اولین اجراست؛ وضعیت عملیاتی در BOT_CONTROL ذخیره می‌شود.</span><b>مقصد Automation</b><span>انتشار زمان‌بندی‌شده همیشه کانال اصلی است؛ حالت تعاملی پنل مسیر Cron را عوض نمی‌کند.</span><b>کانال تست</b><span id="testHelp">—</span><b>مدیریت بازو</b><span>پنل وب مرجع اصلی مدیریت است؛ فرمان‌های داخل بازو به‌عنوان مسیر پشتیبان باقی می‌مانند.</span></div></section>
 </div></div><div id="toast" class="toast"></div>
 <script>
 const $=id=>document.getElementById(id);
 function toast(msg){const t=$("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),3500)}
 async function api(path,opts={}){const r=await fetch(path,{headers:{"content-type":"application/json",...(opts.headers||{})},...opts});if(r.status===401){location.href="/admin";throw new Error("SESSION_EXPIRED")}const d=await r.json().catch(()=>({}));if(!r.ok||d.ok===false)throw new Error(d.error||("HTTP "+r.status));return d}
 function renderPosts(s){$("posts").innerHTML=s.schedule.map(p=>'<div class="post"><div class="time">'+p.time+'</div><div class="name">'+p.title+'</div><div class="row"><button class="btn" onclick="testPost(\\''+p.type+'\\')">تست</button><button class="btn" onclick="diagnosePost(\\''+p.type+'\\')">عیب‌یابی</button></div></div>').join("")}
-async function refreshAll(){try{const s=await api("/admin/api/status");$("build").textContent=s.buildId;$("mode").innerHTML=s.mode==="live"?'<span class="pill ok">🟢 اصلی</span>':'<span class="pill warn">🧪 آزمایشی</span>';$("automation").innerHTML=s.automationEnabled?'<span class="pill ok">فعال</span>':'<span class="pill bad">خاموش</span>';$("bale").innerHTML=s.baleOk?'<span class="pill ok">متصل</span>':'<span class="pill bad">خطا</span>';
+function renderSlots(s){$("slots").innerHTML=(s.deliverySlots||[]).map(x=>'<div class="post"><div class="time">'+esc(x.time)+'</div><div class="name">'+esc(x.title)+'<div class="muted">'+esc(x.phase||x.code||"")+'</div></div><div><span class="pill '+(["SENT","SKIPPED"].includes(x.status)?"ok":(["FAILED","MISSED","UNRECORDED"].includes(x.status)?"bad":"warn"))+'">'+esc(x.status)+'</span></div></div>').join("")||'<div class="muted" style="padding:12px">هنوز رکوردی نیست.</div>';}
+
+async function refreshAll(){try{
+const s=await api("/admin/api/status");
+$("build").textContent=s.buildId;
+$("mode").innerHTML=s.mode==="live"?'<span class="pill ok">🟢 اصلی</span>':'<span class="pill warn">🧪 آزمایشی</span>';
+$("automation").innerHTML=s.automationEnabled?'<span class="pill ok">فعال</span>':'<span class="pill bad">خاموش</span>';
+$("automationMeta").textContent='منبع: '+(s.automation?.source||"—")+' • Boot default: '+(s.automation?.bootDefault?"ON":"OFF")+(s.automation?.updatedAt?' • آخرین تغییر: '+s.automation.updatedAt:'');
+$("bale").innerHTML=s.baleOk?'<span class="pill ok">متصل</span>':'<span class="pill bad">خطا</span>';
 $("connection").innerHTML='<div class="kv"><b>بازو</b><span>'+esc(s.botUsername||"—")+'</span><b>کانال اصلی</b><span>'+esc(s.productionChannel)+' '+(s.canPostMessages?"✅":"❌")+'</span><b>کانال تست</b><span>'+esc(s.testChannel||"تعریف نشده")+' '+(s.testCanPostMessages?"✅":"❌")+'</span><b>Webhook</b><span>'+esc(s.webhookUrl||"ثبت نشده")+'</span><b>زمان تهران</b><span>'+esc(s.tehranTime)+'</span></div>';
 $("readiness").innerHTML='<div class="kv">'+(s.readiness||[]).map(x=>'<b>'+esc(x.stage)+'</b><span>'+(x.ok?"✅ ":"❌ ")+esc(x.name)+'</span>').join("")+'</div>';
+const hb=s.schedulerHeartbeat,co=s.coordinator||{};
+$("scheduler").innerHTML='<div class="kv"><b>Cron</b><span>*/5 * * * *</span><b>Heartbeat</b><span>'+(hb?esc((hb.tehranDate||"")+" "+(hb.tehranTime||"")):"هنوز ثبت نشده")+'</span><b>Coordinator</b><span>'+esc(co?.coordinator?.enabled===true?"ENABLED":(co?.coordinator?.enabled===false?"DISABLED":"UNKNOWN"))+'</span><b>Last Tick</b><span>'+esc(co?.lastTick?.tickKey||"—")+'</span><b>Next Alarm</b><span>'+esc(co?.alarmAt||"—")+'</span></div>';
 $("testHelp").textContent=s.testChannel?"تمام Test/Preview/Test All فقط به کانال تست "+s.testChannel+" می‌روند.":"BALE_TEST_CHANNEL_ID تعریف نشده؛ تست‌های پنل برای ایمنی قفل هستند.";
-const w=$("testWarn"); if(!s.testChannel||!s.testCanPostMessages){w.style.display="block";w.textContent="⚠️ کانال تست آماده نیست. تا رفع این مورد هیچ تست دستی از پنل اجرا نمی‌شود."}else w.style.display="none";renderPosts(s)}catch(e){toast("خطا: "+e.message)}}
+const w=$("testWarn"); if(!s.testChannel||!s.testCanPostMessages){w.style.display="block";w.textContent="⚠️ کانال تست آماده نیست. تا رفع این مورد هیچ تست دستی از پنل اجرا نمی‌شود."}else w.style.display="none";
+renderSlots(s);renderPosts(s)
+}catch(e){toast("خطا: "+e.message)}}
 function esc(v){return String(v??"").replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]))}
+async function automationPreflight(){try{const d=await api("/admin/api/automation/preflight",{method:"POST",body:"{}"});$("health").textContent="AUTOMATION PREFLIGHT\\n\\n"+(d.checks||[]).map(x=>(x.ok?"✅ ":"❌ ")+x.stage+" — "+x.detail) .join("\\n");toast(d.ok?"Preflight سالم است":"Preflight ناقص است")}catch(e){$("health").textContent="Preflight خطا\\n\\n"+e.message;toast(e.message)}}
+async function automationPreview(){try{const d=await api("/admin/api/automation/preview",{method:"POST",body:"{}"});$("health").textContent="DISPATCHER DRY RUN\\n"+d.previewTehran +"\\n\\n"+(d.previewJobs||[]).map(x=>"• "+x.name+" → "+x.action+" ["+x.instance+"]") .join("\\n")+"\\n\\nاین عملیات هیچ پستی منتشر نکرد.";toast("پیش‌نمایش Dispatcher آماده شد")}catch(e){toast(e.message)}}
+async function startAutomation(){if(!confirm("Automation واقعی روی کانال اصلی فعال شود؟ از این لحظه Cron و Coordinator طبق زمان‌بندی اصلی کار می‌کنند."))return;try{const d=await api("/admin/api/automation/start",{method:"POST",body:JSON.stringify({confirm:"START"})});toast("Automation فعال شد");$("health").textContent="✅ AUTOMATION STARTED\\n\\n"+(d.preflight?.checks||[]).map(x=>"✅ "+x.stage+" — "+x.detail) .join("\\n");refreshAll()}catch(e){$("health").textContent="فعال‌سازی انجام نشد\\n\\n"+e.message;toast(e.message)}}
+async function stopAutomation(){if(!confirm("Automation متوقف شود؟ ارسال‌های دستی پنل همچنان فعال می‌مانند."))return;try{await api("/admin/api/automation/stop",{method:"POST",body:JSON.stringify({confirm:"STOP"})});toast("Automation متوقف شد");refreshAll()}catch(e){toast(e.message)}}
 async function setMode(mode){if(mode==="live"&&!confirm("حالت ربات روی LIVE قرار بگیرد؟"))return;try{const d=await api("/admin/api/mode",{method:"POST",body:JSON.stringify({mode})});toast("حالت ربات: "+d.mode);refreshAll()}catch(e){toast(e.message)}}
 async function checkAi(){const el=$("aiHealth");el.textContent="در حال تست واقعی هر دو Provider…";try{const d=await api("/admin/api/ai-health",{method:"POST",body:"{}"});el.innerHTML='<div class="kv"><b>Primary</b><span>'+esc(d.primary)+'</span><b>Arvan</b><span>'+(d.arvan.ok?"✅ ":"❌ ")+esc(d.arvan.model||d.arvan.error||"")+'</span><b>Cloudflare</b><span>'+(d.cloudflare.ok?"✅ ":"❌ ")+esc(d.cloudflare.model||d.cloudflare.error||"")+'</span><b>Operational</b><span>'+(d.operational?"✅ آماده":"❌ نیاز به بررسی")+'</span></div>'}catch(e){el.textContent="خطا: "+e.message}}
 async function diagnosePost(type){try{const d=await api("/admin/api/diagnose-post",{method:"POST",body:JSON.stringify({type})});const summary=(d.pipeline||[]).map(x=>(x.ok?"✅ ":"❌ ")+x.stage+" — "+(x.detail||"")).join("\\n");const extra=d.state?"\\n\\nSTATE\\n"+JSON.stringify(d.state,null,2):"";$("health").textContent="عیب‌یابی "+type+"\\n\\n"+summary+extra+(d.error?"\\n\\nخطا: "+d.error:"");toast(d.ready?"مسیر "+type+" آماده است":"مسیر "+type+" هنوز آماده نیست")}catch(e){toast("خطا: "+e.message)}}
 async function testPost(type){if(!confirm("پست «"+type+"» اکنون به مقصد تست فعلی ارسال/اجرا شود؟"))return;try{const d=await api("/admin/api/test-post",{method:"POST",body:JSON.stringify({type})});let msg="تست "+type+" → "+(d.delivered?"✅ ارسال شد":"⏳ در حال آماده‌سازی");if(d.messageId)msg+=" • Message #"+d.messageId;if(d.action)msg+="\\n"+d.action+" • "+(d.processed||0)+"/"+(d.total||0)+" • "+(d.coveragePct||0)+"%";if(d.message)msg+="\\n"+d.message;$("health").textContent=msg;toast(d.delivered?"ارسال "+type+" موفق بود":"تست "+type+" شروع شد")}catch(e){$("health").textContent="خطای تست "+type+"\\n\\n"+e.message;toast("خطا: "+e.message)}}
-async function testAll(){if(!confirm("تمام پست‌های قابل تست یکی‌یکی اجرا شوند؟ این کار چند پیام در کانال ایجاد می‌کند."))return;try{const d=await api("/admin/api/test-all",{method:"POST",body:"{}"});toast("تست همه پست‌ها شروع شد: "+d.count+" مورد")}catch(e){toast(e.message)}}
+async function testAll(){if(!confirm("تمام پست‌های قابل تست روی کانال تست اجرا شوند؟ Weather ممکن است فقط فرآیند آماده‌سازی را شروع کند."))return;try{const d=await api("/admin/api/test-all",{method:"POST",body:"{}"});$("health").textContent="TEST ALL STARTED\\n\\n"+d.types .join("\\n");toast("تست همه پست‌ها شروع شد: "+d.count+" مورد")}catch(e){toast(e.message)}}
 async function loadHealth(){try{const d=await api("/admin/api/health");$("health").textContent=d.report||"گزارشی وجود ندارد"}catch(e){$("health").textContent="خطا: "+e.message}}
 async function fixWebhook(){try{const d=await api("/admin/api/webhook",{method:"POST",body:"{}"});toast(d.ok?"Webhook بازسازی شد":"Webhook ناموفق")}catch(e){toast(e.message)}}
 async function logout(){await fetch("/admin/logout",{method:"POST"});location.href="/admin"}
@@ -9322,30 +9407,112 @@ function adminWebPostConfig(env, type) {
   }
   return common;
 }
+
+async function getCoordinatorStatus(env) {
+  if (!env?.FREE_TIER_EXECUTOR) return {ok:false,error:"FREE_TIER_EXECUTOR_BINDING_MISSING"};
+  try {
+    const id = env.FREE_TIER_EXECUTOR.idFromName("flyyab-bale-coordinator-v1");
+    const response = await env.FREE_TIER_EXECUTOR.get(id).fetch("https://free-tier-executor/status");
+    if (!response.ok) return {ok:false,error:`COORDINATOR_STATUS_${response.status}`};
+    return await response.json();
+  } catch (error) {
+    return {ok:false,error:String(error?.message || error)};
+  }
+}
+function schedulerPreviewTime(now = new Date()) {
+  const ms = now.getTime();
+  const step = 5 * 60 * 1000;
+  return new Date(Math.floor(ms / step) * step);
+}
+async function adminAutomationPreflight(env) {
+  const checks = [];
+  const push = (stage, ok, detail) => checks.push({stage,ok:Boolean(ok),detail:String(detail || "")});
+  push("BOT_CONTROL", Boolean(env.BOT_CONTROL), env.BOT_CONTROL ? "متصل" : "Binding موجود نیست");
+  push("FREE_TIER_EXECUTOR", Boolean(env.FREE_TIER_EXECUTOR), env.FREE_TIER_EXECUTOR ? "متصل" : "Binding موجود نیست");
+  push("BALE_TOKEN", Boolean(String(env.BALE_BOT_TOKEN || "").trim()), env.BALE_BOT_TOKEN ? "تنظیم شده" : "تنظیم نشده");
+  push("PRODUCTION_CHANNEL", Boolean(String(productionChannel(env) || "").trim()), String(productionChannel(env) || "تعریف نشده"));
+  try {
+    const me = await bale(env,"getMe");
+    push("BALE_GETME", Boolean(me?.ok), me?.ok ? `@${me?.result?.username || me?.result?.id}` : "ناموفق");
+    if (me?.ok) {
+      const member = await bale(env,"getChatMember",{chat_id:String(productionChannel(env)),user_id:me.result.id});
+      push("PRODUCTION_PERMISSION", Boolean(member?.result?.can_post_messages || member?.result?.status === "administrator"),
+        member?.result?.status || "دسترسی ارسال تأیید نشد");
+    }
+  } catch (error) {
+    push("BALE_CONNECTIVITY", false, String(error?.message || error));
+  }
+  const aiPrimary = selectedAiProvider(env);
+  push("AI_PRIMARY_CONFIG", aiPrimary !== "arvan" || Boolean(String(env.ARVAN_AI_API_KEY || "").trim() && String(env.ARVAN_AI_ENDPOINT || "").trim()),
+    aiPrimary === "arvan" ? "Arvan" : aiPrimary);
+  const ok = checks.every(x=>x.ok);
+  return {ok,checks};
+}
+async function adminAutomationSnapshot(env) {
+  const [control, schedulerHealth, coordinator] = await Promise.all([
+    getAutomationControl(env),
+    getSchedulerHealth(env),
+    getCoordinatorStatus(env)
+  ]);
+  const previewAt = schedulerPreviewTime(new Date());
+  const jobs = independentJobsForTick(previewAt).map(j=>({
+    name:j.name,action:j.action,instance:j.instance,tehranTime:j.tehranTime
+  }));
+  return {
+    ok:true,
+    control,
+    heartbeat:schedulerHealth?.heartbeat || null,
+    activation:schedulerHealth?.activation || null,
+    coordinator,
+    previewAt:previewAt.toISOString(),
+    previewTehran:`${currentTehranIso(previewAt)} ${clock(previewAt)}`,
+    previewJobs:jobs
+  };
+}
 async function adminWebStatus(env) {
   const safe = async (method, payload={}) => {
     try { return await bale(env, method, payload); } catch (error) { return {ok:false,error:String(error?.message||error)}; }
   };
+  const now = new Date();
   const mode = await getBotMode(env).catch(()=>"test");
-  const me = await safe("getMe");
+  const [me, automation, schedulerHealth, coordinator, dailyRecord] = await Promise.all([
+    safe("getMe"),
+    getAutomationControl(env),
+    getSchedulerHealth(env),
+    getCoordinatorStatus(env),
+    getDailyDeliveryHealth(env,currentTehranIso(now)).catch(()=>({slots:{}}))
+  ]);
   const production = String(productionChannel(env));
   const test = String(env.BALE_TEST_CHANNEL_ID || "").trim();
-  const chat = await safe("getChat", {chat_id:production});
-  const testChat = test ? await safe("getChat", {chat_id:test}) : {ok:false};
   const botId = me?.result?.id || null;
-  const member = botId ? await safe("getChatMember", {chat_id:production,user_id:botId}) : {ok:false};
-  const testMember = botId && test ? await safe("getChatMember", {chat_id:test,user_id:botId}) : {ok:false};
-  const webhook = await safe("getWebhookInfo");
+  const [chat,testChat,member,testMember,webhook] = await Promise.all([
+    safe("getChat",{chat_id:production}),
+    test ? safe("getChat",{chat_id:test}) : Promise.resolve({ok:false}),
+    botId ? safe("getChatMember",{chat_id:production,user_id:botId}) : Promise.resolve({ok:false}),
+    botId && test ? safe("getChatMember",{chat_id:test,user_id:botId}) : Promise.resolve({ok:false}),
+    safe("getWebhookInfo")
+  ]);
   const readiness = adminWebConfigReadiness(env);
+  const currentMinutes = deliveryTimeMinutes(clock(now));
+  const slots = DAILY_DELIVERY_SLOTS.map(slot=>{
+    const record = dailyRecord?.slots?.[slot.id] || null;
+    let status = record?.status || (currentMinutes < deliveryTimeMinutes(slot.time) ? "PENDING" : "UNRECORDED");
+    return {
+      id:slot.id,type:slot.postType,title:slot.label,time:slot.time,conditional:Boolean(slot.conditional),
+      status,phase:record?.phase || null,code:record?.code || null,reason:record?.reason || null,
+      at:record?.at || null,messageId:record?.baleMessageId ?? record?.telegramMessageId ?? null
+    };
+  });
   return {
     ok:true,
     buildId:FLYYAB_BUILD_ID,
     botVersion:BOT_VERSION,
     mode,
-    automationEnabled:baleAutomationEnabled(env),
+    automationEnabled:Boolean(automation.enabled),
+    automation,
     cron:"*/5 * * * *",
     timezone:"Asia/Tehran",
-    tehranTime:`${currentTehranIso(new Date())} ${clock(new Date())}`,
+    tehranTime:`${currentTehranIso(now)} ${clock(now)}`,
     productionChannel:production,
     testChannel:test || null,
     botUsername:me?.result?.username ? `@${me.result.username}` : null,
@@ -9357,6 +9524,10 @@ async function adminWebStatus(env) {
     aiPrimary:selectedAiProvider(env),
     aiFallback:String(env.AI_FALLBACK || "cloudflare").toLowerCase(),
     readiness,
+    schedulerHeartbeat:schedulerHealth?.heartbeat || null,
+    schedulerActivation:schedulerHealth?.activation || null,
+    coordinator,
+    deliverySlots:slots,
     schedule:ADMIN_POST_SCHEDULE
   };
 }
@@ -9387,6 +9558,34 @@ async function handleAdminWeb(request, env, ctx, url) {
   }
   if (url.pathname === "/admin" || url.pathname === "/admin/") return adminWebHtmlResponse(adminControlRoomHtml());
   if (url.pathname === "/admin/api/status" && request.method === "GET") return Response.json(await adminWebStatus(env),{headers:{"cache-control":"no-store"}});
+  if (url.pathname === "/admin/api/automation" && request.method === "GET") {
+    return Response.json(await adminAutomationSnapshot(env),{headers:{"cache-control":"no-store"}});
+  }
+  if (url.pathname === "/admin/api/automation/preflight" && request.method === "POST") {
+    const result = await adminAutomationPreflight(env);
+    return Response.json(result,{status:result.ok?200:409,headers:{"cache-control":"no-store"}});
+  }
+  if (url.pathname === "/admin/api/automation/start" && request.method === "POST") {
+    const body = await request.json().catch(()=>({}));
+    if (String(body.confirm || "") !== "START") return Response.json({ok:false,error:"CONFIRM_START_REQUIRED"},{status:400});
+    const preflight = await adminAutomationPreflight(env);
+    if (!preflight.ok) return Response.json({ok:false,error:"AUTOMATION_PREFLIGHT_FAILED",preflight},{status:409});
+    const control = await setAutomationControl(env,true,"control-room-web");
+    await ensureDeliveryHealthActivation(env,new Date(),"CONTROL_ROOM_AUTOMATION_START").catch(()=>null);
+    const coordinator = await getCoordinatorStatus(env);
+    return Response.json({ok:true,enabled:true,control,preflight,coordinator},{headers:{"cache-control":"no-store"}});
+  }
+  if (url.pathname === "/admin/api/automation/stop" && request.method === "POST") {
+    const body = await request.json().catch(()=>({}));
+    if (String(body.confirm || "") !== "STOP") return Response.json({ok:false,error:"CONFIRM_STOP_REQUIRED"},{status:400});
+    const control = await setAutomationControl(env,false,"control-room-web");
+    return Response.json({ok:true,enabled:false,control,coordinator:await getCoordinatorStatus(env)},{headers:{"cache-control":"no-store"}});
+  }
+  if (url.pathname === "/admin/api/automation/preview" && request.method === "POST") {
+    const snap = await adminAutomationSnapshot(env);
+    // Preview is deliberately non-mutating: no publication or external job is dispatched.
+    return Response.json({...snap,dryRun:true},{headers:{"cache-control":"no-store"}});
+  }
   if (url.pathname === "/admin/api/ai-health" && request.method === "POST") {
     const result = await adminWebAiHealth(env);
     return Response.json(result,{status:result.operational?200:503,headers:{"cache-control":"no-store"}});
@@ -9552,9 +9751,9 @@ var worker_default = {
     return Response.json({ status: "ok", service: "flyyab-bale-bot", botVersion: BOT_VERSION, nightDestinationVersion: NIGHT_DESTINATION_VERSION, buildId: FLYYAB_BUILD_ID });
   },
   async scheduled(event, env, ctx) {
-    // RC3 safety gate: deployment can be fully exercised without allowing any
-    // scheduled publication. Enable only after the Bale live gate is accepted.
-    if (!baleAutomationEnabled(env)) return;
+    // Runtime Automation state is managed by Control Room. BALE_AUTOMATION_ENABLED
+    // is only the boot default when no runtime state has been saved yet.
+    if (!(await effectiveAutomationEnabled(env))) return;
     // Workers Free Cron has a very small CPU budget. The Cron invocation is only
     // a dispatcher; all real scheduling/preparation/publication work runs in a
     // dedicated Durable Object request, which has its own execution budget.
@@ -9595,7 +9794,7 @@ async function runCoordinatorDispatch(env, scheduledNow = new Date()) {
   return { ok:true, engine:FREE_TIER_DELIVERY_VERSION, buildId:FLYYAB_BUILD_ID, tehranTime:clock(scheduledNow), jobs:jobs.map((job,index)=>({name:job.name,action:job.action,instance:job.instance,status:settled[index].status})) };
 }
 async function dispatchFreeTierSchedulerTick(env, scheduledNow = new Date()) {
-  if (!baleAutomationEnabled(env)) return Response.json({ ok:true, disabled:true, reason:"BALE_AUTOMATION_DISABLED" });
+  if (!(await effectiveAutomationEnabled(env))) return Response.json({ ok:true, disabled:true, reason:"AUTOMATION_RUNTIME_DISABLED" });
   if (!env.FREE_TIER_EXECUTOR) throw new Error("FREE_TIER_EXECUTOR_BINDING_MISSING");
   const id = env.FREE_TIER_EXECUTOR.idFromName("flyyab-bale-coordinator-v1");
   const stub = env.FREE_TIER_EXECUTOR.get(id);
@@ -9611,7 +9810,7 @@ async function dispatchFreeTierSchedulerTick(env, scheduledNow = new Date()) {
   return response;
 }
 async function bootstrapFreeTierCoordinator(env) {
-  if (!baleAutomationEnabled(env)) return { ok:true, disabled:true, reason:"BALE_AUTOMATION_DISABLED" };
+  if (!(await effectiveAutomationEnabled(env))) return { ok:true, disabled:true, reason:"AUTOMATION_RUNTIME_DISABLED" };
   if (!env.FREE_TIER_EXECUTOR) return { ok:false, reason:"FREE_TIER_EXECUTOR_BINDING_MISSING" };
   const id = env.FREE_TIER_EXECUTOR.idFromName("flyyab-bale-coordinator-v1");
   const response = await env.FREE_TIER_EXECUTOR.get(id).fetch("https://free-tier-executor/bootstrap", { method:"POST" });
@@ -9647,10 +9846,10 @@ var FreeTierExecutor = class {
     return at;
   }
   async runCoordinatorTick(scheduledNow = new Date(), source = "ALARM") {
-    if (!baleAutomationEnabled(this.env)) {
+    if (!(await effectiveAutomationEnabled(this.env))) {
       await this.storagePut("coordinator:enabled", { enabled:false, buildId:FLYYAB_BUILD_ID, disabledAt:new Date().toISOString() });
       await this.deleteAlarm();
-      return { ok:true, disabled:true, reason:"BALE_AUTOMATION_DISABLED", source };
+      return { ok:true, disabled:true, reason:"AUTOMATION_RUNTIME_DISABLED", source };
     }
     await this.scheduleCoordinatorAlarm();
     const minute = Number(clock(scheduledNow).slice(3,5));
@@ -9741,11 +9940,36 @@ var FreeTierExecutor = class {
 
   async fetch(request) {
     const url = new URL(request.url);
+    if (url.pathname === "/status" && request.method === "GET") {
+      const coordinator = await this.storageGet("coordinator:enabled") || null;
+      const currentTick = await this.storageGet("coordinator:current-tick") || null;
+      const lastTick = await this.storageGet("coordinator:last-tick") || null;
+      const alarmAt = await this.getAlarmAt();
+      return Response.json({
+        ok:true,
+        engine:FREE_TIER_DELIVERY_VERSION,
+        buildId:FLYYAB_BUILD_ID,
+        coordinator,
+        currentTick,
+        lastTick,
+        alarmAt:alarmAt ? new Date(Number(alarmAt)).toISOString() : null
+      });
+    }
+    if (url.pathname === "/control/stop" && request.method === "POST") {
+      await this.storagePut("coordinator:enabled", {
+        enabled:false,
+        buildId:FLYYAB_BUILD_ID,
+        stoppedAt:new Date().toISOString(),
+        source:"CONTROL_ROOM"
+      });
+      await this.deleteAlarm();
+      return Response.json({ok:true,stopped:true,buildId:FLYYAB_BUILD_ID});
+    }
     if (url.pathname === "/bootstrap" && request.method === "POST") {
-      if (!baleAutomationEnabled(this.env)) {
+      if (!(await effectiveAutomationEnabled(this.env))) {
         await this.storagePut("coordinator:enabled", { enabled:false, buildId:FLYYAB_BUILD_ID, disabledAt:new Date().toISOString() });
         await this.deleteAlarm();
-        return Response.json({ok:true,disabled:true,reason:"BALE_AUTOMATION_DISABLED",engine:FREE_TIER_DELIVERY_VERSION,buildId:FLYYAB_BUILD_ID});
+        return Response.json({ok:true,disabled:true,reason:"AUTOMATION_RUNTIME_DISABLED",engine:FREE_TIER_DELIVERY_VERSION,buildId:FLYYAB_BUILD_ID});
       }
       const existing = await this.storageGet("coordinator:enabled");
       const existingAlarm = await this.getAlarmAt();
@@ -9773,7 +9997,7 @@ var FreeTierExecutor = class {
     return Response.json({ok:false,error:"not found"},{status:404});
   }
   async alarm() {
-    if (!baleAutomationEnabled(this.env)) {
+    if (!(await effectiveAutomationEnabled(this.env))) {
       await this.storagePut("coordinator:enabled", { enabled:false, buildId:FLYYAB_BUILD_ID, disabledAt:new Date().toISOString() });
       await this.deleteAlarm();
       return;
@@ -9900,6 +10124,25 @@ var BotControl = class {
       return record ? Response.json({ ok: true, record }) : Response.json({ ok: false }, { status: 404 });
     }
 
+
+    if (url.pathname === "/automation") {
+      const key = "automation-control-v1";
+      if (request.method === "POST") {
+        const body = await request.json().catch(()=>({}));
+        const record = {
+          enabled:body.enabled === true,
+          updatedAt:String(body.updatedAt || new Date().toISOString()),
+          updatedBy:String(body.updatedBy || "unknown"),
+          buildId:String(body.buildId || FLYYAB_BUILD_ID)
+        };
+        await this.state.storage.put(key, record);
+        return Response.json({ok:true,configured:true,...record});
+      }
+      const record = await this.state.storage.get(key);
+      return Response.json(record
+        ? {ok:true,configured:true,...record}
+        : {ok:true,configured:false,enabled:false,updatedAt:null,updatedBy:null});
+    }
 
     if (url.pathname === "/delivery/activation") {
       const activationKey = "delivery-health-activation-v1";

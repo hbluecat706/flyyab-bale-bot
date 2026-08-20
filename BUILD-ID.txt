@@ -1,5 +1,2 @@
-FlyYab-Bale-1.3.0-20260820-RATES-WEATHER-DIAGNOSTICS-V6.9.1
-Rates: Navasan + Pexels parity, remote image fetched by Worker and uploaded to Bale multipart
-Rates: text fallback if image transport fails
-Weather: real scan/package diagnostics in Control Room
-Automation remains OFF until full-day validation
+FlyYab-Bale-1.4.0-20260820-CONTROL-ROOM-V2-AUTOMATION-V6.9.1
+Control Room V2 runtime automation + scheduler observability
