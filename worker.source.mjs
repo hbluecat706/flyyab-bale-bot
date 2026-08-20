@@ -17,7 +17,7 @@ import { NIGHT_DESTINATIONS, NIGHT_DESTINATION_CATALOG_REVISION, nightDestinatio
 import { HERITAGE_CATALOG_VERSION, HERITAGE_CATALOG, heritageCatalogItem, heritageCatalogStats } from "./heritage-catalog.mjs";
 import { IRAN_WEATHER_DESTINATIONS, WEATHER_CATALOG_VERSION, weatherCatalogStats } from "./weather-catalog.mjs";
 import { WEATHER_VERSION, WEATHER_RULES, assessWeather, weatherReason as weatherReasonV2, selectWeatherPicks, candidateSeasonScore, stableWeatherHash } from "./weather-core.mjs";
-const FLYYAB_BUILD_ID = "FlyYab-Bale-1.0.7-20260820-RC3.5-ALBUM-MULTIPART-FIX-V6.9.1";
+const FLYYAB_BUILD_ID = "FlyYab-Bale-1.0.8-20260820-RC3.6-CALLBACK-TARGET-FIX-V6.9.1";
 const INTERNATIONAL_FARES_POST_VERSION = "international-fares-v2.0-homepage-parity";
 const SCHEDULER_RESILIENCE_VERSION = "scheduler-resilience-v3.1-self-healing-coordinator";
 const FREE_TIER_DELIVERY_VERSION = "free-tier-delivery-v2.1-self-healing-coordinator";
@@ -8816,15 +8816,31 @@ async function runBaleLiveGate(request, env, ctx, url) {
     }
   }
   if (action === "button") {
-    const result = await bale(env, "sendMessage", {
+    const created = await bale(env, "sendMessage", {
       chat_id:channel,
-      text:"🧪 <b>آزمون Callback بله</b>\n\nروی دکمه «تأیید Callback» بزنید. اگر Webhook صحیح باشد، همین پیام ویرایش می‌شود.",
+      text:"🧪 <b>آزمون Callback بله</b>\n\nروی دکمه «تأیید Callback» بزنید. اگر Webhook صحیح باشد، همین پیام ویرایش می‌شود."
+    });
+    const messageId = baleMessageIdFromResult(created);
+    if (!messageId) {
+      return Response.json({ ok:false, action, stage:"button-message-id", error:"BALE_GATE_BUTTON_MESSAGE_ID_MISSING", buildId:FLYYAB_BUILD_ID }, {status:502});
+    }
+    const callbackData = `bale:gate:edit:${String(channel)}:${String(messageId)}`;
+    await bale(env, "editMessageReplyMarkup", {
+      chat_id:channel,
+      message_id:messageId,
       reply_markup:{ inline_keyboard:[
-        [{ text:"✅ تأیید Callback", callback_data:"bale:gate:edit" }],
+        [{ text:"✅ تأیید Callback", callback_data:callbackData }],
         [{ text:"🌐 FlyYab.ir", url:"https://flyyab.ir/?utm_source=bale&utm_medium=callback_gate" }]
       ]}
     });
-    return Response.json({ ok:true, action, messageId:baleMessageIdFromResult(result), next:"tap_callback_button" }, { headers:{"cache-control":"no-store"} });
+    return Response.json({
+      ok:true,
+      action,
+      messageId,
+      callbackData,
+      next:"tap_callback_button",
+      buildId:FLYYAB_BUILD_ID
+    }, { headers:{"cache-control":"no-store"} });
   }
   if (action === "edit") {
     const created = await bale(env, "sendMessage", {
@@ -8854,19 +8870,71 @@ async function runBaleLiveGate(request, env, ctx, url) {
 async function handleBaleGateCallback(env, callback) {
   const data = String(callback?.data || "");
   if (!data.startsWith("bale:gate:")) return false;
-  const callbackId = callback?.id;
-  const chatId = callback?.message?.chat?.id;
-  const messageId = callback?.message?.message_id;
-  if (callbackId && !String(callbackId).startsWith("1")) {
-    await bale(env, "answerCallbackQuery", { callback_query_id:callbackId, text:"Callback بله دریافت شد ✅", show_alert:false }).catch(()=>null);
+
+  const callbackId = String(callback?.id || "");
+  let chatId = callback?.message?.chat?.id || null;
+  let messageId = callback?.message?.message_id || null;
+
+  // Robust fallback for Bale channel callbacks: the button payload carries
+  // the exact target chat/message IDs, because CallbackQuery.message is optional.
+  const parts = data.split(":");
+  if (parts[0] === "bale" && parts[1] === "gate" && parts[2] === "edit") {
+    if (!chatId && parts[3]) chatId = parts[3];
+    if (!messageId && parts[4]) messageId = Number(parts[4]) || parts[4];
   }
-  if (data === "bale:gate:edit" && chatId && messageId) {
-    await bale(env, "editMessageText", {
-      chat_id:chatId,
-      message_id:messageId,
-      text:"✅ <b>Callback + Webhook + Edit تأیید شد</b>\n\nزنجیره کامل دکمه تعاملی بله با موفقیت کار کرد.",
-      reply_markup:{ inline_keyboard:[[{text:"🌐 FlyYab.ir",url:"https://flyyab.ir/?utm_source=bale&utm_medium=callback_verified"}]] }
-    });
+
+  console.log("BALE_GATE_CALLBACK_RECEIVED", JSON.stringify({
+    data,
+    callbackIdPrefix: callbackId.slice(0, 1),
+    hasMessage: Boolean(callback?.message),
+    chatId: chatId ? String(chatId) : null,
+    messageId: messageId ? String(messageId) : null
+  }));
+
+  // Bale docs: callback IDs starting with "1" indicate an older client that
+  // does not support answerCallbackQuery. Newer clients should always be acked.
+  if (callbackId && !callbackId.startsWith("1")) {
+    await bale(env, "answerCallbackQuery", {
+      callback_query_id: callbackId,
+      text: "Callback بله دریافت شد ✅",
+      show_alert: false
+    }).catch((error) => console.error("BALE_GATE_CALLBACK_ACK_FAILED", String(error?.message || error)));
+  }
+
+  if (parts[2] === "edit") {
+    if (!chatId) chatId = env.BALE_CHANNEL_ID || env.BALE_PRODUCTION_CHANNEL_ID || null;
+
+    if (!chatId || !messageId) {
+      console.error("BALE_GATE_CALLBACK_TARGET_MISSING", JSON.stringify({ chatId, messageId, data }));
+      if (chatId) {
+        await bale(env, "sendMessage", {
+          chat_id: chatId,
+          text: "⚠️ Callback دریافت شد اما شناسه پیام برای ویرایش در دسترس نبود."
+        }).catch(() => null);
+      }
+      return true;
+    }
+
+    try {
+      await bale(env, "editMessageText", {
+        chat_id: chatId,
+        message_id: messageId,
+        text: "✅ <b>Callback + Webhook + Edit تأیید شد</b>\\n\\nزنجیره کامل دکمه تعاملی بله با موفقیت کار کرد.",
+        reply_markup: {
+          inline_keyboard: [[{
+            text: "🌐 FlyYab.ir",
+            url: "https://flyyab.ir/?utm_source=bale&utm_medium=callback_verified"
+          }]]
+        }
+      });
+      console.log("BALE_GATE_CALLBACK_EDIT_OK", JSON.stringify({ chatId:String(chatId), messageId:String(messageId) }));
+    } catch (error) {
+      console.error("BALE_GATE_CALLBACK_EDIT_FAILED", String(error?.message || error));
+      await bale(env, "sendMessage", {
+        chat_id: chatId,
+        text: `⚠️ Callback دریافت شد اما Edit شکست خورد: ${String(error?.message || error).slice(0, 220)}`
+      }).catch(() => null);
+    }
   }
   return true;
 }

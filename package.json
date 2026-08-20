@@ -1,6 +1,6 @@
 {
   "name": "flyyab-bale-bot",
-  "version": "1.0.7-rc3.5",
+  "version": "1.0.8-rc3.6",
   "type": "module",
   "private": true,
   "scripts": {

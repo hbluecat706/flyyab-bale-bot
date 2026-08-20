@@ -1,3 +1,4 @@
-FlyYab-Bale-1.0.7-20260820-RC3.5-ALBUM-MULTIPART-FIX-V6.9.1
-Album Gate: multipart attach://
+FlyYab-Bale-1.0.8-20260820-RC3.6-CALLBACK-TARGET-FIX-V6.9.1
+Callback Gate: target chat/message IDs embedded in callback_data
+Webhook required
 Automation: OFF during live gate
