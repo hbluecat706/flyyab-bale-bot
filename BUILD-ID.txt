@@ -1,3 +1,3 @@
-FlyYab-Bale-1.5.1-20260820-BALE-FORMATTING-RESTORE-V6.9.1
-Critical fix: restore 45 server-side content newline joins to real newline delimiters.
-Control Room V3 and Runtime Automation preserved.
+FlyYab-Bale-1.5.2-20260820-NIGHT-HERITAGE-ALBUM-MULTIPART-V6.9.1
+Night Destination + Heritage365: remote image URLs are now downloaded by Worker and sent to Bale via multipart/attach:// album transport.
+Content logic, catalogs, AI, captions, scheduler and formatting preserved.

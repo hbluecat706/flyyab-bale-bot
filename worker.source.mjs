@@ -17,7 +17,7 @@ import { NIGHT_DESTINATIONS, NIGHT_DESTINATION_CATALOG_REVISION, nightDestinatio
 import { HERITAGE_CATALOG_VERSION, HERITAGE_CATALOG, heritageCatalogItem, heritageCatalogStats } from "./heritage-catalog.mjs";
 import { IRAN_WEATHER_DESTINATIONS, WEATHER_CATALOG_VERSION, weatherCatalogStats } from "./weather-catalog.mjs";
 import { WEATHER_VERSION, WEATHER_RULES, assessWeather, weatherReason as weatherReasonV2, selectWeatherPicks, candidateSeasonScore, stableWeatherHash } from "./weather-core.mjs";
-const FLYYAB_BUILD_ID = "FlyYab-Bale-1.5.1-20260820-BALE-FORMATTING-RESTORE-V6.9.1";
+const FLYYAB_BUILD_ID = "FlyYab-Bale-1.5.2-20260820-NIGHT-HERITAGE-ALBUM-MULTIPART-V6.9.1";
 const INTERNATIONAL_FARES_POST_VERSION = "international-fares-v2.0-homepage-parity";
 const SCHEDULER_RESILIENCE_VERSION = "scheduler-resilience-v3.1-self-healing-coordinator";
 const FREE_TIER_DELIVERY_VERSION = "free-tier-delivery-v2.1-self-healing-coordinator";
@@ -784,15 +784,22 @@ async function sendHeritageMediaGroup(env, chatId, images, caption) {
   if (!env.BALE_BOT_TOKEN) throw new Error("BALE_BOT_TOKEN تنظیم نشده است");
   const selected = (images || []).filter((image) => /^https:\/\//i.test(String(image?.media_url || image?.original_url || ""))).slice(0, HERITAGE_MAX_IMAGES);
   if (selected.length < HERITAGE_MIN_IMAGES) throw new Error(`HERITAGE_URL_IMAGES_LOW:${selected.length}`);
-  const media = selected.map((image, index) => ({
-    type: "photo",
-    media: image.media_url || image.original_url,
-    ...(index === 0 ? { caption, parse_mode: "HTML" } : {})
-  }));
-  // Free Tier: Bale downloads Wikimedia images itself. The Worker never
-  // downloads/decodes/re-uploads 5–8 large image binaries in the 21:00 slot.
-  const result = await bale(env, "sendMediaGroup", { chat_id: chatId, media });
-  return { result, images: selected };
+
+  // Bale's reliable path is multipart/attach://. Keep the Telegram/reference
+  // content pipeline intact, but adapt the final transport for Bale.
+  const downloaded = [];
+  for (let i = 0; i < selected.length; i++) {
+    const item = await downloadHeritageImage(selected[i], i);
+    downloaded.push({
+      bytes:new Uint8Array(item.bytes),
+      contentType:item.contentType,
+      filename:item.filename,
+      ...(i === 0 ? { caption } : {})
+    });
+  }
+  if (downloaded.length < HERITAGE_MIN_IMAGES) throw new Error(`HERITAGE_MULTIPART_IMAGES_LOW:${downloaded.length}`);
+  const result = await sendBundledMediaGroup(env, chatId, downloaded);
+  return { result, images:selected, transport:"multipart-upload", uploadedCount:downloaded.length };
 }
 
 async function sendBundledPhoto(env, chatId, image, filename, caption = "", replyMarkup = null, contentType = "image/jpeg") {
@@ -5148,19 +5155,55 @@ async function revalidateNightDestination(env, now = new Date()) {
   return locked;
 }
 
+
+async function downloadNightAlbumImage(image, index) {
+  const candidates = [...new Set([
+    image?.url,
+    image?.media_url,
+    image?.original_url
+  ].filter(Boolean).map(String))];
+  if (!candidates.length) throw new Error(`NIGHT_IMAGE_URL_MISSING_${index + 1}`);
+  let lastError;
+  for (const url of candidates) {
+    try {
+      const fetched = await fetchRemoteImageForBale(url, { timeoutMs: 15000, maxBytes: 9 * 1024 * 1024 });
+      return {
+        sourceImage:image,
+        bytes:fetched.bytes,
+        contentType:fetched.contentType,
+        filename:`night-${String(index + 1).padStart(2,"0")}.${fetched.contentType.includes("png")?"png":fetched.contentType.includes("webp")?"webp":"jpg"}`
+      };
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw new Error(`دریافت تصویر ${index + 1} مقصد امشب ناموفق بود: ${lastError?.message || "خطای نامشخص"}`);
+}
+async function prepareNightAlbumMultipartItems(pkg, caption) {
+  const images = Array.isArray(pkg?.images) ? pkg.images.slice(0, 10) : [];
+  if (!images.length) throw new Error("NIGHT_ALBUM_IMAGES_EMPTY");
+  const downloaded = [];
+  for (let i = 0; i < images.length; i++) {
+    const item = await downloadNightAlbumImage(images[i], i);
+    downloaded.push({
+      bytes:item.bytes,
+      contentType:item.contentType,
+      filename:item.filename,
+      ...(i === 0 ? { caption } : {})
+    });
+  }
+  return downloaded;
+}
 async function sendNightPackage(env, chatId, pkg) {
   const caption = nightPackageCaption(pkg);
   if (pkg.images.length === 1) {
-    const photo = await bale(env, "sendPhoto", { chat_id: chatId, photo: pkg.images[0].url, caption, parse_mode: "HTML" });
-    return { photo, unified: true, singleImage: true };
+    const remote = await downloadNightAlbumImage(pkg.images[0], 0);
+    const photo = await sendBundledPhoto(env, chatId, remote.bytes, remote.filename, caption, null, remote.contentType);
+    return { photo, unified: true, singleImage: true, transport:"multipart-upload" };
   }
-  const media = pkg.images.map((image, index) => ({
-    type: "photo",
-    media: image.url,
-    ...index === 0 ? { caption, parse_mode: "HTML" } : {}
-  }));
-  const album = await bale(env, "sendMediaGroup", { chat_id: chatId, media });
-  return { album, unified: true, singleImage: false };
+  const items = await prepareNightAlbumMultipartItems(pkg, caption);
+  const album = await sendBundledMediaGroup(env, chatId, items);
+  return { album, unified: true, singleImage: false, transport:"multipart-upload", count:items.length };
 }
 async function publishNightDestinationLocked(env, now = /* @__PURE__ */ new Date()) {
   let state = await nightDestinationState(env);
@@ -9337,6 +9380,71 @@ function adminWebConfigReadiness(env) {
   }));
 }
 
+
+async function adminWebNightDiagnostic(env) {
+  const pipeline=[];
+  const push=(stage,ok,detail="",extra={})=>pipeline.push({stage,ok:Boolean(ok),detail:String(detail||""),...extra});
+  push("BALE",Boolean(String(env.BALE_BOT_TOKEN||"").trim()),"توکن بله");
+  push("TEST_CHANNEL",Boolean(String(env.BALE_TEST_CHANNEL_ID||"").trim()),String(env.BALE_TEST_CHANNEL_ID||"تعریف نشده"));
+  push("BOT_CONTROL",Boolean(env.BOT_CONTROL),env.BOT_CONTROL?"متصل":"متصل نیست");
+  let state;
+  try {
+    state=await nightDestinationState(withFlyYabExecutionScope(env,"sandbox-web-control-album"));
+    push("STATE",true,`schema ${state?.version||"?"}`);
+  } catch(error) {
+    push("STATE",false,String(error?.message||error));
+    return {ok:true,type:"album",ready:false,pipeline};
+  }
+  let pkg=state?.preparedPackage;
+  if (!pkg || pkg.date!==currentTehranIso(new Date()) || !["READY","LOCKED","PUBLISHED"].includes(pkg.status)) {
+    push("PACKAGE",false,"پکیج امروز آماده نیست");
+    return {ok:true,type:"album",ready:false,pipeline};
+  }
+  push("PACKAGE",true,`${pkg.status} • ${pkg.displayName||pkg?.entity?.labelFa||"—"}`);
+  push("IMAGES",Array.isArray(pkg.images)&&pkg.images.length>0,`${pkg.images?.length||0} تصویر`);
+  push("CAPTION",Boolean(pkg.editorial?.body),pkg.editorial?.source||"متن آماده نیست");
+  if (pkg.images?.length) {
+    try {
+      const probe=await downloadNightAlbumImage(pkg.images[0],0);
+      push("IMAGE_FETCH",true,`${probe.contentType} • ${probe.bytes.length} bytes • multipart ready`);
+    } catch(error) {
+      push("IMAGE_FETCH",false,String(error?.message||error));
+    }
+  }
+  return {ok:true,type:"album",ready:pipeline.every(x=>x.ok),pipeline};
+}
+async function adminWebHeritageDiagnostic(env) {
+  const pipeline=[];
+  const push=(stage,ok,detail="",extra={})=>pipeline.push({stage,ok:Boolean(ok),detail:String(detail||""),...extra});
+  push("BALE",Boolean(String(env.BALE_BOT_TOKEN||"").trim()),"توکن بله");
+  push("TEST_CHANNEL",Boolean(String(env.BALE_TEST_CHANNEL_ID||"").trim()),String(env.BALE_TEST_CHANNEL_ID||"تعریف نشده"));
+  push("BOT_CONTROL",Boolean(env.BOT_CONTROL),env.BOT_CONTROL?"متصل":"متصل نیست");
+  let state;
+  try {
+    state=await heritageState(withFlyYabExecutionScope(env,"sandbox-web-control-heritage"));
+    push("STATE",true,`روز ${String(state?.nextDayNumber||1).padStart(3,"0")} از 365`);
+  } catch(error) {
+    push("STATE",false,String(error?.message||error));
+    return {ok:true,type:"heritage",ready:false,pipeline};
+  }
+  let pkg=state?.preparedPackage;
+  if (!pkg || pkg.day_number!==state.nextDayNumber) {
+    push("PACKAGE",false,"پرونده روز بعد هنوز آماده نیست");
+    return {ok:true,type:"heritage",ready:false,pipeline};
+  }
+  push("PACKAGE",true,`${pkg.candidate?.fa||"—"} • day ${pkg.day_number}`);
+  push("IMAGES",Array.isArray(pkg.images)&&pkg.images.length>=HERITAGE_MIN_IMAGES,`${pkg.images?.length||0}/${HERITAGE_MIN_IMAGES} حداقل`);
+  push("CAPTION",Boolean(pkg.caption),pkg.candidate?.editorialSource||"کپشن آماده نیست");
+  if (pkg.images?.length) {
+    try {
+      const probe=await downloadHeritageImage(pkg.images[0],0);
+      push("IMAGE_FETCH",true,`${probe.contentType} • ${probe.bytes.byteLength} bytes • multipart ready`);
+    } catch(error) {
+      push("IMAGE_FETCH",false,String(error?.message||error));
+    }
+  }
+  return {ok:true,type:"heritage",ready:pipeline.every(x=>x.ok),pipeline};
+}
 async function adminWebRatesDiagnostic(env) {
   const pipeline = [];
   const push = (stage, ok, detail = "", extra = {}) => pipeline.push({stage,ok:Boolean(ok),detail:String(detail || ""),...extra});
@@ -9663,6 +9771,8 @@ async function handleAdminWeb(request, env, ctx, url) {
     if (!TESTABLE_POST_TYPES.has(type)) return Response.json({ok:false,error:"INVALID_POST_TYPE"},{status:400});
     if (type === "rates") return Response.json(await adminWebRatesDiagnostic(env),{headers:{"cache-control":"no-store"}});
     if (type === "weather") return Response.json(await adminWebWeatherDiagnostic(env),{headers:{"cache-control":"no-store"}});
+    if (type === "album") return Response.json(await adminWebNightDiagnostic(env),{headers:{"cache-control":"no-store"}});
+    if (type === "heritage") return Response.json(await adminWebHeritageDiagnostic(env),{headers:{"cache-control":"no-store"}});
     const pipeline = adminWebPostConfig(env,type);
     return Response.json({ok:true,type,ready:pipeline.every(x=>x.ok),pipeline},{headers:{"cache-control":"no-store"}});
   }
