@@ -1,2 +1,3 @@
-FlyYab-Bale-1.5.0-20260820-CONTROL-ROOM-V3-MANUAL-TEST-CENTER-V6.9.1
-Control Room V3 + Manual Test Center
+FlyYab-Bale-1.5.1-20260820-BALE-FORMATTING-RESTORE-V6.9.1
+Critical fix: restore 45 server-side content newline joins to real newline delimiters.
+Control Room V3 and Runtime Automation preserved.

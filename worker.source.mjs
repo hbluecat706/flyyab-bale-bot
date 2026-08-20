@@ -17,7 +17,7 @@ import { NIGHT_DESTINATIONS, NIGHT_DESTINATION_CATALOG_REVISION, nightDestinatio
 import { HERITAGE_CATALOG_VERSION, HERITAGE_CATALOG, heritageCatalogItem, heritageCatalogStats } from "./heritage-catalog.mjs";
 import { IRAN_WEATHER_DESTINATIONS, WEATHER_CATALOG_VERSION, weatherCatalogStats } from "./weather-catalog.mjs";
 import { WEATHER_VERSION, WEATHER_RULES, assessWeather, weatherReason as weatherReasonV2, selectWeatherPicks, candidateSeasonScore, stableWeatherHash } from "./weather-core.mjs";
-const FLYYAB_BUILD_ID = "FlyYab-Bale-1.5.0-20260820-CONTROL-ROOM-V3-MANUAL-TEST-CENTER-V6.9.1";
+const FLYYAB_BUILD_ID = "FlyYab-Bale-1.5.1-20260820-BALE-FORMATTING-RESTORE-V6.9.1";
 const INTERNATIONAL_FARES_POST_VERSION = "international-fares-v2.0-homepage-parity";
 const SCHEDULER_RESILIENCE_VERSION = "scheduler-resilience-v3.1-self-healing-coordinator";
 const FREE_TIER_DELIVERY_VERSION = "free-tier-delivery-v2.1-self-healing-coordinator";
@@ -1710,7 +1710,7 @@ async function runDailyDeliveryWatchdog(env, now = new Date()) {
       `وضعیت: <code>${esc(event.status)}</code>`,
       `کد: <code>${esc(event.code)}</code>`,
       `علت: ${esc(event.reason)}`
-    ] .join("\\n"));
+    ] .join("\n"));
   }
   return alerts;
 }
@@ -1858,7 +1858,7 @@ async function buildDailyDeliveryHealthReport(env, date = currentTehranIso(new D
     problemCount ? "⚠️ حداقل یک مشکل واقعی در اتوماسیون امروز ثبت شده است." : "✅ تا این لحظه مشکل قطعی ثبت‌شده‌ای در Slotهای بررسی‌شده وجود ندارد.",
     "",
     "ℹ️ «SKIPPED» خطا نیست؛ یعنی مثلاً امروز فرصت زیر سقف قیمت یا مناسبت واجد شرایط وجود نداشته است. «MISSED» یعنی زمان Slot گذشته ولی Cron شروع آن را ثبت نکرده است."
-  ] .join("\\n").slice(0, 3900);
+  ] .join("\n").slice(0, 3900);
 }
 async function sendDailyDeliverySummary(env, now = new Date()) {
   const date = currentTehranIso(now);
@@ -1910,7 +1910,7 @@ async function reportMorningFailure(env, now, phase, error, title = "پست صب
     `کد خطا: <code>${esc(failure.code)}</code>`,
     `علت اصلی: ${esc(failure.reason)}`,
     incident?.id ? `شناسه رخداد: <code>${esc(incident.id)}</code>` : "⚠️ ذخیره رخداد مرکزی نیز در دسترس نبود"
-  ] .join("\\n"));
+  ] .join("\n"));
   return failure;
 }
 async function reportScheduledPostFailure(env, postType, now, phase, error, alertText) {
@@ -1992,7 +1992,7 @@ function morningAdminReport(record) {
       `علت اصلی: ${esc(record.lastFailure.reason || "—")}`,
       `زمان: <code>${esc(record.lastFailure.at || "—")}</code>`
     ] : [])
-  ] .join("\\n").slice(0, 3900);
+  ] .join("\n").slice(0, 3900);
 }
 async function dailyRatesPhoto(env, now = /* @__PURE__ */ new Date(), fresh = false) {
   const seed = freshSeed(now, fresh, "rates-city");
@@ -2461,7 +2461,7 @@ function morningCaption(featured, now = /* @__PURE__ */ new Date()) {
     "\u0644\u0645\u0633 \u06A9\u0646\u060C \u0622\u0633\u0645\u0627\u0646 \u0648 \u0632\u0645\u06CC\u0646 \u0627\u0632 \u0622\u0646 \u062A\u0648\u0633\u062A.",
     "@FlyYab"
   ];
-  return lines .join("\\n");
+  return lines .join("\n");
 }
 async function sendMorning(env, chatId, now = /* @__PURE__ */ new Date(), fresh = false) {
   const featured = await fetchWikipediaFeaturedPicture();
@@ -2564,7 +2564,7 @@ async function ratesMessage(env, now = /* @__PURE__ */ new Date(), photo = null)
     "\u{1F499} <b>\u0641\u0644\u0627\u06CC\u200C\u06CC\u0627\u0628\u061B \u0647\u0645\u0631\u0627\u0647 \u0647\u0648\u0634\u0645\u0646\u062F \u0633\u0641\u0631</b>",
     "@FlyYab"
   );
-  return lines .join("\\n");
+  return lines .join("\n");
 }
 async function sendRates(env, chatId, now = /* @__PURE__ */ new Date(), fresh = false) {
   const photo = await dailyRatesPhoto(env, now, fresh);
@@ -2659,7 +2659,7 @@ function flightsMessageFromData(data, now = /* @__PURE__ */ new Date()) {
     "\u{1F499} <b>\u0641\u0644\u0627\u06CC\u200C\u06CC\u0627\u0628\u061B \u0644\u0645\u0633 \u06A9\u0646\u060C \u0622\u0633\u0645\u0627\u0646 \u0648 \u0632\u0645\u06CC\u0646 \u0627\u0632 \u0622\u0646 \u062A\u0648\u0633\u062A.</b>",
     "@FlyYab"
   );
-  return lines .join("\\n");
+  return lines .join("\n");
 }
 async function flightsMessage(now = /* @__PURE__ */ new Date()) {
   const data = await fetchFlightPrices();
@@ -3016,7 +3016,7 @@ function radarAdminStatusText(data, env, botMode = "test") {
     `آخرین Flash موفق: ${data?.meta?.lastPublished ? `<code>${esc(new Date(data.meta.lastPublished.at).toISOString())}</code>` : "—"}`,
     `آخرین Board: ${data?.meta?.lastBoard ? `<code>${esc(data.meta.lastBoard.status || "—")}</code> • ${data.meta.lastBoard.verifiedCount || 0} فرصت` : "—"}`,
     `قفل ارسال نامشخص: <b>${Array.isArray(data?.meta?.unknownLocks) ? data.meta.unknownLocks.length : 0}</b>`
-  ] .join("\\n");
+  ] .join("\n");
 }
 function radarCandidateAdminText(candidate) {
   if (!candidate) return "ℹ️ هنوز Candidate معتبری در Radar ثبت نشده است.";
@@ -3029,7 +3029,7 @@ function radarCandidateAdminText(candidate) {
     `تأیید خرید: ${Number(parts.verification || 0)} | صرفه‌جویی: ${Number(parts.saving || 0)} | زمان سفر: ${Number(parts.travelWindow || 0)} | اعتماد: ${Number(parts.confidence || 0)}`,
     "",
     radarPostText(candidate)
-  ] .join("\\n");
+  ] .join("\n");
 }
 function radarReasonLabel(reason) {
   return ({
@@ -3069,7 +3069,7 @@ async function radarProbeText(env) {
     ...(sample.length ? sample : ["—"]),
     "",
     "این Probe فقط شاخه minPrice داخلی را می‌خواند؛ gminPrice و پرواز خارجی وارد این Radar نمی‌شوند و State نیز تغییر نمی‌کند."
-  ] .join("\\n");
+  ] .join("\n");
 }
 function radarCalendarReferenceLabel(candidate) {
   const scope = String(candidate.calendarReferenceScope || "");
@@ -3206,7 +3206,7 @@ function radarBoardText(board, now = new Date()) {
     "",
     "@FlyYab"
   );
-  return lines .join("\\n");
+  return lines .join("\n");
 }
 function radarBoardKeyboard() {
   return {
@@ -3759,7 +3759,7 @@ function internationalRadarAdminStatusText(data, env, botMode = "test") {
     `آخرین اعلان موفق: ${data?.meta?.lastPublished ? `<b>${esc(data.meta.lastPublished.checkedAtTehran || "—")}</b> · <code>${esc(data.meta.lastPublished.origin)}-${esc(data.meta.lastPublished.destination)}</code>` : "—"}`,
     `آخرین رد راستی‌آزمایی: ${data?.meta?.lastRejected ? `<code>${esc(data.meta.lastRejected.reason)}</code>` : "—"}`,
     `آخرین خطای فنی: ${data?.meta?.lastFailure ? `<code>${esc(data.meta.lastFailure)}</code>` : "—"}`
-  ] .join("\\n");
+  ] .join("\n");
 }
 function internationalRadarCandidateAdminText(candidate) {
   if (!candidate) return "ℹ️ هنوز فرصت راستی‌آزمایی‌شده‌ای ثبت نشده است.";
@@ -3777,7 +3777,7 @@ function internationalRadarCandidateAdminText(candidate) {
     `مسیر لینک رزرو: <code>${esc(candidate.bookingOrigin || candidate.origin)}-${esc(candidate.bookingDestination || candidate.destination)}</code>`,
     "",
     internationalRadarPostText(candidate)
-  ] .join("\\n");
+  ] .join("\n");
 }
 async function internationalRadarProbeText(env) {
   const data = await fetchFlightPrices();
@@ -3798,7 +3798,7 @@ async function internationalRadarProbeText(env) {
     ...(sample.length ? sample : ["—"]),
     "",
     "این گزارش فقط Feed را می‌خواند؛ پیام عمومی نمی‌فرستد و قیمت دقیق خرید را تأیید نمی‌کند."
-  ] .join("\\n");
+  ] .join("\n");
 }
 
 function flightOffer(data, origin, destination) {
@@ -4018,7 +4018,7 @@ function internationalFlightsMessageFromData(data, catalog, now = /* @__PURE__ *
     "🌐 FlyYab.ir",
     "@FlyYab"
   ];
-  let message = [...header, ...rows, ...footer] .join("\\n");
+  let message = [...header, ...rows, ...footer] .join("\n");
 
   // sendMessage supports 4096 UTF-16 units. This fallback is only for an
   // unexpectedly huge homepage catalog; all valid destinations are retained.
@@ -4029,7 +4029,7 @@ function internationalFlightsMessageFromData(data, catalog, now = /* @__PURE__ *
       "✨ <b>کمترین نرخ‌های فعلی</b>"
     ];
     const compactFooter = ["⚡ آخرین به‌روزرسانی فلای‌یاب • @FlyYab"];
-    message = [...compactHeader, ...compactRows, ...compactFooter] .join("\\n");
+    message = [...compactHeader, ...compactRows, ...compactFooter] .join("\n");
   }
   const visibleLength = baleVisibleUtf16Length(message);
   if (visibleLength > 4096) throw new Error(`متن پرواز خارجی بیش از حد مجاز بله است (${visibleLength})`);
@@ -4342,13 +4342,13 @@ async function createNightDestinationEditorial(env, entity) {
   if (!env.AI) throw nightEditorialQualityError("هوش مصنوعی برای ساخت کپشن مقصد متصل نیست");
   const evidence = buildNightEditorialEvidence(entity); const wikiEvidence = evidence.filter((item) => /^wikipedia-/.test(item.kind));
   if (wikiEvidence.length < 5 || new Set(wikiEvidence.map((item) => normalizeDestinationText(item.text))).size < 5) throw nightEditorialQualityError("Evidence کافی برای یک کپشن باکیفیت وجود ندارد");
-  const evidenceText = evidence.map((item) => `${item.id} | ${item.kind} | ${item.text}`) .join("\\n"); const type = String(entity?.configured?.type || "CITY"); const allowedKeys = nightAllowedSectionKeys(type); const models = ["@cf/zai-org/glm-4.7-flash", "@cf/meta/llama-3.1-8b-instruct-fast"];
+  const evidenceText = evidence.map((item) => `${item.id} | ${item.kind} | ${item.text}`) .join("\n"); const type = String(entity?.configured?.type || "CITY"); const allowedKeys = nightAllowedSectionKeys(type); const models = ["@cf/zai-org/glm-4.7-flash", "@cf/meta/llama-3.1-8b-instruct-fast"];
   let plan = null; let planError = null;
   const planSchema = { type: "object", additionalProperties: false, required: ["angle","leadEvidence","section1Key","section1Evidence","section2Key","section2Evidence"], properties: { angle: { type: "string" }, leadEvidence: { type: "array", items: { type: "string" } }, section1Key: { type: "string", enum: allowedKeys }, section1Evidence: { type: "array", items: { type: "string" } }, section2Key: { type: "string", enum: allowedKeys }, section2Evidence: { type: "array", items: { type: "string" } } } };
   const planPrompt = `تو سردبیر «مقصد امشب فلای‌یاب» هستی. هنوز کپشن ننویس. از میان شواهد قفل‌شده، یک زاویه روایی مشخص و سه مجموعه شاهد مستقل برای Lead و دو بخش انتخاب کن. هدف این است که مخاطب در کمتر از یک دقیقه واقعاً مکان را بشناسد، نه اینکه تعریف دانشنامه‌ای بخواند.\nنوع مقصد: ${type}\nکلیدهای مجاز دو بخش: ${allowedKeys.join(", ")}\nقواعد: واقعیت عینی، معماری، طبیعت، داستان تاریخی و جزئیات مشخص بر آمار اداری اولویت دارند؛ دو بخش باید متفاوت باشند؛ حداقل چهار شاهد یکتا در کل طرح؛ هیچ دانش بیرونی اضافه نکن. فقط JSON مطابق Schema.\n\nEVIDENCE LOCK:\n${evidenceText}`;
   for (const model of models) { try { const result = await env.AI.run(model, { messages: [{ role: "system", content: "تو سردبیر دقیق یک رسانه سفر هستی؛ اول زاویه و شواهد را انتخاب می‌کنی، بعد نویسنده جداگانه متن می‌سازد." }, { role: "user", content: planPrompt }], response_format: { type: "json_schema", json_schema: planSchema }, max_tokens: 620, temperature: 0.15 }); plan = validateNightEditorialPlan(cleanAiJson(aiResponsePayload(result)), evidence, type); break; } catch (error) { planError = error; } }
   if (!plan) throw nightEditorialQualityError("مرحله انتخاب زاویه تحریریه تأیید نشد", planError);
-  const selectedEvidence = [...new Set([...plan.refs.lead,...plan.refs.section1,...plan.refs.section2])].map((ref) => evidence.find((item) => item.id.toUpperCase() === ref)).filter(Boolean); const selectedText = selectedEvidence.map((item) => `${item.id} | ${item.kind} | ${item.text}`) .join("\\n");
+  const selectedEvidence = [...new Set([...plan.refs.lead,...plan.refs.section1,...plan.refs.section2])].map((ref) => evidence.find((item) => item.id.toUpperCase() === ref)).filter(Boolean); const selectedText = selectedEvidence.map((item) => `${item.id} | ${item.kind} | ${item.text}`) .join("\n");
   const writerSchema = { type: "object", additionalProperties: false, required: ["lead","section1","section2"], properties: { lead: { type: "string", minLength: 150, maxLength: 300 }, section1: { type: "string", minLength: 110, maxLength: 220 }, section2: { type: "string", minLength: 110, maxLength: 220 } } };
   const writerBase = `برای «مقصد امشب فلای‌یاب» یک مینی‌روایت فارسی بنویس. زاویه از قبل قفل شده و حق تغییر واقعیت‌ها را نداری.\nزاویه: ${plan.angle}\nLead فقط از این شواهد: ${plan.refs.lead.join(", ")}\nبخش اول (${NIGHT_SECTION_TITLES[plan.section1Key]}) فقط از: ${plan.refs.section1.join(", ")}\nبخش دوم (${NIGHT_SECTION_TITLES[plan.section2Key]}) فقط از: ${plan.refs.section2.join(", ")}\n\nسبک: راوی سفر باسواد، کنجکاو و دقیق؛ فارسی طبیعی و تصویری، بدون اغراق و بدون لحن دانشنامه‌ای یا فروش تور. Lead باید مخاطب را وارد مکان کند. هر بخش باید چیزی تازه اضافه کند. جمله کامل باشد؛ «…» و سه‌نقطه ممنوع. هیچ عدد، تاریخ، نام، لقب، علت یا ادعایی خارج از شاهد نساز. تیتر و ایموجی و HTML داخل متن نیاور. فقط JSON مطابق Schema.\n\nSELECTED EVIDENCE:\n${selectedText}`;
   let lastError = null;
@@ -4564,7 +4564,7 @@ function nightImageAiJson(content = "") {
 async function nightAiVisualCheckBatch(env, candidate, images = []) {
   const list = (Array.isArray(images) ? images : []).slice(0, NIGHT_LITE_MAX_IMAGES);
   if (!list.length || !env.ARVAN_AI_API_KEY || !env.ARVAN_AI_ENDPOINT) return new Map(list.map((image) => [String(image.id), { status: "UNAVAILABLE", confidence: 0 }]));
-  const labels = list.map((image, index) => `${index + 1}. id=${image.id} | source=${image.source || "—"} | file=${image.fileName || "—"} | meta=${String(image.description || image.alt || "").slice(0, 260)}`) .join("\\n");
+  const labels = list.map((image, index) => `${index + 1}. id=${image.id} | source=${image.source || "—"} | file=${image.fileName || "—"} | meta=${String(image.description || image.alt || "").slice(0, 260)}`) .join("\n");
   const content = [
     { type: "text", text: `تو کنترل کیفیت تصویری کانال رسمی گردشگری FlyYab هستی. مقصد دقیق: «${candidate.name}» در ${candidate.country} (${candidate.query}).\nبرای هر تصویر فقط بررسی کن آیا خودِ تصویر با احتمال بالا همین مقصد/مکان را نشان می‌دهد، نه صرفاً مکانی شبیه آن در همان کشور یا منطقه. پرچم، لوگو، نقشه، فرودگاه، تصاویر آرشیوی نامرتبط یا مکان مشابه باید رد شوند. اگر اطمینان نداری رد کن.\nفهرست تصاویر به ترتیب:\n${labels}\n\nفقط JSON برگردان با شکل {"results":[{"id":"...","same_place":true,"confidence":0-100,"reason":"کوتاه"}]}.` }
   ];
@@ -4750,7 +4750,7 @@ function nightPackageText(pkg) {
     nightPexelsAttribution(pkg),
     `🌐 <a href="https://flyyab.ir/">FlyYab.ir</a> | @FlyYab`,
     "#مقصد_امشب"
-  ].filter((line, index, lines) => !(line === "" && lines[index - 1] === "")) .join("\\n");
+  ].filter((line, index, lines) => !(line === "" && lines[index - 1] === "")) .join("\n");
 }
 const NIGHT_DESTINATION_CAPTION_LIMIT = 1024;
 const NIGHT_DESTINATION_EDITORIAL_CEILING = 1024;
@@ -4859,7 +4859,7 @@ async function nightDestinationAdminPanel(env, pkg, note = "") {
     `🎛 حالت ربات: <b>${mode === "live" ? "اصلی 🟢" : "آزمایشی 🧪"}</b>`,
     `🎯 مقصد انتشار: <code>${esc(automaticChannel)}</code>`,
     ...(note ? ["", note] : [])
-  ] .join("\\n");
+  ] .join("\n");
 }
 
 function editableNightPackage(state, now = new Date()) {
@@ -5323,7 +5323,7 @@ function nightDestinationStatusText(state) {
     `تلاش‌های ساخت: ${attempts.length}`,
     `آخرین نتیجه: ${report?.ok ? "✅" : report ? `⚠️ ${esc(report.code || report.status || "ERROR")}` : "—"}`,
     ...report?.error ? [`علت: ${esc(report.error)}`] : []
-  ] .join("\\n");
+  ] .join("\n");
 }
 
 // سفر 365 | میراث جهان — کاتالوگ ثابت و تأییدشده UNESCO
@@ -5472,7 +5472,7 @@ async function officialUnesco(candidate) {
       description ? `Short description: ${description}` : "",
       extracted.synthesis ? `Brief synthesis: ${extracted.synthesis}` : "",
       extracted.criteriaText ? `Criteria rationale: ${extracted.criteriaText}` : ""
-    ].filter(Boolean) .join("\\n"));
+    ].filter(Boolean) .join("\n"));
     return {
       url,
       description,
@@ -5750,7 +5750,7 @@ function heritageEditorialEvidencePack(candidate, official) {
   return [...unesco, ...wiki].slice(0, 24);
 }
 function heritageEvidenceBlock(cards = []) {
-  return cards.map((x) => `[${x.id}] ${x.text}`) .join("\\n");
+  return cards.map((x) => `[${x.id}] ${x.text}`) .join("\n");
 }
 function heritageNormalizeEvidenceIds(value, validIds = new Set()) {
   const raw = Array.isArray(value) ? value : String(value || "").split(/[،,\s]+/);
@@ -5911,7 +5911,7 @@ async function createHeritageEditorialCopy(env, candidate, official, context = {
 
 فقط JSON معتبر با همین سه کلید برگردان: title, story, look.`;
 
-  const user = `DESTINATION\nنام فارسی: ${candidate.fa}\nنام رسمی: ${candidate.en}\nکشور: ${candidate.country}\nنوع اثر: ${candidate.kind}\nسال ثبت جهانی: ${candidate.year || "—"}\nمعیارها: ${candidate.criteria || "—"}\n\nSOURCE\n${sourceText || "فقط از متادیتای قطعی بالا استفاده کن و جزئیات نامطمئن نساز."}\n\nIMAGE HINTS\n${imageHints.length ? imageHints.map((x)=>`- ${x}`) .join("\\n") : "تصاویر همان مقصد هستند؛ فقط چیزی را پیشنهاد کن که از عنوان فایل‌ها یا خود اطلاعات مقصد قابل اتکا باشد."}`;
+  const user = `DESTINATION\nنام فارسی: ${candidate.fa}\nنام رسمی: ${candidate.en}\nکشور: ${candidate.country}\nنوع اثر: ${candidate.kind}\nسال ثبت جهانی: ${candidate.year || "—"}\nمعیارها: ${candidate.criteria || "—"}\n\nSOURCE\n${sourceText || "فقط از متادیتای قطعی بالا استفاده کن و جزئیات نامطمئن نساز."}\n\nIMAGE HINTS\n${imageHints.length ? imageHints.map((x)=>`- ${x}`) .join("\n") : "تصاویر همان مقصد هستند؛ فقط چیزی را پیشنهاد کن که از عنوان فایل‌ها یا خود اطلاعات مقصد قابل اتکا باشد."}`;
 
   let lastError;
   for (let attempt = 0; attempt < 2; attempt++) {
@@ -5974,7 +5974,7 @@ function buildHeritageCaption(candidate, dayNumber, links = {}, sourcesUrl = "",
     "", dayNumber === 1 ? "💙 شب اول تمام شد؛ 364 داستان دیگر روی نقشه ایران و جهان باقی مانده است." : `💙 شب ${night} تمام شد؛ فردا، یک داستان تازه از نقطه‌ای دیگر روی نقشه.`,
     "", sourceLinks ? `🔗 <b>منابع:</b> ${sourceLinks}` : "", "@FlyYab"
   );
-  return rows.filter((x)=>x!==null && x!==undefined) .join("\\n").replace(/\n{3,}/g,"\n\n");
+  return rows.filter((x)=>x!==null && x!==undefined) .join("\n").replace(/\n{3,}/g,"\n\n");
 }
 function heritageCaption(candidate, dayNumber, links = {}, sourcesUrl = "") {
   let working = { ...candidate };
@@ -6108,7 +6108,7 @@ function heritageUpcomingSummary(state, count = 4) {
     const item=heritageCatalogItem(day); if (!item) continue;
     rows.push(`${day===state.nextDayNumber?"▶️":"▫️"} شب <code>${String(day).padStart(3,"0")}</code> · ${esc(item.titleEn)} · ${esc(heritageCountryFa(item))} · UNESCO <code>${esc(item.unescoId)}</code>`);
   }
-  return rows .join("\\n") || "پروژه کامل شده است.";
+  return rows .join("\n") || "پروژه کامل شده است.";
 }
 var BLOG_SITEMAP_URL = "https://flyyab.ir/sitemap-blog.xml";
 var ARTICLE_EDITORIAL_VERSION = "article-v2.0-arvan-editorial-pick";
@@ -6419,7 +6419,7 @@ function validateArticleCopy(value, article = {}) {
   const takeaways=raw.map((x)=>articleSentenceFit(cleanArticleEditorialText(x).replace(/\n+/g," "),130,1)).filter((x)=>x.length>=8).slice(0,3);
   if (headline.length<8) throw new Error("عنوان تولیدشده توسط AI ناقص است");
   if (body.length<100) throw new Error("متن اصلی تولیدشده توسط AI بیش از حد کوتاه است");
-  const all=`${headline}\n${body}\n${takeaways .join("\\n")}`;
+  const all=`${headline}\n${body}\n${takeaways .join("\n")}`;
   if (/(?:\bGPT\b|\bAI\b|\bAPI\b|prompt|json|مدل زبانی|هوش مصنوعی|پرامپت)/i.test(all)) throw new Error("خروجی AI شامل توضیح فنی است");
   const forbidden=[/(?:با خواندن|در این مقاله|در این مطلب|در ادامه همراه|همراه ما باشید)/i,/(?:تجربه[‌ ]?ای بی[‌ ]?نظیر|سفری فراموش[‌ ]?نشدنی|بهترین انتخاب|انتخابی ایده[‌ ]?آل|پروازهای بی[‌ ]?دردسر|کیفیت و تعهد)/i,/(?:نکات طلایی|راهنمای جامع|همه چیز درباره)/i];
   if (forbidden.some((p)=>p.test(all))) throw new Error("خروجی AI لحن قالبی یا تبلیغاتی دارد");
@@ -6456,7 +6456,7 @@ function articleCaption(article, copy) {
   paragraphs.forEach((p,i)=>{ if(i) lines.push(""); lines.push(esc(p)); });
   if (copy.takeaways?.length) lines.push("",articleTakeawayTitle(article.category),...copy.takeaways.map((x)=>`▫️ ${esc(x)}`));
   lines.push("",`⏱ <b>زمان مطالعه: حدود ${article.readingMinutes} دقیقه</b>`,"","━━━━━━━━━━━━━━","","🧭 <b>بیشتر بدانید؛ هوشمندانه‌تر سفر کنید.</b>","","#بلاگ","@FlyYab");
-  return lines .join("\\n");
+  return lines .join("\n");
 }
 function articleAutofit(article, copy, target=970) {
   const fitted={...copy,takeaways:[...(copy.takeaways||[])]}; let caption=articleCaption(article,fitted), length=articleVisibleCaptionLength(caption);
@@ -6674,7 +6674,7 @@ function occasionDecisionReport(record) {
     `ارائه‌دهنده: <code>${esc(record.storyWriterProvider || "—")}</code>`,
     `مدل: <code>${esc(record.storyWriterModel || "—")}</code>`,
     record.storyWriterError ? `گزارش: <code>${esc(String(record.storyWriterError).slice(0, 600))}</code>` : "گزارش خطا: ندارد"
-  ] .join("\\n").slice(0, 3900);
+  ] .join("\n").slice(0, 3900);
 }
 function occasionAdminStatus(record) {
   if (!record) return `📌 <b>وضعیت مناسبت روز</b>\n\nنسخه: <code>${esc(BOT_VERSION)}</code> / <code>${esc(OCCASION_VERSION)}</code>\nپرونده‌ای برای تاریخ موردنظر پیدا نشد.`;
@@ -7273,7 +7273,7 @@ function statusMessage(env, mode) {
     `🩺 سلامت ارسال روزانه: ${DELIVERY_HEALTH_VERSION} · گزارش نهایی 21:10`,
     "",
     "\u{1F570} \u0645\u0646\u0637\u0642\u0647 \u0632\u0645\u0627\u0646\u06CC: \u062A\u0647\u0631\u0627\u0646"
-  ] .join("\\n");
+  ] .join("\n");
 }
 var TESTABLE_POST_TYPES = /* @__PURE__ */ new Set(["morning", "weather", "rates", "flights", "deal", "international", "album", "heritage", "article", "occasion"]);
 var BOT_COMMANDS = [
@@ -7388,7 +7388,7 @@ function buttonPreviewText(note = "") {
     "",
     "آلبوم‌های «مقصد امشب» و «سفر ۳۶۰» عمداً بدون دکمه منتشر می‌شوند.",
     ...(note ? ["", note] : [])
-  ] .join("\\n");
+  ] .join("\n");
 }
 function adminBackKeyboard(rows = []) {
   return { inline_keyboard: [...rows, [{ text: "🏠 منوی اصلی", callback_data: "admin:home" }]] };
@@ -7419,7 +7419,7 @@ async function managedMediaControlPage(env, type, note = "") {
       "",
       "برای تغییر تصویر، دکمه بارگذاری را بزنید و سپس عکس را همین‌جا برای ربات بفرستید. تصویر فعلی داخل فایل حذف نمی‌شود و همیشه نسخه پشتیبان است.",
       ...(note ? ["", note] : [])
-    ] .join("\\n"),
+    ] .join("\n"),
     keyboard: managedMediaKeyboard(normalized)
   };
 }
@@ -7536,7 +7536,7 @@ async function morningControlPage(env, offset = 0, note = "") {
     ...(latestFailure !== "—" ? ["", `🚨 آخرین علت عدم موفقیت: ${esc(latestFailure)}`] : []),
     ...(note ? ["", note] : [])
   ];
-  return { text: lines .join("\\n").slice(0, 3900), keyboard: morningAdminKeyboard(selected), date, record, incidents };
+  return { text: lines .join("\n").slice(0, 3900), keyboard: morningAdminKeyboard(selected), date, record, incidents };
 }
 function morningIncidentReport(date, incidents = []) {
   if (!incidents.length) return `🚨 <b>گزارش خطاهای پست صبح</b>\n\nتاریخ: <code>${esc(date)}</code>\n\n✅ هیچ خطایی برای این تاریخ ثبت نشده است.`;
@@ -7554,7 +7554,7 @@ function morningIncidentReport(date, incidents = []) {
       `شناسه: <code>${esc(item.id || "—")}</code>`,
       ""
     ])
-  ] .join("\\n").slice(0, 3900);
+  ] .join("\n").slice(0, 3900);
 }
 function adminPage(page) {
   const pages = {
@@ -7724,7 +7724,7 @@ async function handleAdminCallback(env, callback, workerOrigin) {
         "🎨 <b>آزمون دکمه‌های رنگی فلای‌یاب</b>",
         "",
         "این پیام فقط برای کنترل ظاهر و عملکرد دکمه‌ها در کانال آزمایشی است."
-      ] .join("\\n"), morningServiceButtons("button_test"));
+      ] .join("\n"), morningServiceButtons("button_test"));
       await editAdminMessage(env, callback, buttonPreviewText(`✅ نمونه به <code>${esc(testChannel(env))}</code> ارسال شد.`), buttonPreviewKeyboard());
     } catch (error) {
       await editAdminMessage(env, callback, buttonPreviewText(`❌ ارسال نمونه انجام نشد: ${esc(error.message)}`), buttonPreviewKeyboard());
@@ -7752,7 +7752,7 @@ async function handleAdminCallback(env, callback, workerOrigin) {
           "⏱ این درخواست ۱۰ دقیقه اعتبار دارد.",
           "📦 حداکثر حجم امن: ۹٫۵ مگابایت.",
           "🛟 تا پیش از ثبت موفق، تصویر فعلی تغییر نمی‌کند."
-        ] .join("\\n"), managedMediaUploadKeyboard(type));
+        ] .join("\n"), managedMediaUploadKeyboard(type));
         return true;
       }
       if (action === "cancel") {
@@ -8053,7 +8053,7 @@ async function handleCommand(env, message, workerOrigin) {
         `پاسخ مدل: ${esc(result.content)}`,
         "",
         "🔒 هیچ کلید API در این گزارش نمایش داده نمی‌شود."
-      ] .join("\\n"));
+      ] .join("\n"));
     } catch (error) {
       return send(env, chatId, [
         "❌ <b>اتصال ArvanCloud AI برقرار نشد</b>",
@@ -8063,7 +8063,7 @@ async function handleCommand(env, message, workerOrigin) {
         "Secretهای لازم در Cloudflare:",
         "<code>ARVAN_AI_API_KEY</code>",
         "<code>ARVAN_AI_ENDPOINT</code>"
-      ] .join("\\n"));
+      ] .join("\n"));
     }
   }
   if (command === "/daily_health") {
@@ -8094,7 +8094,7 @@ async function handleCommand(env, message, workerOrigin) {
       "",
       `\u062A\u0645\u0627\u0645 \u0627\u0646\u062A\u0634\u0627\u0631\u0647\u0627\u06CC \u0632\u0645\u0627\u0646\u200C\u0628\u0646\u062F\u06CC\u200C\u0634\u062F\u0647 \u0628\u0647 ${esc(testChannel(env))} \u0645\u06CC\u200C\u0631\u0648\u0646\u062F.`,
       `\u0647\u06CC\u0686 \u067E\u0633\u062A\u06CC \u062F\u0631 ${esc(productionChannel(env))} \u0645\u0646\u062A\u0634\u0631 \u0646\u062E\u0648\u0627\u0647\u062F \u0634\u062F.`
-    ] .join("\\n"));
+    ] .join("\n"));
   }
   if (command === "/live_mode") {
     await setBotMode(env, "live");
@@ -8103,7 +8103,7 @@ async function handleCommand(env, message, workerOrigin) {
       "",
       `\u0627\u0646\u062A\u0634\u0627\u0631\u0647\u0627\u06CC \u0632\u0645\u0627\u0646\u200C\u0628\u0646\u062F\u06CC\u200C\u0634\u062F\u0647 \u0627\u0632 \u0627\u06CC\u0646 \u0644\u062D\u0638\u0647 \u0628\u0647 ${esc(productionChannel(env))} \u0645\u06CC\u200C\u0631\u0648\u0646\u062F.`,
       `\u0641\u0631\u0645\u0627\u0646\u200C\u0647\u0627\u06CC \u062F\u0633\u062A\u06CC \u0648 /publish_all \u0647\u0645\u0686\u0646\u0627\u0646 \u0641\u0642\u0637 \u062F\u0631 ${esc(testChannel(env))} \u0645\u0646\u062A\u0634\u0631 \u0645\u06CC\u200C\u0634\u0648\u0646\u062F.`
-    ] .join("\\n"));
+    ] .join("\n"));
   }
   if (command === "/help") {
     return send(env, chatId, [
@@ -8164,7 +8164,7 @@ async function handleCommand(env, message, workerOrigin) {
       "/weather_preview — پیش‌نمایش خصوصی پست آماده آب‌وهوا",
       "/version — نمایش نسخه فعال",
       "/menu \u2014 \u0628\u0627\u0632\u0633\u0627\u0632\u06CC \u0645\u0646\u0648\u06CC \u0641\u0631\u0645\u0627\u0646\u200C\u0647\u0627"
-    ] .join("\\n"));
+    ] .join("\n"));
   }
 
   if (command === "/button_preview") {
@@ -8300,7 +8300,7 @@ ${radarAdminStatusText(data, env, botMode)}`);
         `آزمون حداقل 24 ساعته: ✅`,
         `حالت کلی ربات: <b>${botMode === "live" ? "LIVE" : "TEST"}</b>`,
         botMode === "live" ? `Flashهای استثنایی بعدی می‌توانند به <code>${esc(productionChannel(env))}</code> بروند.` : `تا وقتی /live_mode فعال نشود، Flash Radar برای ایمنی همچنان به <code>${esc(testChannel(env))}</code> می‌رود.`
-      ] .join("\\n"));
+      ] .join("\n"));
     } catch (error) {
       if (error?.data?.error === "MIN_24H_TEST_REQUIRED") {
         return send(env, chatId, `⏳ <b>Radar هنوز اجازه Live ندارد</b>\n\nحداقل 24 ساعت آزمون واقعی اجباری است.\nزمان باقی‌مانده: <code>${esc(radarDurationText(error.data.remainingTestMs))}</code>`);
@@ -8359,7 +8359,7 @@ ${radarAdminStatusText(data, env, botMode)}`);
         "آزمون زنده حداقل ۷۲ ساعته: ✅",
         `حالت کلی ربات: <b>${botMode === "live" ? "LIVE" : "TEST"}</b>`,
         botMode === "live" ? `اعلان‌های بعدی می‌توانند به <code>${esc(productionChannel(env))}</code> بروند.` : `تا فعال‌شدن حالت اصلی ربات، اعلان‌ها همچنان به <code>${esc(testChannel(env))}</code> می‌روند.`
-      ] .join("\\n"));
+      ] .join("\n"));
     } catch (error) {
       if (error?.data?.error === "MIN_72H_TEST_REQUIRED") {
         return send(env, chatId, `⏳ <b>رادار خارجی هنوز اجازه Live ندارد</b>\n\nآزمون زنده ۷۲ ساعته اجباری است.\nزمان باقی‌مانده: <b>${esc(internationalRadarDurationText(error.data.remainingTestMs))}</b>`);
@@ -8614,7 +8614,7 @@ ${await nightDestinationAdminPanel(env, pkg?.date === currentTehranIso(new Date(
       "",
       "هر 11 پست به‌صورت مستقل اجرا می‌شوند و ممکن است با چند ثانیه فاصله در کانال دیده شوند.",
       "\u0627\u06AF\u0631 \u06CC\u06A9\u06CC \u0627\u0632 \u0628\u062E\u0634\u200C\u0647\u0627 \u062E\u0637\u0627 \u062F\u0627\u0634\u062A\u0647 \u0628\u0627\u0634\u062F\u060C \u06AF\u0632\u0627\u0631\u0634 \u0647\u0645\u0627\u0646 \u0628\u062E\u0634 \u062C\u062F\u0627\u06AF\u0627\u0646\u0647 \u0628\u0631\u0627\u06CC \u0645\u062F\u06CC\u0631 \u0627\u0631\u0633\u0627\u0644 \u0645\u06CC\u200C\u0634\u0648\u062F."
-    ] .join("\\n"));
+    ] .join("\n"));
   }
   return send(env, chatId, "\u0641\u0631\u0645\u0627\u0646 \u0634\u0646\u0627\u062E\u062A\u0647 \u0646\u0634\u062F. \u0628\u0631\u0627\u06CC \u0645\u0634\u0627\u0647\u062F\u0647 \u0631\u0627\u0647\u0646\u0645\u0627 /help \u0631\u0627 \u0628\u0632\u0646\u06CC\u062F.");
 }
