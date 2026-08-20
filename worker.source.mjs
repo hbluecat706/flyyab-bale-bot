@@ -17,7 +17,7 @@ import { NIGHT_DESTINATIONS, NIGHT_DESTINATION_CATALOG_REVISION, nightDestinatio
 import { HERITAGE_CATALOG_VERSION, HERITAGE_CATALOG, heritageCatalogItem, heritageCatalogStats } from "./heritage-catalog.mjs";
 import { IRAN_WEATHER_DESTINATIONS, WEATHER_CATALOG_VERSION, weatherCatalogStats } from "./weather-catalog.mjs";
 import { WEATHER_VERSION, WEATHER_RULES, assessWeather, weatherReason as weatherReasonV2, selectWeatherPicks, candidateSeasonScore, stableWeatherHash } from "./weather-core.mjs";
-const FLYYAB_BUILD_ID = "FlyYab-Bale-1.6.0-20260820-HERITAGE-DAY4-ADVANCED-CONTROL-ROOM-V6.9.1";
+const FLYYAB_BUILD_ID = "FlyYab-Bale-1.6.1-20260820-HERITAGE-WIKIPEDIA-RESOLVER-V6.9.1";
 const INTERNATIONAL_FARES_POST_VERSION = "international-fares-v2.0-homepage-parity";
 const SCHEDULER_RESILIENCE_VERSION = "scheduler-resilience-v3.1-self-healing-coordinator";
 const FREE_TIER_DELIVERY_VERSION = "free-tier-delivery-v2.1-self-healing-coordinator";
@@ -5577,6 +5577,109 @@ function heritageIdentityFromEntity(entity, candidate) {
   const wikipedia = preferred?.url || (preferred?.title ? `https://${wikiLang || "en"}.wikipedia.org/wiki/${encodeURIComponent(String(preferred.title).replace(/ /g, "_"))}` : "");
   return { qid, category, fa, en, wikipedia, wikipediaLang: wikiLang || "" };
 }
+
+function heritageWikiNormalizeTitle(value = "") {
+  return String(value || "")
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/&amp;/gi, "and")
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+}
+const HERITAGE_WIKI_STOPWORDS = new Set([
+  "the","a","an","of","and","or","in","at","on","for","to","from","with","by",
+  "historic","historical","archaeological","archeological","site","sites","area","areas",
+  "centre","center","city","old","ancient","national","park","parks","complex","complexes",
+  "monument","monuments","ensemble","ensembles","sanctuary","sanctuaries","cultural","landscape","landscapes","world",
+  "heritage","property","properties","group","groups","region","regions"
+]);
+function heritageWikiTokens(value = "") {
+  return heritageWikiNormalizeTitle(value).split(" ").filter((x) => x && !HERITAGE_WIKI_STOPWORDS.has(x));
+}
+function heritageWikipediaTitleScore(candidate, title = "", snippet = "") {
+  const expected = heritageWikiTokens(candidate?.en || candidate?.fa || "");
+  const actual = heritageWikiTokens(title);
+  if (!expected.length || !actual.length) return 0;
+  const aset = new Set(actual);
+  const overlap = expected.filter((x) => aset.has(x)).length;
+  const coverage = overlap / expected.length;
+  const exact = heritageWikiNormalizeTitle(title) === heritageWikiNormalizeTitle(candidate?.en || "") ? 35 : 0;
+  const country = heritageWikiNormalizeTitle(`${title} ${snippet}`).includes(heritageWikiNormalizeTitle(candidate?.countryEn || candidate?.country || "")) ? 8 : 0;
+  const distinctive = expected.length <= 2 ? (overlap === expected.length ? 20 : 0) : 0;
+  return Math.round(coverage * 65 + exact + country + distinctive);
+}
+async function heritageWikipediaPageInfo(title) {
+  const params = new URLSearchParams({
+    action:"query", format:"json", formatversion:"2", redirects:"1",
+    prop:"info|pageprops", inprop:"url", titles:String(title || ""), origin:"*"
+  });
+  const data = await fetchJsonRetry(`https://en.wikipedia.org/w/api.php?${params}`, {}, 2);
+  return (data?.query?.pages || []).find((page) => page && !page.missing) || null;
+}
+async function heritageWikipediaSearch(candidate) {
+  const queries = [...new Set([
+    String(candidate?.en || "").trim(),
+    `${String(candidate?.en || "").trim()} ${String(candidate?.countryEn || "").trim()}`.trim()
+  ].filter(Boolean))];
+  const hits = [];
+  for (const query of queries) {
+    const params = new URLSearchParams({
+      action:"query", format:"json", formatversion:"2", list:"search",
+      srsearch:query, srlimit:"10", srnamespace:"0", origin:"*"
+    });
+    const data = await fetchJsonRetry(`https://en.wikipedia.org/w/api.php?${params}`, {}, 2).catch(() => null);
+    for (const hit of data?.query?.search || []) {
+      const title = String(hit?.title || "").trim();
+      if (!title) continue;
+      const score = heritageWikipediaTitleScore(candidate,title,stripTags(hit?.snippet || ""));
+      hits.push({title,score,snippet:stripTags(hit?.snippet || "")});
+    }
+  }
+  const dedupe = new Map();
+  for (const hit of hits) {
+    const key = heritageWikiNormalizeTitle(hit.title);
+    if (!dedupe.has(key) || dedupe.get(key).score < hit.score) dedupe.set(key,hit);
+  }
+  return [...dedupe.values()].sort((a,b)=>b.score-a.score).slice(0,12);
+}
+async function resolveHeritageWikipediaIdentity(candidate, identity = {}) {
+  // The immutable UNESCO catalog decides the destination. Wikipedia is only an
+  // evidence/media source, so resolving an article must never substitute a new destination.
+  const directRef = heritageWikipediaRef(identity?.wikipedia || "");
+  if (directRef) return identity;
+
+  const direct = await heritageWikipediaPageInfo(candidate?.en || "").catch(() => null);
+  const searchHits = await heritageWikipediaSearch(candidate);
+  const candidates = [];
+  if (direct?.title) candidates.push({title:direct.title,score:heritageWikipediaTitleScore(candidate,direct.title,""),page:direct});
+  for (const hit of searchHits) candidates.push(hit);
+
+  const seen = new Set();
+  for (const item of candidates.sort((a,b)=>Number(b.score||0)-Number(a.score||0))) {
+    const key = heritageWikiNormalizeTitle(item.title);
+    if (!key || seen.has(key) || Number(item.score||0) < 58) continue;
+    seen.add(key);
+    const page = item.page || await heritageWikipediaPageInfo(item.title).catch(() => null);
+    if (!page?.title) continue;
+    const qid = String(page?.pageprops?.wikibase_item || "");
+    let entity = null;
+    if (qid) entity = await heritageEntityByQid(qid).catch(() => null);
+    const ids = entity ? heritageClaimString(entity,"P757").map(String) : [];
+    // A contradictory explicit UNESCO id is a hard rejection. Missing P757 is
+    // allowed only when title evidence is strong; the fixed catalog remains truth.
+    if (ids.length && !ids.includes(String(candidate?.id || ""))) continue;
+    const score = heritageWikipediaTitleScore(candidate,page.title,item.snippet || "");
+    if (score < 58) continue;
+    const category = entity ? heritageClaimString(entity,"P373")[0] || identity?.category || "" : identity?.category || "";
+    const fa = entity?.labels?.fa?.value || identity?.fa || candidate?.fa || candidate?.en || "";
+    const en = entity?.labels?.en?.value || identity?.en || page.title || candidate?.en || "";
+    const href = String(page?.fullurl || `https://en.wikipedia.org/wiki/${encodeURIComponent(String(page.title).replace(/ /g,"_"))}`);
+    return { ...identity, qid:qid || identity?.qid || "", category, fa, en, wikipedia:href, wikipediaLang:"en", wikipediaResolution:"SEARCH_VERIFIED_TITLE" };
+  }
+  return identity;
+}
 async function resolveHeritageIdentity(candidate) {
   // Wikidata فقط هویت همان UNESCO ID ثابت را resolve می‌کند؛ حق انتخاب مقصد ندارد.
   try {
@@ -6073,9 +6176,10 @@ async function resolveHeritageCandidateBase(state) {
   const duplicate = (state.history || []).some((x)=>String(x.unesco_id) === String(base.id) && Number(x.day_number) !== Number(state.nextDayNumber));
   if (duplicate) throw new Error(`HERITAGE_CATALOG_HISTORY_CONFLICT: UNESCO ID ${base.id} قبلاً منتشر شده است`);
   const official = await officialUnesco(base);
-  const identity = await resolveHeritageIdentity(base);
+  const rawIdentity = await resolveHeritageIdentity(base);
+  const identity = await resolveHeritageWikipediaIdentity(base, rawIdentity);
   const wikipediaEvidence = await heritageWikipediaEvidence(identity);
-  const candidate = { ...base, qid:identity.qid || "", category:identity.category || "", fa:identity.fa || base.fa, en:identity.en || base.en, wikipedia:identity.wikipedia || "", officialDescription:official.description || "", wikipediaEvidence };
+  const candidate = { ...base, qid:identity.qid || "", category:identity.category || "", fa:identity.fa || base.fa, en:identity.en || base.en, wikipedia:identity.wikipedia || "", wikipediaResolution:identity.wikipediaResolution || (identity.wikipedia ? "WIKIDATA_SITELINK" : "UNRESOLVED"), officialDescription:official.description || "", wikipediaEvidence };
   return { candidate, official };
 }
 async function buildHeritageCandidate(env, state) {
@@ -9523,6 +9627,7 @@ async function adminWebHeritageDiagnostic(env) {
     return {ok:true,type:"heritage",ready:false,pipeline};
   }
   push("PACKAGE",true,`${pkg.candidate?.fa||"—"} • day ${pkg.day_number}`);
+  push("WIKIPEDIA",Boolean(pkg.candidate?.wikipedia),`${pkg.candidate?.wikipediaResolution||"—"} • ${pkg.candidate?.wikipedia||"بدون مقاله"}`);
   push("IMAGES",Array.isArray(pkg.images)&&pkg.images.length>=HERITAGE_MIN_IMAGES,`${pkg.images?.length||0}/${HERITAGE_MIN_IMAGES} حداقل`);
   push("CAPTION",Boolean(pkg.caption),pkg.candidate?.editorialSource||"کپشن آماده نیست");
   if (pkg.images?.length) {
@@ -10812,6 +10917,8 @@ export {
   heritageCatalogItem,
   heritageCatalogStats,
   heritageExtractOfficialEvidence,
+  heritageWikipediaTitleScore,
+  resolveHeritageWikipediaIdentity,
   heritageStaticCandidate,
   normalizeHeritageState,
   heritageUpcomingSummary,
