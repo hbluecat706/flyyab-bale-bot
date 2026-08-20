@@ -17,7 +17,7 @@ import { NIGHT_DESTINATIONS, NIGHT_DESTINATION_CATALOG_REVISION, nightDestinatio
 import { HERITAGE_CATALOG_VERSION, HERITAGE_CATALOG, heritageCatalogItem, heritageCatalogStats } from "./heritage-catalog.mjs";
 import { IRAN_WEATHER_DESTINATIONS, WEATHER_CATALOG_VERSION, weatherCatalogStats } from "./weather-catalog.mjs";
 import { WEATHER_VERSION, WEATHER_RULES, assessWeather, weatherReason as weatherReasonV2, selectWeatherPicks, candidateSeasonScore, stableWeatherHash } from "./weather-core.mjs";
-const FLYYAB_BUILD_ID = "FlyYab-Bale-1.6.1-20260820-HERITAGE-WIKIPEDIA-RESOLVER-V6.9.1";
+const FLYYAB_BUILD_ID = "FlyYab-Bale-1.7.0-20260820-FULL-CONTROL-ROOM-RADAR-MIRROR-V6.9.1";
 const INTERNATIONAL_FARES_POST_VERSION = "international-fares-v2.0-homepage-parity";
 const SCHEDULER_RESILIENCE_VERSION = "scheduler-resilience-v3.1-self-healing-coordinator";
 const FREE_TIER_DELIVERY_VERSION = "free-tier-delivery-v2.1-self-healing-coordinator";
@@ -3702,28 +3702,54 @@ async function runInternationalRadarCycle(env, now = new Date()) {
       const candidate = await internationalRadarAttachBookingRoute(verification.candidate);
       const botMode = await getBotMode(env);
       const radarMode = reservation.radarMode === "live" ? "live" : "test";
-      const liveAllowed = radarMode === "live" && botMode === "live";
-      const channel = liveAllowed ? productionChannel(env) : testChannel(env);
+      const automationRun = env?.__FLYYAB_AUTOMATION_RUN === true || String(env?.__FLYYAB_AUTOMATION_RUN || "") === "1";
+      // Bale delivery policy:
+      // automatic radar alerts => Production first + Test mirror.
+      // manual/admin scans => reference TEST/LIVE behavior.
+      const primaryChannel = automationRun
+        ? productionChannel(env)
+        : (radarMode === "live" && botMode === "live" ? productionChannel(env) : testChannel(env));
+      const mirrorChannel = automationRun ? String(env.BALE_TEST_CHANNEL_ID || "").trim() : "";
       try {
-        const sent = await sendInternationalRadarBale(env, channel, candidate);
+        const sent = await sendInternationalRadarBale(env, primaryChannel, candidate);
+        let mirror = null;
+        if (mirrorChannel && String(mirrorChannel) !== String(primaryChannel)) {
+          try {
+            const mirrored = await sendInternationalRadarBale(env, mirrorChannel, candidate);
+            mirror = { ok:true, channel:mirrorChannel, baleMessageId:mirrored?.result?.message_id || null };
+          } catch (mirrorError) {
+            mirror = { ok:false, channel:mirrorChannel, error:String(mirrorError?.message || mirrorError) };
+            await notifyAdmin(env, `⚠️ <b>رادار خارجی — Mirror تست ناموفق بود</b>\n\nارسال اصلی انجام شد: ✅\nکانال تست: <code>${esc(mirrorChannel)}</code>\nعلت: ${esc(mirror.error)}`);
+          }
+        }
         await internationalRadarAck(env, {
           token: reservation.token,
           status: "published",
           atMs: Date.now(),
-          channel,
+          channel: primaryChannel,
+          mirrorChannel: mirror?.ok ? mirror.channel : null,
           baleMessageId: sent?.result?.message_id || null,
           candidate
         });
-        return { ...result, sent: true, channel, candidate };
+        return { ...result, sent:true, channel:primaryChannel, primaryChannel, mirror, deliveryPolicy:automationRun ? "PRODUCTION_PLUS_TEST_MIRROR" : "REFERENCE_TEST_LIVE", candidate };
       } catch (error) {
         const status = error?.internationalRadarSendExplicit ? "send_failed" : "send_unknown";
+        let testFallback = null;
+        if (automationRun && mirrorChannel && String(mirrorChannel) !== String(primaryChannel)) {
+          try {
+            const fallback = await sendInternationalRadarBale(env, mirrorChannel, candidate);
+            testFallback = {ok:true,channel:mirrorChannel,baleMessageId:fallback?.result?.message_id || null};
+          } catch (fallbackError) {
+            testFallback = {ok:false,channel:mirrorChannel,error:String(fallbackError?.message || fallbackError)};
+          }
+        }
         try {
-          await internationalRadarAck(env, { token: reservation.token, status, atMs: Date.now(), channel, error: error.message, candidate });
+          await internationalRadarAck(env, { token:reservation.token, status, atMs:Date.now(), channel:primaryChannel, error:error.message, candidate });
         } catch {}
         await notifyAdmin(env, status === "send_unknown"
-          ? `⚠️ <b>رادار خارجی — وضعیت ارسال نامشخص</b>\n\nمسیر: ${esc(candidate.origin)} به ${esc(candidate.destination)}\nعلت: ${esc(error.message)}\nبرای جلوگیری از پیام تکراری، ارسال خودکار دوباره انجام نشد.`
-          : `❌ <b>رادار خارجی ارسال نشد</b>\n\nعلت: ${esc(error.message)}`);
-        return { ...result, sent: false, sendStatus: status, error: error.message };
+          ? `⚠️ <b>رادار خارجی — وضعیت ارسال اصلی نامشخص</b>\n\nمسیر: ${esc(candidate.origin)} به ${esc(candidate.destination)}\nکانال اصلی: <code>${esc(primaryChannel)}</code>\nعلت: ${esc(error.message)}`
+          : `❌ <b>رادار خارجی به کانال اصلی ارسال نشد</b>\n\nکانال: <code>${esc(primaryChannel)}</code>\nعلت: ${esc(error.message)}`);
+        return { ...result, sent:false, sendStatus:status, primaryChannel, testFallback, deliveryPolicy:automationRun ? "PRODUCTION_PLUS_TEST_MIRROR" : "REFERENCE_TEST_LIVE", error:error.message };
       }
     }
     return lastResult || { ok: true, sent: false, reason: "NO_VERIFIED_CANDIDATE" };
@@ -9356,6 +9382,17 @@ pre{white-space:pre-wrap;word-break:break-word;background:#08182f;border:1px sol
 <div id="manualTests" class="testCenter"></div>
 </section>
 <section class="card wide">
+<div class="sectionTitle"><div><h2 style="margin:0">🎛 مرکز مدیریت محتوای FlyYab</h2><div class="muted" style="margin-top:5px">امکانات مدیریتی مرجع تلگرام، به‌شکل وب و موبایل‌محور.</div></div><span class="pill ok">Automation مستقل</span></div>
+<div class="testCenter">
+<div class="testCard"><div><div class="tname">☀️ صبح‌بخیر</div><div class="meta">Prepare • Preview • Test</div></div><div class="actions"><button class="btn" onclick="moduleManage('morning','prepare')">آماده‌سازی</button><button class="btn" onclick="moduleManage('morning','preview')">پیش‌نمایش</button><button class="btn good" onclick="moduleManage('morning','test')">تست</button></div><div class="result" id="module-morning"></div></div>
+<div class="testCard"><div><div class="tname">🌤 Weather 420</div><div class="meta">Status • Slice • Finalize • Test</div></div><div class="actions"><button class="btn" onclick="moduleManage('weather','status')">وضعیت</button><button class="btn" onclick="moduleManage('weather','continue')">ادامه Scan</button><button class="btn" onclick="moduleManage('weather','finalize')">Finalize</button><button class="btn good" onclick="moduleManage('weather','test')">تست</button></div><div class="result" id="module-weather"></div></div>
+<div class="testCard"><div><div class="tname">📌 مناسبت امروز</div><div class="meta">Prepare • Refresh • Preview • Lock • Test</div></div><div class="actions"><button class="btn" onclick="moduleManage('occasion','prepare')">آماده‌سازی</button><button class="btn" onclick="moduleManage('occasion','refresh')">نوسازی</button><button class="btn" onclick="moduleManage('occasion','preview')">پیش‌نمایش</button><button class="btn warn" onclick="moduleManage('occasion','lock')">Lock</button><button class="btn good" onclick="moduleManage('occasion','test')">تست</button></div><div class="result" id="module-occasion"></div></div>
+<div class="testCard"><div><div class="tname">📡 Radar داخلی</div><div class="meta">Status • Probe • Scan • Preview • Mode</div></div><div class="actions"><button class="btn" onclick="moduleManage('radar','status')">وضعیت</button><button class="btn" onclick="moduleManage('radar','probe')">Probe</button><button class="btn" onclick="moduleManage('radar','scan')">Scan</button><button class="btn" onclick="moduleManage('radar','preview')">Preview</button><button class="btn warn" onclick="moduleManage('radar','test_mode')">TEST</button><button class="btn good" onclick="moduleManage('radar','live_mode')">LIVE</button></div><div class="result" id="module-radar"></div></div>
+<div class="testCard"><div><div class="tname">🌐 Radar خارجی</div><div class="meta">خودکار: Production اول + Mirror به Test</div></div><div class="actions"><button class="btn" onclick="moduleManage('international-radar','status')">وضعیت</button><button class="btn" onclick="moduleManage('international-radar','probe')">Probe</button><button class="btn" onclick="moduleManage('international-radar','scan')">Scan دستی</button><button class="btn" onclick="moduleManage('international-radar','preview')">Preview</button><button class="btn warn" onclick="moduleManage('international-radar','test_mode')">TEST دستی</button><button class="btn good" onclick="moduleManage('international-radar','live_mode')">LIVE دستی</button></div><div class="result" id="module-international-radar"></div></div>
+<div class="testCard"><div><div class="tname">📚 مجله فلای‌یاب</div><div class="meta">Preview / Test روی کانال تست</div></div><div class="actions"><button class="btn" onclick="moduleManage('article','preview')">پیش‌نمایش</button><button class="btn good" onclick="moduleManage('article','test')">تست</button></div><div class="result" id="module-article"></div></div>
+</div></section>
+
+<section class="card wide">
 <div class="sectionTitle"><div><h2 style="margin:0">🌙 مدیریت مقصد امشب</h2><div class="muted" style="margin-top:5px">همان ابزارهای مدیریتی نسخه تلگرام، روی پنل وب و روی State اصلی Automation.</div></div><span class="pill" id="nightMgmtStatus">—</span></div>
 <div id="nightMgmt" class="kv"></div>
 <div class="row" style="margin-top:14px">
@@ -9380,7 +9417,7 @@ pre{white-space:pre-wrap;word-break:break-word;background:#08182f;border:1px sol
 </div>
 </section>
 
-<section class="card wide"><h2>Scheduler / Dispatcher</h2><div id="scheduler"></div><div class="row" style="margin-top:12px"><button class="btn" onclick="automationPreflight()">🧪 Preflight Automation</button><button class="btn" onclick="automationPreview()">🧭 Jobهای Tick فعلی</button></div></section>
+<section class="card wide"><h2>Scheduler / Dispatcher</h2><div class="notice" style="margin-bottom:12px">🌐 رادار خارجی خودکار: <b>Production اول</b> + Mirror به Test. تست دستی همچنان Sandbox است.</div><div id="scheduler"></div><div class="row" style="margin-top:12px"><button class="btn" onclick="automationPreflight()">🧪 Preflight Automation</button><button class="btn" onclick="automationPreview()">🧭 Jobهای Tick فعلی</button></div></section>
 <section class="card wide"><h2>وضعیت Slotهای امروز</h2><div id="slots" class="table"></div></section>
 <section class="card wide"><h2>برنامه رسمی انتشار — تهران</h2><div id="posts" class="table"></div></section>
 <section class="card wide"><h2>Delivery Health امروز</h2><pre id="health">برای مشاهده گزارش روی «سلامت ارسال» بزنید.</pre></section>
@@ -9430,6 +9467,23 @@ await loadEditorialManagement();
 }catch(e){toast("خطا: "+e.message)}}
 function esc(v){return String(v??"").replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]))}
 
+
+async function moduleManage(module,action){
+ const endpoints={morning:"/admin/api/morning/manage",weather:"/admin/api/weather/manage",occasion:"/admin/api/occasion/manage",radar:"/admin/api/radar/manage","international-radar":"/admin/api/international-radar/manage",article:"/admin/api/article/manage"};
+ if(["live_mode","lock","refresh"].includes(action)&&!confirm("این عملیات State مدیریتی را تغییر می‌دهد. ادامه؟"))return;
+ const el=$("module-"+module);if(el){el.style.display="block";el.textContent="⏳ "+action+" ...";}
+ try{
+  const d=await api(endpoints[module],{method:"POST",body:JSON.stringify({action})});
+  const summary=d.report||d.preview||JSON.stringify(d.state||d.result||d,null,2);
+  if(el)el.textContent=(d.ok?"✅ ":"ℹ️ ")+String(summary||"انجام شد").slice(0,1800);
+  $("health").textContent=("MANAGEMENT — "+module+" / "+action+"\\n\\n"+JSON.stringify(d,null,2)).slice(0,12000);
+  toast("انجام شد: "+module+" / "+action);
+ }catch(e){
+  if(el)el.textContent="❌ "+e.message;
+  $("health").textContent="MANAGEMENT FAILED — "+module+" / "+action+"\\n\\n"+e.message;
+  toast(e.message);
+ }
+}
 function renderNightMgmt(d){
  const s=d?.state||{};
  $("nightMgmtStatus").className="pill "+(["READY","LOCKED","PUBLISHED"].includes(s.status)?"ok":"warn");
@@ -9728,6 +9782,98 @@ async function adminHeritageManage(env, action, requestedDay=null) {
     return {ok:true,action,messageId:baleMessageIdFromResult(result),uploadedCount:result.uploadedCount||0,rejected:result.rejected||[],state:adminHeritageStateSummary(await heritageState(env))};
   }
   throw new Error("INVALID_HERITAGE_MANAGEMENT_ACTION");
+}
+
+function adminPlain(value) {
+  return String(value ?? "").replace(/<[^>]*>/g,"").replace(/&nbsp;/g," ").trim();
+}
+async function adminMorningManage(env, action) {
+  const now=new Date(), date=currentTehranIso(now);
+  if (action==="status") return {ok:true,action,state:await getMorningRecord(env,date).catch(()=>null)};
+  if (action==="prepare") return {ok:true,action,state:await prepareMorningRecord(env,isoDateObject(date),{phase:"WEB_ADMIN_PREPARE",lock:false,referenceNow:now})};
+  if (action==="preview") {
+    let record=await getMorningRecord(env,date);
+    if (!record) record=await prepareMorningRecord(env,isoDateObject(date),{phase:"WEB_ADMIN_PREVIEW",lock:false,referenceNow:now});
+    return {ok:true,action,preview:record?.text || record?.caption || record?.message || "",state:record};
+  }
+  if (action==="test") {
+    const result=await runAdminWebTest(env,"morning",adminWebTestTarget(env));
+    return {ok:true,action,messageId:baleMessageIdFromResult(result)};
+  }
+  throw new Error("INVALID_MORNING_ACTION");
+}
+async function adminWeatherManage(env, action) {
+  const sandbox=withFlyYabExecutionScope({...env,BALE_TEST_CHANNEL_ID:String(adminWebTestTarget(env))},"sandbox-web-control-weather");
+  const now=new Date();
+  if (action==="status") {
+    const state=await getWeatherState(sandbox), p=weatherScanProgress(state?.scan||{});
+    return {ok:true,action,state:{scanStatus:state?.scan?.status||"NOT_STARTED",processed:p.processed||0,total:p.total||WEATHER_RULES.targetForecasts,coveragePct:p.coveragePct||0,packageStatus:state?.preparedPackage?.status||"NOT_PREPARED",picks:state?.preparedPackage?.picks?.length||0}};
+  }
+  if (action==="start" || action==="continue") {
+    if (action==="start") await startWeatherScan(sandbox,now,{fresh:false,mode:"WEB_ADMIN"});
+    await runWeatherScanSlice(sandbox,now,{phase:"WEB_ADMIN_SLICE",maxItems:WEATHER_RULES.manualBatchSize});
+    return adminWeatherManage(env,"status");
+  }
+  if (action==="finalize") {
+    await finalizeWeatherScan(sandbox,now,{force:true,phase:"WEB_ADMIN_FINALIZE"});
+    return adminWeatherManage(env,"status");
+  }
+  if (action==="test") {
+    const state=await getWeatherState(sandbox), pkg=state?.preparedPackage;
+    if (!pkg?.picks?.length) return {ok:false,error:"WEATHER_PACKAGE_NOT_READY",state:(await adminWeatherManage(env,"status")).state};
+    const result=await sendWeatherPackage(sandbox,adminWebTestTarget(env),pkg,now);
+    return {ok:true,action,messageId:baleMessageIdFromResult(result),state:(await adminWeatherManage(env,"status")).state};
+  }
+  throw new Error("INVALID_WEATHER_ACTION");
+}
+async function adminOccasionManage(env, action) {
+  const sandbox=withFlyYabExecutionScope({...env,BALE_TEST_CHANNEL_ID:String(adminWebTestTarget(env))},"sandbox-web-control-occasion");
+  const date=currentTehranIso(new Date());
+  if (action==="status") {
+    const record=await getOccasionRecord(sandbox,date);
+    return {ok:true,action,state:record||null,statusText:adminPlain(occasionAdminStatus(record))};
+  }
+  if (action==="prepare" || action==="refresh") {
+    const record=await prepareOccasionRecord(sandbox,date,{phase:action==="refresh"?"WEB_ADMIN_REFRESH":"WEB_ADMIN_PREPARE",force:action==="refresh",includeDetail:true});
+    return {ok:true,action,state:record,preview:occasionPreviewText(record)};
+  }
+  if (action==="preview") {
+    let record=await getOccasionRecord(sandbox,date);
+    if (!record) record=await prepareOccasionRecord(sandbox,date,{phase:"WEB_ADMIN_PREVIEW",includeDetail:true});
+    return {ok:true,action,state:record,preview:occasionPreviewText(record)};
+  }
+  if (action==="lock" || action==="unlock") return {ok:true,action,state:await lockOccasionRecord(sandbox,date,action==="lock")};
+  if (action==="test") {
+    const sent=await sendOccasionToTest(sandbox,date);
+    return {ok:true,action,sent:sent.sent,messageId:baleMessageIdFromResult(sent.result),state:sent.record};
+  }
+  throw new Error("INVALID_OCCASION_ACTION");
+}
+async function adminDomesticRadarManage(env, action) {
+  const sandbox=withFlyYabExecutionScope({...env,BALE_TEST_CHANNEL_ID:String(adminWebTestTarget(env))},"sandbox-web-control-radar");
+  if (action==="status") return {ok:true,action,state:await radarStatusData(sandbox)};
+  if (action==="probe") return {ok:true,action,report:adminPlain(await radarProbeText(sandbox))};
+  if (action==="scan") return {ok:true,action,result:await runRadarManualScan(sandbox,new Date()),state:await radarStatusData(sandbox)};
+  if (action==="preview") return {ok:true,action,state:await radarPreviewData(sandbox)};
+  if (action==="test_mode" || action==="live_mode") return {ok:true,action,result:await radarSetMode(env,action==="live_mode"?"live":"test"),state:await radarStatusData(env)};
+  throw new Error("INVALID_DOMESTIC_RADAR_ACTION");
+}
+async function adminInternationalRadarManage(env, action) {
+  const sandbox=withFlyYabExecutionScope({...env,BALE_TEST_CHANNEL_ID:String(adminWebTestTarget(env))},"sandbox-web-control-international-radar");
+  if (action==="status") return {ok:true,action,state:await internationalRadarStatusData(env),automaticDeliveryPolicy:"PRODUCTION_PLUS_TEST_MIRROR"};
+  if (action==="probe") return {ok:true,action,report:adminPlain(await internationalRadarProbeText(sandbox)),automaticDeliveryPolicy:"PRODUCTION_PLUS_TEST_MIRROR"};
+  if (action==="scan") return {ok:true,action,result:await runInternationalRadarCycle(sandbox,new Date()),state:await internationalRadarStatusData(env),automaticDeliveryPolicy:"PRODUCTION_PLUS_TEST_MIRROR"};
+  if (action==="preview") return {ok:true,action,state:await internationalRadarPreviewData(env),automaticDeliveryPolicy:"PRODUCTION_PLUS_TEST_MIRROR"};
+  if (action==="test_mode" || action==="live_mode") return {ok:true,action,result:await internationalRadarSetMode(env,action==="live_mode"?"live":"test"),state:await internationalRadarStatusData(env),automaticDeliveryPolicy:"PRODUCTION_PLUS_TEST_MIRROR"};
+  throw new Error("INVALID_INTERNATIONAL_RADAR_ACTION");
+}
+async function adminArticleManage(env, action) {
+  const sandbox=withFlyYabExecutionScope({...env,BALE_TEST_CHANNEL_ID:String(adminWebTestTarget(env))},"sandbox-web-control-article");
+  if (action==="test" || action==="preview") {
+    const result=await runAdminWebTest(sandbox,"article",adminWebTestTarget(env));
+    return {ok:true,action,messageId:baleMessageIdFromResult(result),note:action==="preview"?"آزمون زنده فقط در کانال تست اجرا شد.":""};
+  }
+  throw new Error("INVALID_ARTICLE_ACTION");
 }
 async function adminWebRatesDiagnostic(env) {
   const pipeline = [];
@@ -10048,6 +10194,24 @@ async function handleAdminWeb(request, env, ctx, url) {
   if (url.pathname === "/admin/api/ai-health" && request.method === "POST") {
     const result = await adminWebAiHealth(env);
     return Response.json(result,{status:result.operational?200:503,headers:{"cache-control":"no-store"}});
+  }
+  if (url.pathname === "/admin/api/morning/manage" && request.method === "POST") {
+    const body=await request.json().catch(()=>({}));try{return Response.json(await adminMorningManage(env,String(body.action||"status")),{headers:{"cache-control":"no-store"}})}catch(error){return Response.json({ok:false,error:String(error?.message||error)},{status:500})}
+  }
+  if (url.pathname === "/admin/api/weather/manage" && request.method === "POST") {
+    const body=await request.json().catch(()=>({}));try{return Response.json(await adminWeatherManage(env,String(body.action||"status")),{headers:{"cache-control":"no-store"}})}catch(error){return Response.json({ok:false,error:String(error?.message||error)},{status:500})}
+  }
+  if (url.pathname === "/admin/api/occasion/manage" && request.method === "POST") {
+    const body=await request.json().catch(()=>({}));try{return Response.json(await adminOccasionManage(env,String(body.action||"status")),{headers:{"cache-control":"no-store"}})}catch(error){return Response.json({ok:false,error:String(error?.message||error)},{status:500})}
+  }
+  if (url.pathname === "/admin/api/radar/manage" && request.method === "POST") {
+    const body=await request.json().catch(()=>({}));try{return Response.json(await adminDomesticRadarManage(env,String(body.action||"status")),{headers:{"cache-control":"no-store"}})}catch(error){return Response.json({ok:false,error:String(error?.message||error),details:error?.data||null},{status:500})}
+  }
+  if (url.pathname === "/admin/api/international-radar/manage" && request.method === "POST") {
+    const body=await request.json().catch(()=>({}));try{return Response.json(await adminInternationalRadarManage(env,String(body.action||"status")),{headers:{"cache-control":"no-store"}})}catch(error){return Response.json({ok:false,error:String(error?.message||error),details:error?.data||null},{status:500})}
+  }
+  if (url.pathname === "/admin/api/article/manage" && request.method === "POST") {
+    const body=await request.json().catch(()=>({}));try{return Response.json(await adminArticleManage(env,String(body.action||"test")),{headers:{"cache-control":"no-store"}})}catch(error){return Response.json({ok:false,error:String(error?.message||error)},{status:500})}
   }
   if (url.pathname === "/admin/api/night/manage" && request.method === "POST") {
     const body=await request.json().catch(()=>({}));
