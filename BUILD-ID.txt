@@ -1,7 +1,6 @@
-FlyYab-Bale-1.2.0-20260820-CONTROL-ROOM-DIAGNOSTICS-V6.9.1
-Control Room diagnostics v1.2
+FlyYab-Bale-1.2.1-20260820-CONTROL-ROOM-JS-FIX-V6.9.1
+Fix: Control Room browser JavaScript newline escaping
 AI Primary: Arvan GPT-4.1-Mini
 AI Fallback: Cloudflare Workers AI
-Panel manual tests: BALE_TEST_CHANNEL_ID only
-Automation: BALE_PRODUCTION_CHANNEL_ID only
-BALE_AUTOMATION_ENABLED must stay 0 until full-day test passes.
+Manual tests: TEST channel only
+Automation: OFF until full-day validation

@@ -17,7 +17,7 @@ import { NIGHT_DESTINATIONS, NIGHT_DESTINATION_CATALOG_REVISION, nightDestinatio
 import { HERITAGE_CATALOG_VERSION, HERITAGE_CATALOG, heritageCatalogItem, heritageCatalogStats } from "./heritage-catalog.mjs";
 import { IRAN_WEATHER_DESTINATIONS, WEATHER_CATALOG_VERSION, weatherCatalogStats } from "./weather-catalog.mjs";
 import { WEATHER_VERSION, WEATHER_RULES, assessWeather, weatherReason as weatherReasonV2, selectWeatherPicks, candidateSeasonScore, stableWeatherHash } from "./weather-core.mjs";
-const FLYYAB_BUILD_ID = "FlyYab-Bale-1.2.0-20260820-CONTROL-ROOM-DIAGNOSTICS-V6.9.1";
+const FLYYAB_BUILD_ID = "FlyYab-Bale-1.2.1-20260820-CONTROL-ROOM-JS-FIX-V6.9.1";
 const INTERNATIONAL_FARES_POST_VERSION = "international-fares-v2.0-homepage-parity";
 const SCHEDULER_RESILIENCE_VERSION = "scheduler-resilience-v3.1-self-healing-coordinator";
 const FREE_TIER_DELIVERY_VERSION = "free-tier-delivery-v2.1-self-healing-coordinator";
@@ -9081,7 +9081,7 @@ const w=$("testWarn"); if(!s.testChannel||!s.testCanPostMessages){w.style.displa
 function esc(v){return String(v??"").replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]))}
 async function setMode(mode){if(mode==="live"&&!confirm("حالت ربات روی LIVE قرار بگیرد؟"))return;try{const d=await api("/admin/api/mode",{method:"POST",body:JSON.stringify({mode})});toast("حالت ربات: "+d.mode);refreshAll()}catch(e){toast(e.message)}}
 async function checkAi(){const el=$("aiHealth");el.textContent="در حال تست واقعی هر دو Provider…";try{const d=await api("/admin/api/ai-health",{method:"POST",body:"{}"});el.innerHTML='<div class="kv"><b>Primary</b><span>'+esc(d.primary)+'</span><b>Arvan</b><span>'+(d.arvan.ok?"✅ ":"❌ ")+esc(d.arvan.model||d.arvan.error||"")+'</span><b>Cloudflare</b><span>'+(d.cloudflare.ok?"✅ ":"❌ ")+esc(d.cloudflare.model||d.cloudflare.error||"")+'</span><b>Operational</b><span>'+(d.operational?"✅ آماده":"❌ نیاز به بررسی")+'</span></div>'}catch(e){el.textContent="خطا: "+e.message}}
-async function diagnosePost(type){try{const d=await api("/admin/api/diagnose-post",{method:"POST",body:JSON.stringify({type})});const summary=(d.pipeline||[]).map(x=>(x.ok?"✅ ":"❌ ")+x.stage+" — "+(x.detail||"")).join("\n");$("health").textContent="عیب‌یابی "+type+"\n\n"+summary+(d.error?"\n\nخطا: "+d.error:"");toast(d.ready?"پیش‌نیازهای "+type+" آماده‌اند":"پیش‌نیاز ناقص است")}catch(e){toast("خطا: "+e.message)}}
+async function diagnosePost(type){try{const d=await api("/admin/api/diagnose-post",{method:"POST",body:JSON.stringify({type})});const summary=(d.pipeline||[]).map(x=>(x.ok?"✅ ":"❌ ")+x.stage+" — "+(x.detail||"")).join("\\n");$("health").textContent="عیب‌یابی "+type+"\\n\\n"+summary+(d.error?"\\n\\nخطا: "+d.error:"");toast(d.ready?"پیش‌نیازهای "+type+" آماده‌اند":"پیش‌نیاز ناقص است")}catch(e){toast("خطا: "+e.message)}}
 async function testPost(type){if(!confirm("پست «"+type+"» اکنون به مقصد تست فعلی ارسال شود؟"))return;try{const d=await api("/admin/api/test-post",{method:"POST",body:JSON.stringify({type})});toast("تست "+type+" پذیرفته شد → "+d.targetChannel)}catch(e){toast("خطا: "+e.message)}}
 async function testAll(){if(!confirm("تمام پست‌های قابل تست یکی‌یکی اجرا شوند؟ این کار چند پیام در کانال ایجاد می‌کند."))return;try{const d=await api("/admin/api/test-all",{method:"POST",body:"{}"});toast("تست همه پست‌ها شروع شد: "+d.count+" مورد")}catch(e){toast(e.message)}}
 async function loadHealth(){try{const d=await api("/admin/api/health");$("health").textContent=d.report||"گزارشی وجود ندارد"}catch(e){$("health").textContent="خطا: "+e.message}}
