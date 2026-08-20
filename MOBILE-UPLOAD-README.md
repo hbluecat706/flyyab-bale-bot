@@ -1,8 +1,8 @@
-# FlyYab Bale v1.0.6 RC3.4 — Photo Gate Fix
+# FlyYab Bale Bot v1.0.3 RC3.1 — Gate Diagnostic
 
-Fixes:
-- correct sendBundledPhoto argument order
-- correct Response.json error handling
-- deterministic embedded PNG instead of SVG/external URL
-- multipart/form-data upload directly to Bale
-Keep BALE_AUTOMATION_ENABLED=0 during Live Gate.
+Temporary diagnostic release. Automation stays disabled.
+
+Safe diagnostic endpoint (does not publish):
+`/__bale-gate-debug?key=<BALE_TEST_KEY>`
+
+It never returns the secret. It only reports whether the runtime binding exists, input/configured lengths, and whether they match.

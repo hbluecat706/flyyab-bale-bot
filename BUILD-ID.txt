@@ -1,0 +1,3 @@
+FlyYab-Bale-1.0.7-20260820-RC3.5-ALBUM-MULTIPART-FIX-V6.9.1
+Album Gate: multipart attach://
+Automation: OFF during live gate
