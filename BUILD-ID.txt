@@ -1,2 +1,2 @@
-FlyYab-Bale-1.4.0-20260820-CONTROL-ROOM-V2-AUTOMATION-V6.9.1
-Control Room V2 runtime automation + scheduler observability
+FlyYab-Bale-1.5.0-20260820-CONTROL-ROOM-V3-MANUAL-TEST-CENTER-V6.9.1
+Control Room V3 + Manual Test Center

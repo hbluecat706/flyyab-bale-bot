@@ -17,7 +17,7 @@ import { NIGHT_DESTINATIONS, NIGHT_DESTINATION_CATALOG_REVISION, nightDestinatio
 import { HERITAGE_CATALOG_VERSION, HERITAGE_CATALOG, heritageCatalogItem, heritageCatalogStats } from "./heritage-catalog.mjs";
 import { IRAN_WEATHER_DESTINATIONS, WEATHER_CATALOG_VERSION, weatherCatalogStats } from "./weather-catalog.mjs";
 import { WEATHER_VERSION, WEATHER_RULES, assessWeather, weatherReason as weatherReasonV2, selectWeatherPicks, candidateSeasonScore, stableWeatherHash } from "./weather-core.mjs";
-const FLYYAB_BUILD_ID = "FlyYab-Bale-1.4.0-20260820-CONTROL-ROOM-V2-AUTOMATION-V6.9.1";
+const FLYYAB_BUILD_ID = "FlyYab-Bale-1.5.0-20260820-CONTROL-ROOM-V3-MANUAL-TEST-CENTER-V6.9.1";
 const INTERNATIONAL_FARES_POST_VERSION = "international-fares-v2.0-homepage-parity";
 const SCHEDULER_RESILIENCE_VERSION = "scheduler-resilience-v3.1-self-healing-coordinator";
 const FREE_TIER_DELIVERY_VERSION = "free-tier-delivery-v2.1-self-healing-coordinator";
@@ -9071,17 +9071,17 @@ const ADMIN_WEB_FALLBACK_PASSWORD_SHA256 = "fae48608f11c49d4138ddd16ce0ffb9ae739
 const ADMIN_WEB_COOKIE = "flyyab_bale_admin";
 const ADMIN_WEB_SESSION_SECONDS = 60 * 60 * 12;
 const ADMIN_POST_SCHEDULE = [
-  { time:"08:00", title:"صبح‌بخیر فلای‌یاب", type:"morning" },
-  { time:"09:30", title:"مقصدهای خوش‌آب‌وهوا", type:"weather" },
-  { time:"10:15", title:"مناسبت‌های امروز", type:"occasion" },
-  { time:"11:00", title:"نرخ ارز", type:"rates" },
-  { time:"11:30", title:"کمترین نرخ پروازهای داخلی", type:"flights" },
-  { time:"13:30", title:"FlyYab Radar | فرصت‌های خرید امروز", type:"deal" },
-  { time:"16:00", title:"کمترین نرخ پروازهای خارجی", type:"international" },
-  { time:"18:00", title:"به‌روزرسانی پروازهای داخلی", type:"flights" },
-  { time:"19:15", title:"خواندنی امروز از مجله فلای‌یاب", type:"article" },
-  { time:"20:30", title:"مقصد امشب فلای‌یاب", type:"album" },
-  { time:"21:00", title:"سفر 365 | میراث جهان", type:"heritage" }
+  { time:"08:00", title:"صبح‌بخیر فلای‌یاب", type:"morning", icon:"☀️", engine:"Morning" },
+  { time:"09:30", title:"مقصدهای خوش‌آب‌وهوا", type:"weather", icon:"🌤", engine:"Weather 420" },
+  { time:"10:15", title:"مناسبت‌های امروز", type:"occasion", icon:"📌", engine:"Occasion + AI" },
+  { time:"11:00", title:"نرخ ارز", type:"rates", icon:"💱", engine:"Navasan + Pexels" },
+  { time:"11:30", title:"کمترین نرخ پروازهای داخلی", type:"flights", icon:"✈️", engine:"Domestic Fares" },
+  { time:"13:30", title:"FlyYab Radar | فرصت‌های خرید امروز", type:"deal", icon:"📡", engine:"Domestic Radar" },
+  { time:"16:00", title:"کمترین نرخ پروازهای خارجی", type:"international", icon:"🌍", engine:"International Fares" },
+  { time:"18:00", title:"به‌روزرسانی پروازهای داخلی", type:"flights", icon:"✈️", engine:"Domestic Fares" },
+  { time:"19:15", title:"خواندنی امروز از مجله فلای‌یاب", type:"article", icon:"📚", engine:"Blog + Media" },
+  { time:"20:30", title:"مقصد امشب فلای‌یاب", type:"album", icon:"🌙", engine:"Night Destination" },
+  { time:"21:00", title:"سفر 365 | میراث جهان", type:"heritage", icon:"🏛", engine:"Heritage 365" }
 ];
 
 function adminWebCookie(request) {
@@ -9156,10 +9156,21 @@ header{position:sticky;top:0;z-index:20;background:#07152bf2;backdrop-filter:blu
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.kv{display:grid;grid-template-columns:120px 1fr;gap:8px;font-size:13px;margin-top:7px}.kv b{color:#8da6c4;font-weight:600}.table{overflow:auto;border-radius:14px;border:1px solid #1b3a63}.post{display:grid;grid-template-columns:70px minmax(180px,1fr) 105px;border-bottom:1px solid #173456;align-items:center;padding:10px;background:#0a1d38}.post:last-child{border-bottom:0}.post .time{font-family:ui-monospace,Menlo,monospace;color:#86b8ff}.post .name{font-weight:750}.post .btn{padding:8px}
 pre{white-space:pre-wrap;word-break:break-word;background:#08182f;border:1px solid #173456;border-radius:14px;padding:13px;color:#cfe1f6;font:12px/1.9 ui-monospace,SFMono-Regular,Menlo,monospace;max-height:420px;overflow:auto}
 .toast{position:fixed;left:16px;bottom:16px;background:#102949;border:1px solid #31547f;border-radius:14px;padding:12px 16px;max-width:360px;display:none;z-index:50}.toast.show{display:block}.notice{background:#382d0d;border:1px solid #6c5816;color:#ffe4a1;padding:11px;border-radius:12px;font-size:13px;line-height:1.8;margin-bottom:12px}
-@media(max-width:800px){.card,.half{grid-column:span 12}.kv{grid-template-columns:105px 1fr}.post{grid-template-columns:60px 1fr 80px}.head .muted{display:none}.btn{font-size:13px;padding:9px 10px}}
+.heroGrid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px;margin-top:14px}
+.heroCard{background:linear-gradient(145deg,#0f2a50,#0b1d38);border:1px solid #1e4778;border-radius:20px;padding:18px}
+.heroCard .big{font-size:30px;font-weight:950;margin-top:4px}.sectionTitle{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:4px 0 12px}
+.testCenter{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.testCard{background:#0a1d38;border:1px solid #1b3a63;border-radius:16px;padding:13px;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center}
+.testCard .tname{font-weight:850}.testCard .meta{color:#86a0c0;font-size:12px;margin-top:4px}.testCard .actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.testCard .result{grid-column:1/-1;font-size:12px;color:#9bb6d5;padding-top:7px;border-top:1px solid #153253;display:none}
+.quick{display:flex;gap:8px;flex-wrap:wrap}.statusDot{width:9px;height:9px;border-radius:50%;display:inline-block;background:#8da6c4}.statusDot.ok{background:#21c77a}.statusDot.bad{background:#ff6677}.statusDot.warn{background:#ffbd4a}
+@media(max-width:800px){.heroGrid{grid-template-columns:1fr}.testCenter{grid-template-columns:1fr}.card,.half{grid-column:span 12}.kv{grid-template-columns:105px 1fr}.post{grid-template-columns:60px 1fr 80px}.head .muted{display:none}.btn{font-size:13px;padding:9px 10px}}
 </style></head><body><header><div class="wrap" style="padding-top:0;padding-bottom:0"><div class="head"><div class="logo">✈️</div><div><div class="title">FlyYab Bale Control Room</div><div class="muted" id="build">در حال خواندن وضعیت…</div></div><div class="spacer"></div><button class="btn" onclick="refreshAll()">↻ بروزرسانی</button><button class="btn danger" onclick="logout()">خروج</button></div></div></header>
 <div class="wrap">
 <div id="testWarn" class="notice" style="display:none"></div>
+<div class="heroGrid">
+  <div class="heroCard"><div class="muted">وضعیت عملیاتی</div><div class="big" id="heroOperational">در حال بررسی…</div><div class="muted" id="heroNext">—</div></div>
+  <div class="heroCard"><div class="muted">Automation</div><div class="big" id="heroAutomation">—</div><div class="muted">Cron هر ۵ دقیقه</div></div>
+  <div class="heroCard"><div class="muted">کانال تست</div><div class="big" id="heroTest">—</div><div class="muted">تمام تست‌های دستی</div></div>
+</div>
 <div class="grid">
 <section class="card"><h2>وضعیت ربات</h2><div class="stat" id="mode">—</div><div class="row" style="margin-top:12px"><button class="btn" onclick="setMode('test')">🧪 حالت تست</button><button class="btn good" onclick="setMode('live')">🟢 حالت اصلی</button></div></section>
 <section class="card"><h2>Automation / Cron</h2><div class="stat" id="automation">—</div><div class="muted" id="automationMeta" style="margin-top:8px">در حال خواندن کنترل زمان‌بندی…</div><div class="row" style="margin-top:12px"><button class="btn good" onclick="startAutomation()">▶ فعال‌سازی</button><button class="btn danger" onclick="stopAutomation()">■ توقف</button><button class="btn" onclick="automationPreview()">🧭 پیش‌نمایش Dispatcher</button></div></section>
@@ -9170,9 +9181,13 @@ pre{white-space:pre-wrap;word-break:break-word;background:#08182f;border:1px sol
 <section class="card half"><h2>سلامت زیرساخت</h2><div id="readiness"></div></section>
 <section class="card half"><h2>کنترل سریع</h2><div class="row"><button class="btn primary" onclick="testAll()">⚡ تست همه پست‌ها</button><button class="btn" onclick="loadHealth()">🩺 سلامت ارسال</button></div><div class="muted" style="margin-top:10px">تمام تست‌های دستی فقط به کانال تست می‌روند. کانال اصلی برای Automation رزرو شده است.</div></section>
 
+<section class="card wide">
+<div class="sectionTitle"><div><h2 style="margin:0">🧪 مرکز تست دستی پست‌ها</h2><div class="muted" style="margin-top:5px">Automation روشن می‌ماند؛ تمام تست‌های این بخش فقط در Sandbox و کانال تست اجرا می‌شوند.</div></div><div class="quick"><button class="btn" onclick="loadHealth()">سلامت امروز</button><button class="btn warn" onclick="testAll()">تست همه</button></div></div>
+<div id="manualTests" class="testCenter"></div>
+</section>
 <section class="card wide"><h2>Scheduler / Dispatcher</h2><div id="scheduler"></div><div class="row" style="margin-top:12px"><button class="btn" onclick="automationPreflight()">🧪 Preflight Automation</button><button class="btn" onclick="automationPreview()">🧭 Jobهای Tick فعلی</button></div></section>
 <section class="card wide"><h2>وضعیت Slotهای امروز</h2><div id="slots" class="table"></div></section>
-<section class="card wide"><h2>پست‌های روزانه — تهران</h2><div id="posts" class="table"></div></section>
+<section class="card wide"><h2>برنامه رسمی انتشار — تهران</h2><div id="posts" class="table"></div></section>
 <section class="card wide"><h2>Delivery Health امروز</h2><pre id="health">برای مشاهده گزارش روی «سلامت ارسال» بزنید.</pre></section>
 <section class="card wide"><h2>راهنمای عملیاتی</h2><div class="kv"><b>Automation</b><span>از همین Control Room روشن/خاموش می‌شود. <code>BALE_AUTOMATION_ENABLED</code> فقط مقدار پیش‌فرضِ اولین اجراست؛ وضعیت عملیاتی در BOT_CONTROL ذخیره می‌شود.</span><b>مقصد Automation</b><span>انتشار زمان‌بندی‌شده همیشه کانال اصلی است؛ حالت تعاملی پنل مسیر Cron را عوض نمی‌کند.</span><b>کانال تست</b><span id="testHelp">—</span><b>مدیریت بازو</b><span>پنل وب مرجع اصلی مدیریت است؛ فرمان‌های داخل بازو به‌عنوان مسیر پشتیبان باقی می‌مانند.</span></div></section>
 </div></div><div id="toast" class="toast"></div>
@@ -9182,6 +9197,20 @@ function toast(msg){const t=$("toast");t.textContent=msg;t.classList.add("show")
 async function api(path,opts={}){const r=await fetch(path,{headers:{"content-type":"application/json",...(opts.headers||{})},...opts});if(r.status===401){location.href="/admin";throw new Error("SESSION_EXPIRED")}const d=await r.json().catch(()=>({}));if(!r.ok||d.ok===false)throw new Error(d.error||("HTTP "+r.status));return d}
 function renderPosts(s){$("posts").innerHTML=s.schedule.map(p=>'<div class="post"><div class="time">'+p.time+'</div><div class="name">'+p.title+'</div><div class="row"><button class="btn" onclick="testPost(\\''+p.type+'\\')">تست</button><button class="btn" onclick="diagnosePost(\\''+p.type+'\\')">عیب‌یابی</button></div></div>').join("")}
 function renderSlots(s){$("slots").innerHTML=(s.deliverySlots||[]).map(x=>'<div class="post"><div class="time">'+esc(x.time)+'</div><div class="name">'+esc(x.title)+'<div class="muted">'+esc(x.phase||x.code||"")+'</div></div><div><span class="pill '+(["SENT","SKIPPED"].includes(x.status)?"ok":(["FAILED","MISSED","UNRECORDED"].includes(x.status)?"bad":"warn"))+'">'+esc(x.status)+'</span></div></div>').join("")||'<div class="muted" style="padding:12px">هنوز رکوردی نیست.</div>';}
+
+function renderManualTests(s){
+  const byType={};(s.deliverySlots||[]).forEach(x=>{byType[x.type]=x});
+  $("manualTests").innerHTML=(s.schedule||[]).map((p,i)=>{
+    const slot=byType[p.type]||{};
+    const status=slot.status||"READY";
+    const cls=["SENT","SKIPPED"].includes(status)?"ok":(["FAILED","MISSED"].includes(status)?"bad":"warn");
+    return '<div class="testCard" id="tc-'+esc(p.type)+'-'+i+'"><div><div class="tname">'+esc(p.icon||"")+" "+esc(p.title)+'</div><div class="meta">'+esc(p.time)+' • '+esc(p.engine||p.type)+' • <span class="pill '+cls+'">'+esc(status)+'</span></div></div><div class="actions"><button class="btn primary" onclick="testPost(\\''+p.type+'\\',this)">▶ تست فوری</button><button class="btn" onclick="diagnosePost(\\''+p.type+'\\')">عیب‌یابی</button></div><div class="result" id="tr-'+esc(p.type)+'-'+i+'"></div></div>';
+  }).join("");
+}
+function nextScheduledPost(s){
+  const now=String(s.tehranTime||"").slice(-5);
+  return (s.schedule||[]).find(p=>String(p.time)>=now)||null;
+}
 
 async function refreshAll(){try{
 const s=await api("/admin/api/status");
@@ -9196,7 +9225,12 @@ const hb=s.schedulerHeartbeat,co=s.coordinator||{};
 $("scheduler").innerHTML='<div class="kv"><b>Cron</b><span>*/5 * * * *</span><b>Heartbeat</b><span>'+(hb?esc((hb.tehranDate||"")+" "+(hb.tehranTime||"")):"هنوز ثبت نشده")+'</span><b>Coordinator</b><span>'+esc(co?.coordinator?.enabled===true?"ENABLED":(co?.coordinator?.enabled===false?"DISABLED":"UNKNOWN"))+'</span><b>Last Tick</b><span>'+esc(co?.lastTick?.tickKey||"—")+'</span><b>Next Alarm</b><span>'+esc(co?.alarmAt||"—")+'</span></div>';
 $("testHelp").textContent=s.testChannel?"تمام Test/Preview/Test All فقط به کانال تست "+s.testChannel+" می‌روند.":"BALE_TEST_CHANNEL_ID تعریف نشده؛ تست‌های پنل برای ایمنی قفل هستند.";
 const w=$("testWarn"); if(!s.testChannel||!s.testCanPostMessages){w.style.display="block";w.textContent="⚠️ کانال تست آماده نیست. تا رفع این مورد هیچ تست دستی از پنل اجرا نمی‌شود."}else w.style.display="none";
-renderSlots(s);renderPosts(s)
+renderSlots(s);renderPosts(s);renderManualTests(s);
+const next=nextScheduledPost(s);
+$("heroOperational").innerHTML=(s.baleOk&&s.canPostMessages&&s.automationEnabled)?'<span class="pill ok">عملیاتی ✅</span>':'<span class="pill warn">نیازمند بررسی</span>';
+$("heroAutomation").textContent=s.automationEnabled?"روشن":"خاموش";
+$("heroTest").textContent=s.testCanPostMessages?"آماده ✅":"خطا";
+$("heroNext").textContent=next?("ارسال بعدی: "+next.time+" — "+next.title):"ارسال‌های امروز تمام شده";
 }catch(e){toast("خطا: "+e.message)}}
 function esc(v){return String(v??"").replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]))}
 async function automationPreflight(){try{const d=await api("/admin/api/automation/preflight",{method:"POST",body:"{}"});$("health").textContent="AUTOMATION PREFLIGHT\\n\\n"+(d.checks||[]).map(x=>(x.ok?"✅ ":"❌ ")+x.stage+" — "+x.detail) .join("\\n");toast(d.ok?"Preflight سالم است":"Preflight ناقص است")}catch(e){$("health").textContent="Preflight خطا\\n\\n"+e.message;toast(e.message)}}
@@ -9206,7 +9240,25 @@ async function stopAutomation(){if(!confirm("Automation متوقف شود؟ ار
 async function setMode(mode){if(mode==="live"&&!confirm("حالت ربات روی LIVE قرار بگیرد؟"))return;try{const d=await api("/admin/api/mode",{method:"POST",body:JSON.stringify({mode})});toast("حالت ربات: "+d.mode);refreshAll()}catch(e){toast(e.message)}}
 async function checkAi(){const el=$("aiHealth");el.textContent="در حال تست واقعی هر دو Provider…";try{const d=await api("/admin/api/ai-health",{method:"POST",body:"{}"});el.innerHTML='<div class="kv"><b>Primary</b><span>'+esc(d.primary)+'</span><b>Arvan</b><span>'+(d.arvan.ok?"✅ ":"❌ ")+esc(d.arvan.model||d.arvan.error||"")+'</span><b>Cloudflare</b><span>'+(d.cloudflare.ok?"✅ ":"❌ ")+esc(d.cloudflare.model||d.cloudflare.error||"")+'</span><b>Operational</b><span>'+(d.operational?"✅ آماده":"❌ نیاز به بررسی")+'</span></div>'}catch(e){el.textContent="خطا: "+e.message}}
 async function diagnosePost(type){try{const d=await api("/admin/api/diagnose-post",{method:"POST",body:JSON.stringify({type})});const summary=(d.pipeline||[]).map(x=>(x.ok?"✅ ":"❌ ")+x.stage+" — "+(x.detail||"")).join("\\n");const extra=d.state?"\\n\\nSTATE\\n"+JSON.stringify(d.state,null,2):"";$("health").textContent="عیب‌یابی "+type+"\\n\\n"+summary+extra+(d.error?"\\n\\nخطا: "+d.error:"");toast(d.ready?"مسیر "+type+" آماده است":"مسیر "+type+" هنوز آماده نیست")}catch(e){toast("خطا: "+e.message)}}
-async function testPost(type){if(!confirm("پست «"+type+"» اکنون به مقصد تست فعلی ارسال/اجرا شود؟"))return;try{const d=await api("/admin/api/test-post",{method:"POST",body:JSON.stringify({type})});let msg="تست "+type+" → "+(d.delivered?"✅ ارسال شد":"⏳ در حال آماده‌سازی");if(d.messageId)msg+=" • Message #"+d.messageId;if(d.action)msg+="\\n"+d.action+" • "+(d.processed||0)+"/"+(d.total||0)+" • "+(d.coveragePct||0)+"%";if(d.message)msg+="\\n"+d.message;$("health").textContent=msg;toast(d.delivered?"ارسال "+type+" موفق بود":"تست "+type+" شروع شد")}catch(e){$("health").textContent="خطای تست "+type+"\\n\\n"+e.message;toast("خطا: "+e.message)}}
+async function testPost(type,button=null){
+if(!confirm("تست «"+type+"» فقط به کانال تست ارسال/اجرا شود؟ Automation اصلی روشن می‌ماند."))return;
+const old=button?button.textContent:"";if(button){button.disabled=true;button.textContent="⏳ در حال اجرا…";}
+try{
+ const started=Date.now();
+ const d=await api("/admin/api/test-post",{method:"POST",body:JSON.stringify({type})});
+ const msg=d.delivered
+   ? "✅ SENT"+(d.messageId?" • Message #"+d.messageId:"")+" • "+(d.elapsedMs??(Date.now()-started))+"ms"
+   : "⏳ "+(d.status||"PREPARING")+(d.action?" • "+d.action:"")+(d.processed!=null?" • "+d.processed+"/"+d.total+" ("+d.coveragePct+"%)":"");
+ $("health").textContent="MANUAL TEST — "+type+"\\n\\n"+msg+(d.message?"\\n\\n"+d.message:"");
+ document.querySelectorAll('[id^="tr-'+type+'-"]').forEach(el=>{el.style.display="block";el.textContent=msg});
+ toast(d.delivered?"ارسال آزمایشی موفق ✅":"فرآیند آماده‌سازی شروع شد");
+}catch(e){
+ const msg="❌ FAILED — "+e.message;
+ $("health").textContent="MANUAL TEST FAILED — "+type+"\\n\\n"+e.message;
+ document.querySelectorAll('[id^="tr-'+type+'-"]').forEach(el=>{el.style.display="block";el.textContent=msg});
+ toast("تست ناموفق: "+e.message);
+}finally{if(button){button.disabled=false;button.textContent=old;}}
+}
 async function testAll(){if(!confirm("تمام پست‌های قابل تست روی کانال تست اجرا شوند؟ Weather ممکن است فقط فرآیند آماده‌سازی را شروع کند."))return;try{const d=await api("/admin/api/test-all",{method:"POST",body:"{}"});$("health").textContent="TEST ALL STARTED\\n\\n"+d.types .join("\\n");toast("تست همه پست‌ها شروع شد: "+d.count+" مورد")}catch(e){toast(e.message)}}
 async function loadHealth(){try{const d=await api("/admin/api/health");$("health").textContent=d.report||"گزارشی وجود ندارد"}catch(e){$("health").textContent="خطا: "+e.message}}
 async function fixWebhook(){try{const d=await api("/admin/api/webhook",{method:"POST",body:"{}"});toast(d.ok?"Webhook بازسازی شد":"Webhook ناموفق")}catch(e){toast(e.message)}}
@@ -9540,6 +9592,21 @@ async function runAdminWebTest(env, type, targetChannel) {
   const sandboxEnv = withFlyYabExecutionScope({...env, BALE_TEST_CHANNEL_ID:String(targetChannel)}, `sandbox-web-control-${type}`);
   return publish(sandboxEnv, type, {channel:String(targetChannel),fresh:true});
 }
+function adminWebManualTestResult(type, targetChannel, result, startedAt) {
+  const messageId = baleMessageIdFromResult(result);
+  return {
+    ok:true,
+    type,
+    targetChannel:String(targetChannel),
+    delivered:Boolean(messageId || result?.ok || result?.result?.ok || result?.result?.message_id),
+    messageId:messageId || null,
+    elapsedMs:Date.now() - startedAt,
+    resultSummary:{
+      ok:result?.ok ?? result?.result?.ok ?? true,
+      messageId:messageId || null
+    }
+  };
+}
 async function handleAdminWeb(request, env, ctx, url) {
   if (url.pathname === "/admin/login" && request.method === "POST") {
     const form = await request.formData().catch(()=>new FormData());
@@ -9624,45 +9691,51 @@ async function handleAdminWeb(request, env, ctx, url) {
     try { targetChannel = adminWebTestTarget(env); }
     catch (error) { return Response.json({ok:false,error:String(error?.message||error)},{status:409}); }
 
-    if (type === "rates") {
-      try {
-        const result = await runAdminWebTest(env,type,targetChannel);
-        return Response.json({
-          ok:true,accepted:true,delivered:true,type,targetChannel,
-          messageId:baleMessageIdFromResult(result) || null,
-          scope:`sandbox-web-control-${type}`
-        },{headers:{"cache-control":"no-store"}});
-      } catch (error) {
-        return Response.json({ok:false,type,targetChannel,error:String(error?.message||error),code:String(error?.code||"RATES_TEST_FAILED")},{status:502,headers:{"cache-control":"no-store"}});
-      }
-    }
-
     if (type === "weather") {
       try {
         const sandboxEnv = withFlyYabExecutionScope({...env,BALE_TEST_CHANNEL_ID:String(targetChannel)}, "sandbox-web-control-weather");
         const state = await getWeatherState(sandboxEnv);
         const pkg = state?.preparedPackage;
-        if (pkg?.date===currentTehranIso(new Date()) && ["READY","PUBLISHED"].includes(pkg?.status)) {
+        if (pkg?.date===currentTehranIso(new Date()) && ["READY","PUBLISHED"].includes(pkg?.status) && pkg?.picks?.length) {
+          const startedAt = Date.now();
           const result = await sendWeatherPackage(sandboxEnv,targetChannel,pkg,new Date());
-          return Response.json({ok:true,accepted:true,delivered:true,type,targetChannel,messageId:baleMessageIdFromResult(result)||null},{headers:{"cache-control":"no-store"}});
+          return Response.json({
+            ...adminWebManualTestResult(type,targetChannel,result,startedAt),
+            delivered:true,
+            action:"WEATHER_READY_PACKAGE_SENT"
+          },{headers:{"cache-control":"no-store"}});
         }
         await startWeatherScan(sandboxEnv,new Date(),{fresh:!state?.scan || state.scan?.date!==currentTehranIso(new Date()),mode:"MANUAL_WEB"});
         const latest = await getWeatherState(sandboxEnv);
         const p = weatherScanProgress(latest?.scan || {});
         return Response.json({
           ok:true,accepted:true,delivered:false,type,targetChannel,
+          status:"PREPARING",
           action:"WEATHER_SCAN_STARTED_OR_RESUMED",
           scanStatus:String(latest?.scan?.status||"RUNNING"),
           processed:p.processed||0,total:p.total||WEATHER_RULES.targetForecasts,coveragePct:p.coveragePct||0,
-          message:"رصد Weather شروع/ادامه داده شد. برای دیدن وضعیت، عیب‌یابی Weather را بزن."
+          message:"Weather معماری Batch دارد؛ اسکن/آماده‌سازی در Sandbox شروع یا ادامه داده شد."
         },{status:202,headers:{"cache-control":"no-store"}});
       } catch (error) {
-        return Response.json({ok:false,type,targetChannel,error:String(error?.message||error),code:String(error?.code||"WEATHER_TEST_FAILED")},{status:502,headers:{"cache-control":"no-store"}});
+        return Response.json({ok:false,type,targetChannel,status:"FAILED",error:String(error?.message||error),code:String(error?.code||"WEATHER_TEST_FAILED")},{status:502,headers:{"cache-control":"no-store"}});
       }
     }
 
-    ctx.waitUntil(runAdminWebTest(env,type,targetChannel).catch((error)=>console.error("ADMIN_WEB_TEST_FAILED",type,error)));
-    return Response.json({ok:true,accepted:true,type,targetChannel,scope:`sandbox-web-control-${type}`},{status:202});
+    const startedAt = Date.now();
+    try {
+      const result = await runAdminWebTest(env,type,targetChannel);
+      return Response.json({
+        ...adminWebManualTestResult(type,targetChannel,result,startedAt),
+        status:"SENT"
+      },{headers:{"cache-control":"no-store"}});
+    } catch (error) {
+      return Response.json({
+        ok:false,type,targetChannel,status:"FAILED",
+        elapsedMs:Date.now()-startedAt,
+        error:String(error?.message||error),
+        code:String(error?.code||`${type.toUpperCase()}_TEST_FAILED`)
+      },{status:502,headers:{"cache-control":"no-store"}});
+    }
   }
   if (url.pathname === "/admin/api/test-all" && request.method === "POST") {
     let targetChannel;
