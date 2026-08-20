@@ -8721,38 +8721,33 @@ async function runBaleLiveGate(request, env, ctx, url) {
     return Response.json({ ok:true, action, messageId:baleMessageIdFromResult(result) }, { headers:{"cache-control":"no-store"} });
   }
   if (action === "photo") {
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
-      <rect width="1200" height="630" fill="#0b5fff"/>
-      <circle cx="1030" cy="120" r="150" fill="#ffffff" opacity=".10"/>
-      <circle cx="110" cy="560" r="220" fill="#ffffff" opacity=".08"/>
-      <text x="600" y="275" text-anchor="middle" fill="#ffffff" font-family="Arial,sans-serif" font-size="72" font-weight="700">FlyYab</text>
-      <text x="600" y="365" text-anchor="middle" fill="#ffffff" font-family="Arial,sans-serif" font-size="38">Bale Media Gate</text>
-    </svg>`;
+    const photoBytes = Uint8Array.from(atob("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AMUEFgBAMYEFAFBMYAEAFBNYAADFBBYAQDGBBQBQTGABABQTWAAAxQQWAEAxgQUAUExgAQAUE1gAAMUEFgBAMYEFAFBMYAEAFBNYAADFBBYAQDGBBQBQTGABABQTWAAAxQQWAEAxgQUAUExgAQAUE1gAAMUEFgBAMYEFAFBMYAEAFBNYAADFBBYAQDGBBQBQTGABABQTWAAAxQQWAEAxgQUAUExgAQAUE1gAAMUEFgBAMYEFAFBMYAEAFBNYAADFBBYAQDGBBQBQTGABABQTWAAAxQQWAEAxgQUAUExgAQAUE1gAAMUEFgBAMYEFAFBMYAEAFBNYAADFBBYAQDGBBQBQTGABABQTWAAAxQQWAEAxgQUAUExgAQAUE1gAAMUEFgBAMYEFAFBMYAEAFBNYAADFBBYAQDGBBQBQTGABABQTWAAAxQQWAEAxgQUAUExgAQAUE1gAAMUEFgBAMYEFAFBMYAEAFBNYAADFBBYAQDGBBQBQTGABABQTWAAAxQQWAEAxgQUAUExgAQAUE1gAAMUEFgBAMYEFAFBMYAEAFBNYAADFBBYAQDGBBQBQTGABABQTWAAAxQQWAEAxgQUAUExgAQAUE1gAAMUEFgBAMYEFAFBMYAEAFBNYAADFBBYAQDGBBQBQTGABABQTWAAAxQQWAEAxgQUAUExgAQAUE1gAAMUEFgBAMYEFAFBMYAEAFBNYAADFBBYAQDGBBQBQTGABABQTWAAAxQQWAEAxgQUAUExgAQAUE1gAAMUEFgBAMYEFAFBMYAEAFBNYAADFBBYAQDGBBQBQTGABABQTWAAAxQQWAEAxgQUAUExgAQAUE1gAAMUEFgBAMYEFAFBMYAEAFBNYAADFBBYAQDGBBQBQTGABABQTWAAAxQQWAEAxgQUAUExgAQAUE1gAAMUEFgBAMYEFAFBMYAEAFBNYAADFBBYAQDGBBQBQTGABABQTWAAAxQQWAEAxgQUAUExgAQAUE1gAAMUEFgBAMYEFAFBMYAEAFBNYAADFBBYAQDGBBQBQTGABABQTWAAAxQQWAEAxgQUAUExgAQAUE1gAAMUEFgBAMYEFAFBMYAEAFBNYAADFBBYAQDGBBQBQTGABABQTWAAAxQQWAEAxgQUAUExgAQAUE1gAAMUEFgBAMYEFAFBMYAEAFBNYAADFBBYAQDGBBQBQTGABABQTWAAAxQQWAEAxgQUAUExgAQAUE1gAAMUEFgBAMYEFAFBMYAEAFBNYAADFBBYAQDGBBQBQTGABABQTWAAAxQQWAEAxgQUAUExgAQAUE1gAAMUEFgBAMYEFAFBMYAEAFGvp6Ojo7RkAAN5XPMECACgmsAAAigksAIBiAgsAoJjAAgAoJrAAAIoJLACAYgILAKCYwAIAKCawAACKCSwAgGICCwCgmMACACgmsAAAigksAIBiAgsAoJjAAgAoJrAAAIoJLACAYgILAKCYwAIAKCawAACKCSwAgGICCwCgmMACACgmsAAAiq1agbX+qM6Lc29Lkjlz8w/3vJf7LNneZZ1jM3xy9p6cYRMz+4UkWfuY7D25yblT780u38nuE3Lg9zL3tfdydNetVtJ6AGDVt2oFVpdzb02SQRvk6N3e+/YufdsyfUzuGJPzD8+pVyZJvz5Z1J4Hnl5m2T0/zS2zM3N87h6fP9ssJ0x9b7MDAP/f9Vmpd19/VPbfPv/2dL68Tx76WR55LscPy0l7db718sXdy7quk0ycljfmZ7+z84Ovdb+1/qgcsWtmPZ+W5LJj8taCnHxFXn8zh+/cfcP9hmSbT+S1ed3bG2yxYX7+q87r8QdkwrTcObb73fPvyLcOSt+2JDl298x6Povb07Y0QZsO3DDVJut0Lviv1zNqSua9nQ99IBcfldfmLTPtq/+dk6bmt29m03X/j99gAGBVtHKfYM1fmCN3ze1jcuqVGbVHbh+T8+7oedfpB2RA/8Y8WrAogzfJjHE5cteMvSqXzsyZB+eucd03XLAoX9who/Zovn2Je5/K1ht3Xu8yKEnun9P97py52XKjzusPfSBXn9JdVyvSMFWXsVfl4B1z17gcvGPGXd047birc9AOmTEuIwZn/sKevyEAwOpl5QZWa2sGD8xGH0u/tgwemI0/ljfnN1nW3tHzrVpaMnJIkhwwNI88lwmH5Jlf5nu35fdvdS5oa81uWzbfu3Bxhk/OXmflorty4ZHdry95iNVl0eLOiwumZ/jkbDdmhcN0DdwwVZcHns6BQ5PkwKG5f07jtA88nS/8SZLsvU3PDQcArHZW7h/vfds6A6J/37S2LPNWV6O8/mYWLur5Vq0t3S3Sv2/+6sIkOX5YWpbetq218Yg/HGP6mNw5NteOzifW7n59p83T1pr7lj7E+uR6efLFJDl5eK45JS/+pueBG6bq0lCMDdMuWLq9vaNxJQDwPtBrz08+ukbmzE2Sax7qjqQu7R2Nj7UWLc6djyfJtFnZeVAeeyEHDc38hd2x8s7bV+QPH2IduWsm3JiFi5Pk0rsbny01Hbhhqi47b56bHk2Smx7NTps3Trvjp3LbY0lyy+x0KCwAeN9ZuT/k/g7O/lL++sKs85Fsv2n6LZ3iU+vlnFtz2oh8/jP5i/Ny/and6/v3zc0/ynm3Z801ctFR2Wit7Pa32WrjfHSNzF+U/st+HctvX5HPb5Z+bZ3dc+jn8szL2WF8/njNHPqnjYHVdOCGqbq+hImH5oQpmfLDDOifi4/KpvcsM+1Zh+XYy3PJzOz46e5bAQDvGy0dq8kjlIa/abiKWDWnAgB6lx+xBgAotto8wQIAWF14ggUAUExgAQAUE1gAAMUEFgBAMYEFAFBMYAEAFBNYAADFBBYAQDGBBQBQTGABABQTWAAAxQQWAEAxgQUAUExgAQAUE1gAAMUEFgBAMYEFAFBMYAEAFBNYAADFBBYAQDGBBQBQTGABABQTWAAAxQQWAEAxgQUAUExgAQAUE1gAAMUEFgBAMYEFAFBMYAEAFBNYAADFBBYAQDGBBQBQTGABABQTWAAAxQQWAEAxgQUAUExgAQAUE1gAAMUEFgBAMYEFAFBMYAEAFBNYAADFBBYAQDGBBQBQTGABABQTWAAAxQQWAEAxgQUAUExgAQAUE1gAAMUEFgBAsf8BAa8jH/Tk0OsAAAAASUVORK5CYII="), (c) => c.charCodeAt(0));
     try {
       const photo = await sendBundledPhoto(
         env,
-        channelId,
-        new TextEncoder().encode(svg),
-        "image/svg+xml",
-        "flyyab-bale-media-gate.svg",
-        "<b>FlyYab Bale Live Gate</b>\n\nتست ارسال مستقیم فایل تصویر از Worker به بله.",
-        { reply_markup: { inline_keyboard: [[{ text: "FlyYab.ir", url: "https://flyyab.ir/" }]] } }
+        channel,
+        photoBytes,
+        "flyyab-bale-media-gate.png",
+        "<b>FlyYab Bale Live Gate</b>\n\nتست ارسال مستقیم فایل PNG از Worker به بله.",
+        { inline_keyboard: [[{ text: "FlyYab.ir", url: "https://flyyab.ir/" }]] },
+        "image/png"
       );
-      return json({
+      return Response.json({
         ok: true,
         action,
         transport: "multipart-upload",
-        source: "worker-generated-svg",
-        messageId: photo?.result?.message_id || null
-      });
+        source: "worker-embedded-png",
+        messageId: photo?.result?.message_id || null,
+        buildId: BUILD_ID
+      }, { headers:{"cache-control":"no-store"} });
     } catch (error) {
-      return json({
+      return Response.json({
         ok: false,
         action,
         stage: "bale-multipart-upload",
         error: String(error?.message || error),
         buildId: BUILD_ID
-      }, 502);
+      }, { status: 502, headers:{"cache-control":"no-store"} });
     }
   }
   if (action === "album") {
