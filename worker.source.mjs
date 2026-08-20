@@ -17,7 +17,7 @@ import { NIGHT_DESTINATIONS, NIGHT_DESTINATION_CATALOG_REVISION, nightDestinatio
 import { HERITAGE_CATALOG_VERSION, HERITAGE_CATALOG, heritageCatalogItem, heritageCatalogStats } from "./heritage-catalog.mjs";
 import { IRAN_WEATHER_DESTINATIONS, WEATHER_CATALOG_VERSION, weatherCatalogStats } from "./weather-catalog.mjs";
 import { WEATHER_VERSION, WEATHER_RULES, assessWeather, weatherReason as weatherReasonV2, selectWeatherPicks, candidateSeasonScore, stableWeatherHash } from "./weather-core.mjs";
-const FLYYAB_BUILD_ID = "FlyYab-Bale-1.2.1-20260820-CONTROL-ROOM-JS-FIX-V6.9.1";
+const FLYYAB_BUILD_ID = "FlyYab-Bale-1.2.2-20260820-CONTROL-ROOM-BROWSER-JS-FIX-V6.9.1";
 const INTERNATIONAL_FARES_POST_VERSION = "international-fares-v2.0-homepage-parity";
 const SCHEDULER_RESILIENCE_VERSION = "scheduler-resilience-v3.1-self-healing-coordinator";
 const FREE_TIER_DELIVERY_VERSION = "free-tier-delivery-v2.1-self-healing-coordinator";
@@ -9072,7 +9072,7 @@ pre{white-space:pre-wrap;word-break:break-word;background:#08182f;border:1px sol
 const $=id=>document.getElementById(id);
 function toast(msg){const t=$("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),3500)}
 async function api(path,opts={}){const r=await fetch(path,{headers:{"content-type":"application/json",...(opts.headers||{})},...opts});if(r.status===401){location.href="/admin";throw new Error("SESSION_EXPIRED")}const d=await r.json().catch(()=>({}));if(!r.ok||d.ok===false)throw new Error(d.error||("HTTP "+r.status));return d}
-function renderPosts(s){$("posts").innerHTML=s.schedule.map(p=>'<div class="post"><div class="time">'+p.time+'</div><div class="name">'+p.title+'</div><div class="row"><button class="btn" onclick="testPost(\''+p.type+'\')">تست</button><button class="btn" onclick="diagnosePost(\''+p.type+'\')">عیب‌یابی</button></div></div>').join("")}
+function renderPosts(s){$("posts").innerHTML=s.schedule.map(p=>'<div class="post"><div class="time">'+p.time+'</div><div class="name">'+p.title+'</div><div class="row"><button class="btn" onclick="testPost(\\''+p.type+'\\')">تست</button><button class="btn" onclick="diagnosePost(\\''+p.type+'\\')">عیب‌یابی</button></div></div>').join("")}
 async function refreshAll(){try{const s=await api("/admin/api/status");$("build").textContent=s.buildId;$("mode").innerHTML=s.mode==="live"?'<span class="pill ok">🟢 اصلی</span>':'<span class="pill warn">🧪 آزمایشی</span>';$("automation").innerHTML=s.automationEnabled?'<span class="pill ok">فعال</span>':'<span class="pill bad">خاموش</span>';$("bale").innerHTML=s.baleOk?'<span class="pill ok">متصل</span>':'<span class="pill bad">خطا</span>';
 $("connection").innerHTML='<div class="kv"><b>بازو</b><span>'+esc(s.botUsername||"—")+'</span><b>کانال اصلی</b><span>'+esc(s.productionChannel)+' '+(s.canPostMessages?"✅":"❌")+'</span><b>کانال تست</b><span>'+esc(s.testChannel||"تعریف نشده")+' '+(s.testCanPostMessages?"✅":"❌")+'</span><b>Webhook</b><span>'+esc(s.webhookUrl||"ثبت نشده")+'</span><b>زمان تهران</b><span>'+esc(s.tehranTime)+'</span></div>';
 $("readiness").innerHTML='<div class="kv">'+(s.readiness||[]).map(x=>'<b>'+esc(x.stage)+'</b><span>'+(x.ok?"✅ ":"❌ ")+esc(x.name)+'</span>').join("")+'</div>';

@@ -1,5 +1,6 @@
-FlyYab-Bale-1.2.1-20260820-CONTROL-ROOM-JS-FIX-V6.9.1
-Fix: Control Room browser JavaScript newline escaping
+FlyYab-Bale-1.2.2-20260820-CONTROL-ROOM-BROWSER-JS-FIX-V6.9.1
+Fix: rendered browser JavaScript syntax (inline onclick quote escaping)
+Verification now includes parsing the FINAL rendered <script> from /admin HTML.
 AI Primary: Arvan GPT-4.1-Mini
 AI Fallback: Cloudflare Workers AI
 Manual tests: TEST channel only
