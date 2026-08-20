@@ -17,7 +17,7 @@ import { NIGHT_DESTINATIONS, NIGHT_DESTINATION_CATALOG_REVISION, nightDestinatio
 import { HERITAGE_CATALOG_VERSION, HERITAGE_CATALOG, heritageCatalogItem, heritageCatalogStats } from "./heritage-catalog.mjs";
 import { IRAN_WEATHER_DESTINATIONS, WEATHER_CATALOG_VERSION, weatherCatalogStats } from "./weather-catalog.mjs";
 import { WEATHER_VERSION, WEATHER_RULES, assessWeather, weatherReason as weatherReasonV2, selectWeatherPicks, candidateSeasonScore, stableWeatherHash } from "./weather-core.mjs";
-const FLYYAB_BUILD_ID = "FlyYab-Bale-1.5.2-20260820-NIGHT-HERITAGE-ALBUM-MULTIPART-V6.9.1";
+const FLYYAB_BUILD_ID = "FlyYab-Bale-1.6.0-20260820-HERITAGE-DAY4-ADVANCED-CONTROL-ROOM-V6.9.1";
 const INTERNATIONAL_FARES_POST_VERSION = "international-fares-v2.0-homepage-parity";
 const SCHEDULER_RESILIENCE_VERSION = "scheduler-resilience-v3.1-self-healing-coordinator";
 const FREE_TIER_DELIVERY_VERSION = "free-tier-delivery-v2.1-self-healing-coordinator";
@@ -761,6 +761,7 @@ async function downloadHeritageImage(image, index) {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const contentType = String(response.headers.get("content-type") || "").split(";")[0].trim().toLowerCase();
         if (!contentType.startsWith("image/")) throw new Error(`نوع فایل نامعتبر: ${contentType || "unknown"}`);
+        if (!["image/jpeg","image/png"].includes(contentType)) throw new Error(`BALE_UNSUPPORTED_IMAGE_TYPE:${contentType || "unknown"}`);
         const declaredSize = Number(response.headers.get("content-length") || 0);
         if (declaredSize > 9.5 * 1024 * 1024) throw new Error("حجم تصویر بیش از حد مجاز بله است");
         const bytes = await response.arrayBuffer();
@@ -788,18 +789,34 @@ async function sendHeritageMediaGroup(env, chatId, images, caption) {
   // Bale's reliable path is multipart/attach://. Keep the Telegram/reference
   // content pipeline intact, but adapt the final transport for Bale.
   const downloaded = [];
+  const publishedImages = [];
+  const rejected = [];
   for (let i = 0; i < selected.length; i++) {
-    const item = await downloadHeritageImage(selected[i], i);
-    downloaded.push({
-      bytes:new Uint8Array(item.bytes),
-      contentType:item.contentType,
-      filename:item.filename,
-      ...(i === 0 ? { caption } : {})
-    });
+    try {
+      const item = await downloadHeritageImage(selected[i], i);
+      downloaded.push({
+        bytes:new Uint8Array(item.bytes),
+        contentType:item.contentType,
+        filename:item.filename
+      });
+      publishedImages.push(selected[i]);
+    } catch (error) {
+      rejected.push({
+        index:i,
+        file:selected[i]?.file_name || selected[i]?.id || `image-${i+1}`,
+        error:String(error?.message || error)
+      });
+    }
   }
-  if (downloaded.length < HERITAGE_MIN_IMAGES) throw new Error(`HERITAGE_MULTIPART_IMAGES_LOW:${downloaded.length}`);
+  if (downloaded.length < HERITAGE_MIN_IMAGES) {
+    const error = new Error(`HERITAGE_MULTIPART_IMAGES_LOW:${downloaded.length}/${HERITAGE_MIN_IMAGES}`);
+    error.code = "HERITAGE_MULTIPART_IMAGES_LOW";
+    error.details = rejected;
+    throw error;
+  }
+  downloaded[0] = {...downloaded[0], caption};
   const result = await sendBundledMediaGroup(env, chatId, downloaded);
-  return { result, images:selected, transport:"multipart-upload", uploadedCount:downloaded.length };
+  return { result, images:publishedImages, transport:"multipart-upload", uploadedCount:downloaded.length, rejected };
 }
 
 async function sendBundledPhoto(env, chatId, image, filename, caption = "", replyMarkup = null, contentType = "image/jpeg") {
@@ -5377,14 +5394,20 @@ const HERITAGE_MAX_IMAGES = 8;
 const HERITAGE_AI_MODEL = "@cf/zai-org/glm-4.7-flash";
 const HERITAGE_AI_BACKUP_MODEL = "@cf/meta/llama-3.1-8b-instruct-fast";
 const HERITAGE_STATE_VERSION = 2;
+const HERITAGE_BALE_SYNC_START_DAY = 4;
 
 function heritageDefaultState() {
-  return { version: HERITAGE_STATE_VERSION, catalogVersion: HERITAGE_CATALOG_VERSION, nextDayNumber: 1, history: [], usedImageIds: [], preparedPackage: null, lastReport: null };
+  return { version: HERITAGE_STATE_VERSION, catalogVersion: HERITAGE_CATALOG_VERSION, nextDayNumber: HERITAGE_BALE_SYNC_START_DAY, history: [], usedImageIds: [], preparedPackage: null, lastReport: null };
 }
 function normalizeHeritageState(raw) {
   const base = raw && typeof raw === "object" ? raw : {};
-  const nextDayNumber = Math.max(1, Math.min(366, Number(base.nextDayNumber || 1)));
   const history = Array.isArray(base.history) ? base.history.slice(-365) : [];
+  const rawNextDayNumber = Math.max(1, Math.min(366, Number(base.nextDayNumber || HERITAGE_BALE_SYNC_START_DAY)));
+  // Telegram has already published nights 001-003. A pristine Bale state is
+  // migrated once to night 004 so both channels continue the same editorial sequence.
+  const nextDayNumber = history.length === 0 && rawNextDayNumber < HERITAGE_BALE_SYNC_START_DAY
+    ? HERITAGE_BALE_SYNC_START_DAY
+    : rawNextDayNumber;
   const usedImageIds = Array.isArray(base.usedImageIds) ? base.usedImageIds.slice(-3000) : [];
   let preparedPackage = base.preparedPackage || null;
   const expected = nextDayNumber <= 365 ? heritageCatalogItem(nextDayNumber) : null;
@@ -9228,6 +9251,31 @@ pre{white-space:pre-wrap;word-break:break-word;background:#08182f;border:1px sol
 <div class="sectionTitle"><div><h2 style="margin:0">🧪 مرکز تست دستی پست‌ها</h2><div class="muted" style="margin-top:5px">Automation روشن می‌ماند؛ تمام تست‌های این بخش فقط در Sandbox و کانال تست اجرا می‌شوند.</div></div><div class="quick"><button class="btn" onclick="loadHealth()">سلامت امروز</button><button class="btn warn" onclick="testAll()">تست همه</button></div></div>
 <div id="manualTests" class="testCenter"></div>
 </section>
+<section class="card wide">
+<div class="sectionTitle"><div><h2 style="margin:0">🌙 مدیریت مقصد امشب</h2><div class="muted" style="margin-top:5px">همان ابزارهای مدیریتی نسخه تلگرام، روی پنل وب و روی State اصلی Automation.</div></div><span class="pill" id="nightMgmtStatus">—</span></div>
+<div id="nightMgmt" class="kv"></div>
+<div class="row" style="margin-top:14px">
+<button class="btn primary" onclick="nightManage('prepare')">ساخت/آماده‌سازی</button>
+<button class="btn" onclick="nightManage('refresh_images')">نوسازی تصاویر</button>
+<button class="btn" onclick="nightManage('refresh_text')">نوسازی متن</button>
+<button class="btn warn" onclick="nightManage('new')">مقصد تازه</button>
+<button class="btn good" onclick="nightManage('send_test')">ارسال پکیج آماده به تست</button>
+<button class="btn" onclick="nightManage('status')">وضعیت</button>
+</div>
+</section>
+
+<section class="card wide">
+<div class="sectionTitle"><div><h2 style="margin:0">🏛 مدیریت سفر 365 | میراث جهان</h2><div class="muted" style="margin-top:5px">وضعیت شب، آماده‌سازی، تست آلبوم و همگام‌سازی شماره شب با تلگرام.</div></div><span class="pill" id="heritageMgmtStatus">—</span></div>
+<div id="heritageMgmt" class="kv"></div>
+<div class="row" style="margin-top:14px">
+<button class="btn primary" onclick="heritageManage('prepare')">آماده‌سازی شب بعد</button>
+<button class="btn" onclick="heritageManage('rebuild')">بازسازی پرونده</button>
+<button class="btn good" onclick="heritageManage('send_test')">ارسال پکیج آماده به تست</button>
+<button class="btn warn" onclick="heritageManage('sync_day4')">همگام‌سازی با تلگرام → شب 004</button>
+<button class="btn" onclick="heritageManage('status')">وضعیت</button>
+</div>
+</section>
+
 <section class="card wide"><h2>Scheduler / Dispatcher</h2><div id="scheduler"></div><div class="row" style="margin-top:12px"><button class="btn" onclick="automationPreflight()">🧪 Preflight Automation</button><button class="btn" onclick="automationPreview()">🧭 Jobهای Tick فعلی</button></div></section>
 <section class="card wide"><h2>وضعیت Slotهای امروز</h2><div id="slots" class="table"></div></section>
 <section class="card wide"><h2>برنامه رسمی انتشار — تهران</h2><div id="posts" class="table"></div></section>
@@ -9274,8 +9322,50 @@ $("heroOperational").innerHTML=(s.baleOk&&s.canPostMessages&&s.automationEnabled
 $("heroAutomation").textContent=s.automationEnabled?"روشن":"خاموش";
 $("heroTest").textContent=s.testCanPostMessages?"آماده ✅":"خطا";
 $("heroNext").textContent=next?("ارسال بعدی: "+next.time+" — "+next.title):"ارسال‌های امروز تمام شده";
+await loadEditorialManagement();
 }catch(e){toast("خطا: "+e.message)}}
 function esc(v){return String(v??"").replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]))}
+
+function renderNightMgmt(d){
+ const s=d?.state||{};
+ $("nightMgmtStatus").className="pill "+(["READY","LOCKED","PUBLISHED"].includes(s.status)?"ok":"warn");
+ $("nightMgmtStatus").textContent=s.status||"EMPTY";
+ $("nightMgmt").innerHTML='<b>مقصد</b><span>'+esc(s.destination||"—")+'</span><b>تاریخ</b><span>'+esc(s.date||"—")+'</span><b>تصاویر</b><span>'+esc(s.images||0)+' • '+esc(s.imageSource||"—")+'</span><b>متن/AI</b><span>'+esc(s.textSource||"—")+' • '+esc(s.model||"—")+'</span><b>صف ۳ روزه</b><span>'+esc((s.plans||[]).map(x=>(x.date||"")+" "+(x.name||"")+" ["+(x.status||"")+"]").join(" | ")||"—")+'</span>';
+}
+async function nightManage(action){
+ if(["new","refresh_images","refresh_text"].includes(action)&&!confirm("این عملیات پرونده اصلی مقصد امشب را تغییر می‌دهد. ادامه؟"))return;
+ try{
+  const d=await api("/admin/api/night/manage",{method:"POST",body:JSON.stringify({action})});
+  renderNightMgmt(d);
+  $("health").textContent="NIGHT MANAGEMENT — "+action+"\\n\\n"+JSON.stringify(d,null,2);
+  toast(action==="send_test"?"پکیج مقصد امشب به کانال تست ارسال شد ✅":"مدیریت مقصد امشب انجام شد");
+ }catch(e){$("health").textContent="NIGHT MANAGEMENT FAILED\\n\\n"+e.message;toast(e.message)}
+}
+function renderHeritageMgmt(d){
+ const s=d?.state||{};
+ $("heritageMgmtStatus").className="pill "+(s.prepared?"ok":"warn");
+ $("heritageMgmtStatus").textContent="شب "+String(s.nextDayNumber||4).padStart(3,"0");
+ $("heritageMgmt").innerHTML='<b>شب بعدی</b><span>'+String(s.nextDayNumber||4).padStart(3,"0")+' از 365</span><b>پرونده آماده</b><span>'+(s.prepared?"✅ ":"❌ ")+esc(s.title||"—")+'</span><b>کشور</b><span>'+esc(s.country||"—")+'</span><b>تصاویر</b><span>'+esc(s.images||0)+'</span><b>منتشرشده در بله</b><span>'+esc(s.publishedCount||0)+'</span><b>صف بعدی</b><span>'+esc(s.upcoming||"—")+'</span>';
+}
+async function heritageManage(action){
+ if(action==="sync_day4"&&!confirm("شماره شب سفر 365 بله با تلگرام روی شب 004 همگام شود؟ این کار فقط وقتی تاریخچه بله خالی است انجام می‌شود."))return;
+ if(action==="rebuild"&&!confirm("پرونده آماده سفر 365 دوباره ساخته شود؟"))return;
+ try{
+  const d=await api("/admin/api/heritage/manage",{method:"POST",body:JSON.stringify({action})});
+  renderHeritageMgmt(d);
+  $("health").textContent="HERITAGE MANAGEMENT — "+action+"\\n\\n"+JSON.stringify(d,null,2);
+  toast(action==="send_test"?"آلبوم سفر 365 به کانال تست ارسال شد ✅":"مدیریت سفر 365 انجام شد");
+ }catch(e){$("health").textContent="HERITAGE MANAGEMENT FAILED\\n\\n"+e.message;toast(e.message)}
+}
+async function loadEditorialManagement(){
+ try{
+  const [n,h]=await Promise.all([
+   api("/admin/api/night/manage",{method:"POST",body:JSON.stringify({action:"status"})}),
+   api("/admin/api/heritage/manage",{method:"POST",body:JSON.stringify({action:"status"})})
+  ]);
+  renderNightMgmt(n);renderHeritageMgmt(h);
+ }catch(e){console.warn("EDITORIAL_MANAGEMENT_STATUS",e)}
+}
 async function automationPreflight(){try{const d=await api("/admin/api/automation/preflight",{method:"POST",body:"{}"});$("health").textContent="AUTOMATION PREFLIGHT\\n\\n"+(d.checks||[]).map(x=>(x.ok?"✅ ":"❌ ")+x.stage+" — "+x.detail) .join("\\n");toast(d.ok?"Preflight سالم است":"Preflight ناقص است")}catch(e){$("health").textContent="Preflight خطا\\n\\n"+e.message;toast(e.message)}}
 async function automationPreview(){try{const d=await api("/admin/api/automation/preview",{method:"POST",body:"{}"});$("health").textContent="DISPATCHER DRY RUN\\n"+d.previewTehran +"\\n\\n"+(d.previewJobs||[]).map(x=>"• "+x.name+" → "+x.action+" ["+x.instance+"]") .join("\\n")+"\\n\\nاین عملیات هیچ پستی منتشر نکرد.";toast("پیش‌نمایش Dispatcher آماده شد")}catch(e){toast(e.message)}}
 async function startAutomation(){if(!confirm("Automation واقعی روی کانال اصلی فعال شود؟ از این لحظه Cron و Coordinator طبق زمان‌بندی اصلی کار می‌کنند."))return;try{const d=await api("/admin/api/automation/start",{method:"POST",body:JSON.stringify({confirm:"START"})});toast("Automation فعال شد");$("health").textContent="✅ AUTOMATION STARTED\\n\\n"+(d.preflight?.checks||[]).map(x=>"✅ "+x.stage+" — "+x.detail) .join("\\n");refreshAll()}catch(e){$("health").textContent="فعال‌سازی انجام نشد\\n\\n"+e.message;toast(e.message)}}
@@ -9444,6 +9534,95 @@ async function adminWebHeritageDiagnostic(env) {
     }
   }
   return {ok:true,type:"heritage",ready:pipeline.every(x=>x.ok),pipeline};
+}
+
+function adminNightStateSummary(state) {
+  const pkg=state?.preparedPackage;
+  return {
+    status:pkg?.status || state?.lastReport?.status || "EMPTY",
+    destination:pkg?.displayName || pkg?.entity?.labelFa || "",
+    date:pkg?.date || null,
+    images:pkg?.images?.length || 0,
+    imageSource:nightImageSourceLabel(pkg),
+    textSource:pkg?.editorial?.source || "",
+    model:pkg?.editorial?.model || "",
+    caption:pkg ? nightPackageCaption(pkg) : "",
+    report:state?.lastReport || null,
+    plans:(state?.plans || []).slice(0,3)
+  };
+}
+function adminHeritageStateSummary(state) {
+  const pkg=state?.preparedPackage;
+  return {
+    nextDayNumber:Number(state?.nextDayNumber || HERITAGE_BALE_SYNC_START_DAY),
+    publishedCount:Array.isArray(state?.history)?state.history.length:0,
+    prepared:Boolean(pkg),
+    preparedDay:pkg?.day_number || null,
+    title:pkg?.candidate?.fa || "",
+    country:pkg?.candidate?.country || "",
+    images:pkg?.images?.length || 0,
+    caption:pkg?.caption || "",
+    editorialSource:pkg?.candidate?.editorialSource || "",
+    lastReport:state?.lastReport || null,
+    upcoming:heritageUpcomingSummary(state,4),
+    syncStartDay:HERITAGE_BALE_SYNC_START_DAY
+  };
+}
+async function adminNightManage(env, action) {
+  const now=new Date();
+  if (action==="status") return {ok:true,action,state:adminNightStateSummary(await nightDestinationState(env))};
+  if (action==="prepare") {
+    const pkg=await prepareNightDestination(env,now,{fresh:false});
+    return {ok:true,action,state:adminNightStateSummary(await nightDestinationState(env)),package:{destination:pkg.displayName,images:pkg.images.length}};
+  }
+  if (action==="refresh_images") {
+    const pkg=await refreshNightDestinationImages(env,now);
+    return {ok:true,action,state:adminNightStateSummary(await nightDestinationState(env)),package:{destination:pkg.displayName,images:pkg.images.length}};
+  }
+  if (action==="refresh_text") {
+    const pkg=await refreshNightDestinationText(env,now);
+    return {ok:true,action,state:adminNightStateSummary(await nightDestinationState(env)),package:{destination:pkg.displayName,source:pkg.editorial?.source}};
+  }
+  if (action==="new") {
+    const pkg=await replaceNightDestinationPackage(env,now);
+    return {ok:true,action,state:adminNightStateSummary(await nightDestinationState(env)),package:{destination:pkg.displayName,images:pkg.images.length}};
+  }
+  if (action==="send_test") {
+    const state=await nightDestinationState(env);
+    const pkg=state?.preparedPackage?.date===currentTehranIso(now) ? state.preparedPackage : await prepareNightDestination(env,now,{fresh:false});
+    const result=await sendNightPackage(env,testChannel(env),pkg);
+    return {ok:true,action,messageId:baleMessageIdFromResult(result),state:adminNightStateSummary(await nightDestinationState(env))};
+  }
+  throw new Error("INVALID_NIGHT_MANAGEMENT_ACTION");
+}
+async function adminHeritageManage(env, action, requestedDay=null) {
+  const now=new Date();
+  if (action==="status") return {ok:true,action,state:adminHeritageStateSummary(await heritageState(env))};
+  if (action==="sync_day4") {
+    const state=await heritageState(env);
+    if ((state.history||[]).length) throw new Error("HERITAGE_SYNC_BLOCKED_HISTORY_EXISTS");
+    const updated=await heritageState(env,{...state,nextDayNumber:HERITAGE_BALE_SYNC_START_DAY,preparedPackage:null,lastReport:{ok:true,stage:"synced",at:new Date().toISOString(),nextDayNumber:HERITAGE_BALE_SYNC_START_DAY}});
+    return {ok:true,action,state:adminHeritageStateSummary(updated)};
+  }
+  if (action==="set_day") {
+    const day=Math.max(1,Math.min(365,Number(requestedDay||0)));
+    if (!Number.isInteger(day)) throw new Error("HERITAGE_DAY_INVALID");
+    const state=await heritageState(env);
+    const updated=await heritageState(env,{...state,nextDayNumber:day,preparedPackage:null,lastReport:{ok:true,stage:"manual-day-set",at:new Date().toISOString(),nextDayNumber:day}});
+    return {ok:true,action,state:adminHeritageStateSummary(updated)};
+  }
+  if (action==="prepare" || action==="rebuild") {
+    const pkg=await prepareHeritage(env,now,action==="rebuild",true);
+    return {ok:true,action,state:adminHeritageStateSummary(await heritageState(env)),package:{dayNumber:pkg.day_number,title:pkg.candidate?.fa,images:pkg.images?.length||0}};
+  }
+  if (action==="send_test") {
+    let state=await heritageState(env);
+    let pkg=state.preparedPackage;
+    if (!pkg || Number(pkg.day_number)!==Number(state.nextDayNumber)) pkg=await prepareHeritage(env,now,false,true);
+    const result=await sendHeritageMediaGroup(env,testChannel(env),pkg.images,pkg.caption);
+    return {ok:true,action,messageId:baleMessageIdFromResult(result),uploadedCount:result.uploadedCount||0,rejected:result.rejected||[],state:adminHeritageStateSummary(await heritageState(env))};
+  }
+  throw new Error("INVALID_HERITAGE_MANAGEMENT_ACTION");
 }
 async function adminWebRatesDiagnostic(env) {
   const pipeline = [];
@@ -9765,6 +9944,22 @@ async function handleAdminWeb(request, env, ctx, url) {
     const result = await adminWebAiHealth(env);
     return Response.json(result,{status:result.operational?200:503,headers:{"cache-control":"no-store"}});
   }
+  if (url.pathname === "/admin/api/night/manage" && request.method === "POST") {
+    const body=await request.json().catch(()=>({}));
+    try {
+      return Response.json(await adminNightManage(withFlyYabExecutionScope(env,"production"),String(body.action||"status")),{headers:{"cache-control":"no-store"}});
+    } catch(error) {
+      return Response.json({ok:false,error:String(error?.message||error),code:String(error?.code||"NIGHT_MANAGEMENT_FAILED")},{status:500,headers:{"cache-control":"no-store"}});
+    }
+  }
+  if (url.pathname === "/admin/api/heritage/manage" && request.method === "POST") {
+    const body=await request.json().catch(()=>({}));
+    try {
+      return Response.json(await adminHeritageManage(withFlyYabExecutionScope(env,"production"),String(body.action||"status"),body.day),{headers:{"cache-control":"no-store"}});
+    } catch(error) {
+      return Response.json({ok:false,error:String(error?.message||error),code:String(error?.code||"HERITAGE_MANAGEMENT_FAILED"),details:error?.details||null},{status:500,headers:{"cache-control":"no-store"}});
+    }
+  }
   if (url.pathname === "/admin/api/diagnose-post" && request.method === "POST") {
     const body = await request.json().catch(()=>({}));
     const type = String(body.type || "").toLowerCase();
@@ -9800,6 +9995,32 @@ async function handleAdminWeb(request, env, ctx, url) {
     let targetChannel;
     try { targetChannel = adminWebTestTarget(env); }
     catch (error) { return Response.json({ok:false,error:String(error?.message||error)},{status:409}); }
+
+    if (type === "heritage") {
+      try {
+        const sandboxEnv = withFlyYabExecutionScope({...env,BALE_TEST_CHANNEL_ID:String(targetChannel)}, "sandbox-web-control-heritage");
+        const startedAt = Date.now();
+        const pkg = await prepareHeritage(sandboxEnv,new Date(),true,true);
+        const result = await sendHeritageMediaGroup(sandboxEnv,targetChannel,pkg.images,pkg.caption);
+        return Response.json({
+          ...adminWebManualTestResult(type,targetChannel,result,startedAt),
+          delivered:true,
+          status:"SENT",
+          action:"HERITAGE_SANDBOX_PACKAGE_SENT",
+          dayNumber:pkg.day_number,
+          title:pkg.candidate?.fa || "",
+          uploadedCount:result.uploadedCount || 0,
+          rejected:result.rejected || []
+        },{headers:{"cache-control":"no-store"}});
+      } catch (error) {
+        return Response.json({
+          ok:false,type,targetChannel,status:"FAILED",
+          error:String(error?.message||error),
+          code:String(error?.code||"HERITAGE_TEST_FAILED"),
+          details:error?.details || null
+        },{status:502,headers:{"cache-control":"no-store"}});
+      }
+    }
 
     if (type === "weather") {
       try {

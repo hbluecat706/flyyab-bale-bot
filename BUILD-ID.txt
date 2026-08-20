@@ -1,3 +1,2 @@
-FlyYab-Bale-1.5.2-20260820-NIGHT-HERITAGE-ALBUM-MULTIPART-V6.9.1
-Night Destination + Heritage365: remote image URLs are now downloaded by Worker and sent to Bale via multipart/attach:// album transport.
-Content logic, catalogs, AI, captions, scheduler and formatting preserved.
+FlyYab-Bale-1.6.0-20260820-HERITAGE-DAY4-ADVANCED-CONTROL-ROOM-V6.9.1
+Heritage day-004 sync + supported multipart album filtering + advanced Night/Heritage web management.
