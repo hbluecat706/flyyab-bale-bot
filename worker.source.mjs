@@ -17,7 +17,7 @@ import { NIGHT_DESTINATIONS, NIGHT_DESTINATION_CATALOG_REVISION, nightDestinatio
 import { HERITAGE_CATALOG_VERSION, HERITAGE_CATALOG, heritageCatalogItem, heritageCatalogStats } from "./heritage-catalog.mjs";
 import { IRAN_WEATHER_DESTINATIONS, WEATHER_CATALOG_VERSION, weatherCatalogStats } from "./weather-catalog.mjs";
 import { WEATHER_VERSION, WEATHER_RULES, assessWeather, weatherReason as weatherReasonV2, selectWeatherPicks, candidateSeasonScore, stableWeatherHash } from "./weather-core.mjs";
-const FLYYAB_BUILD_ID = "FlyYab-Bale-1.0.3-20260820-RC3.1-GATE-DIAG-V6.9.1";
+const FLYYAB_BUILD_ID = "FlyYab-Bale-1.0.4-20260820-RC3.2-MEDIA-UPLOAD-FIX-V6.9.1";
 const INTERNATIONAL_FARES_POST_VERSION = "international-fares-v2.0-homepage-parity";
 const SCHEDULER_RESILIENCE_VERSION = "scheduler-resilience-v3.1-self-healing-coordinator";
 const FREE_TIER_DELIVERY_VERSION = "free-tier-delivery-v2.1-self-healing-coordinator";
@@ -8721,13 +8721,32 @@ async function runBaleLiveGate(request, env, ctx, url) {
     return Response.json({ ok:true, action, messageId:baleMessageIdFromResult(result) }, { headers:{"cache-control":"no-store"} });
   }
   if (action === "photo") {
-    const result = await bale(env, "sendPhoto", {
-      chat_id: channel,
-      photo: BALE_GATE_PHOTO_1,
-      caption: "🖼 <b>FlyYab Bale Photo Gate</b>\n\nارسال تصویر از URL + کپشن فارسی + دکمه لینک.",
-      reply_markup: { inline_keyboard: [[{ text:"🌐 FlyYab.ir", url:"https://flyyab.ir/?utm_source=bale&utm_medium=photo_gate" }]] }
-    });
-    return Response.json({ ok:true, action, messageId:baleMessageIdFromResult(result) }, { headers:{"cache-control":"no-store"} });
+    try {
+      const source = await fetch(BALE_GATE_PHOTO_1, {
+        headers:{
+          "user-agent":"FlyYab-Bale-Live-Gate/1.0 (https://flyyab.ir)",
+          accept:"image/jpeg,image/png,image/webp,image/*;q=0.8"
+        }
+      });
+      if (!source.ok) throw new Error(`PHOTO_GATE_SOURCE_HTTP_${source.status}`);
+      const contentType = String(source.headers.get("content-type") || "image/jpeg").split(";")[0].trim();
+      if (!contentType.startsWith("image/")) throw new Error(`PHOTO_GATE_SOURCE_TYPE_${contentType || "unknown"}`);
+      const bytes = await source.arrayBuffer();
+      if (!bytes.byteLength) throw new Error("PHOTO_GATE_SOURCE_EMPTY");
+      const ext = heritageImageExtension(contentType);
+      const result = await sendBundledPhoto(
+        env,
+        channel,
+        bytes,
+        `flyyab-bale-photo-gate.${ext}`,
+        "🖼 <b>FlyYab Bale Photo Gate</b>\n\nارسال فایل تصویر مستقیم از Worker به بله + کپشن فارسی + دکمه لینک.",
+        { inline_keyboard: [[{ text:"🌐 FlyYab.ir", url:"https://flyyab.ir/?utm_source=bale&utm_medium=photo_gate" }]] },
+        contentType
+      );
+      return Response.json({ ok:true, action, transport:"multipart-upload", bytes:bytes.byteLength, contentType, messageId:baleMessageIdFromResult(result) }, { headers:{"cache-control":"no-store"} });
+    } catch (error) {
+      return Response.json({ ok:false, action, stage:"photo", error:String(error?.message || error), buildId:FLYYAB_BUILD_ID }, { status:502, headers:{"cache-control":"no-store"} });
+    }
   }
   if (action === "album") {
     const media = [
