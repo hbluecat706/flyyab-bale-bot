@@ -1,3 +1,7 @@
-FlyYab-Bale-1.1.0-20260820-CONTROL-ROOM-FINAL-V6.9.1
-Control Room: /admin
-Automation default: controlled by BALE_AUTOMATION_ENABLED
+FlyYab-Bale-1.2.0-20260820-CONTROL-ROOM-DIAGNOSTICS-V6.9.1
+Control Room diagnostics v1.2
+AI Primary: Arvan GPT-4.1-Mini
+AI Fallback: Cloudflare Workers AI
+Panel manual tests: BALE_TEST_CHANNEL_ID only
+Automation: BALE_PRODUCTION_CHANNEL_ID only
+BALE_AUTOMATION_ENABLED must stay 0 until full-day test passes.

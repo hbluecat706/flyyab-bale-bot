@@ -9,8 +9,8 @@
   "workers_dev": true,
   "keep_vars": true,
   "vars": {
-    "AI_PROVIDER": "gapgpt",
-    "GAPGPT_MODEL": "gpt-4o",
+    "AI_PROVIDER": "arvan",
+    "ARVAN_AI_MODEL": "GPT-4.1-Mini",
     "AI_FALLBACK": "cloudflare",
     "BALE_CHANNEL_ID": "5254814488",
     "BALE_AUTOMATION_ENABLED": "0"

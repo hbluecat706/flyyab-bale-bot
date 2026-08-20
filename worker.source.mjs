@@ -17,7 +17,7 @@ import { NIGHT_DESTINATIONS, NIGHT_DESTINATION_CATALOG_REVISION, nightDestinatio
 import { HERITAGE_CATALOG_VERSION, HERITAGE_CATALOG, heritageCatalogItem, heritageCatalogStats } from "./heritage-catalog.mjs";
 import { IRAN_WEATHER_DESTINATIONS, WEATHER_CATALOG_VERSION, weatherCatalogStats } from "./weather-catalog.mjs";
 import { WEATHER_VERSION, WEATHER_RULES, assessWeather, weatherReason as weatherReasonV2, selectWeatherPicks, candidateSeasonScore, stableWeatherHash } from "./weather-core.mjs";
-const FLYYAB_BUILD_ID = "FlyYab-Bale-1.1.0-20260820-CONTROL-ROOM-FINAL-V6.9.1";
+const FLYYAB_BUILD_ID = "FlyYab-Bale-1.2.0-20260820-CONTROL-ROOM-DIAGNOSTICS-V6.9.1";
 const INTERNATIONAL_FARES_POST_VERSION = "international-fares-v2.0-homepage-parity";
 const SCHEDULER_RESILIENCE_VERSION = "scheduler-resilience-v3.1-self-healing-coordinator";
 const FREE_TIER_DELIVERY_VERSION = "free-tier-delivery-v2.1-self-healing-coordinator";
@@ -522,9 +522,11 @@ async function runArvanAiConnectionTest(env) {
 }
 function selectedAiProvider(env) {
   const requested = String(env.AI_PROVIDER || "").trim().toLowerCase();
-  if (requested === "gapgpt") return "gapgpt";
+  if (requested === "arvan" || requested === "arvancloud") return "arvan";
   if (requested === "cloudflare") return "cloudflare";
-  return env.GAPGPT_API_KEY ? "gapgpt" : "cloudflare";
+  if (requested === "gapgpt") return "gapgpt"; // legacy compatibility only
+  if (env.ARVAN_AI_API_KEY && env.ARVAN_AI_ENDPOINT) return "arvan";
+  return env.AI?.run ? "cloudflare" : (env.GAPGPT_API_KEY ? "gapgpt" : "cloudflare");
 }
 function gapGptResponseFormat(format) {
   if (!format) return undefined;
@@ -567,19 +569,31 @@ async function runGapGpt(env, options = {}) {
 function createAiBinding(env, telemetry = { last: null, history: [] }) {
   const cloudflareAi = env.AI;
   const provider = selectedAiProvider(env);
-  // Preserve the native binding identity for existing Cloudflare-only flows.
-  // GapGPT uses the observable wrapper below because it may fall back to Cloudflare.
   if (provider === "cloudflare") return cloudflareAi;
   return {
-    async run(cloudflareModel, options) {
+    async run(cloudflareModel, options = {}) {
       try {
-        const result = await runGapGpt(env, options);
-        telemetry.last = { provider: "gapgpt", model: String(env.GAPGPT_MODEL || "gpt-4o"), ok: true, at: new Date().toISOString() };
+        let result;
+        let model;
+        if (provider === "arvan") {
+          const arvan = await runArvanAiChat(env, {
+            messages: options.messages || [],
+            temperature: options.temperature,
+            max_tokens: options.max_tokens,
+            model: env.ARVAN_AI_MODEL || ARVAN_AI_MODEL_DEFAULT
+          });
+          result = arvan.data;
+          model = arvan.model;
+        } else {
+          result = await runGapGpt(env, options);
+          model = String(env.GAPGPT_MODEL || "gpt-4o");
+        }
+        telemetry.last = { provider, model, ok: true, at: new Date().toISOString() };
         telemetry.history.push(telemetry.last);
         return result;
       } catch (error) {
         if (cloudflareAi?.run && String(env.AI_FALLBACK || "cloudflare").toLowerCase() !== "none") {
-          const warning = `GapGPT: ${String(error?.message || error).slice(0, 180)}`;
+          const warning = `${provider}: ${String(error?.message || error).slice(0, 180)}`;
           try {
             const result = await cloudflareAi.run(cloudflareModel, options);
             telemetry.last = { provider: "cloudflare", model: cloudflareModel, ok: true, warning, at: new Date().toISOString() };
@@ -591,7 +605,7 @@ function createAiBinding(env, telemetry = { last: null, history: [] }) {
             throw fallbackError;
           }
         }
-        telemetry.last = { provider: "gapgpt", model: String(env.GAPGPT_MODEL || "gpt-4o"), ok: false, error: String(error?.message || error).slice(0, 240), at: new Date().toISOString() };
+        telemetry.last = { provider, model: provider === "arvan" ? String(env.ARVAN_AI_MODEL || ARVAN_AI_MODEL_DEFAULT) : String(env.GAPGPT_MODEL || "gpt-4o"), ok: false, error: String(error?.message || error).slice(0, 240), at: new Date().toISOString() };
         telemetry.history.push(telemetry.last);
         throw error;
       }
@@ -601,11 +615,17 @@ function createAiBinding(env, telemetry = { last: null, history: [] }) {
 function withAiProvider(env) {
   const provider = selectedAiProvider(env);
   const telemetry = { last: null, history: [] };
+  const nativeCloudflareAi = env.AI;
   return {
     ...env,
-    CLOUDFLARE_AI_AVAILABLE: Boolean(env.AI?.run),
+    CLOUDFLARE_AI_AVAILABLE: Boolean(nativeCloudflareAi?.run),
+    CLOUDFLARE_AI_NATIVE: nativeCloudflareAi,
     AI_PROVIDER_ACTIVE: provider,
-    AI_MODEL_ACTIVE: provider === "gapgpt" ? String(env.GAPGPT_MODEL || "gpt-4o") : "cloudflare-dynamic",
+    AI_MODEL_ACTIVE: provider === "arvan"
+      ? String(env.ARVAN_AI_MODEL || ARVAN_AI_MODEL_DEFAULT)
+      : provider === "gapgpt"
+        ? String(env.GAPGPT_MODEL || "gpt-4o")
+        : "cloudflare-dynamic",
     AI_TELEMETRY: telemetry,
     AI: createAiBinding(env, telemetry)
   };
@@ -1288,7 +1308,7 @@ function deliveryFailureCode(error, phase = "", postType = "") {
   if (/navasan|نوسان|نرخ ارز|وب.?سرویس نرخ ارز/.test(message) || normalizedType === "rates" && /api|rate|نرخ/.test(message)) return "RATE_SOURCE_FAILED";
   if (/met norway|api\.met\.no|هواشناسی|weather|forecast/.test(message) || normalizedType === "weather" && /api|fetch|http/.test(message)) return "WEATHER_SOURCE_FAILED";
   if (/getminfile|cheapestprice|minprice|نرخ معتبر داخلی|نرخ معتبر خارجی|flight feed|feed قیمت|پرواز/.test(message) && !/bale/.test(message)) return "FLIGHT_FEED_FAILED";
-  if (/gapgpt|workers ai|cloudflare ai|هوش مصنوعی|ai|glm-|llama/.test(message)) return "AI_PROVIDER_FAILED";
+  if (/arvan|arvancloud|gapgpt|workers ai|cloudflare ai|هوش مصنوعی|ai|gpt-4\.1|glm-|llama/.test(message)) return "AI_PROVIDER_FAILED";
   if (/pexels|wikimedia commons|commons/.test(message) && /تصویر|image|photo|http|api|fetch/.test(message)) return "IMAGE_SOURCE_FAILED";
   if (/نگاره|wikipedia|wiki|ویکی|زیرصفحه|مقاله/.test(message)) return "WIKIPEDIA_SOURCE_FAILED";
   if (/تصویر|image|mime|فایل نگاره|حجم/.test(message)) return "IMAGE_VALIDATION_FAILED";
@@ -7099,6 +7119,7 @@ function testChannel(env) {
   return channel;
 }
 async function getBotMode(env) {
+  if (env?.__FLYYAB_AUTOMATION_RUN === true || String(env?.__FLYYAB_AUTOMATION_RUN || "") === "1") return "live";
   if (!env.BOT_CONTROL) return "test";
   const id = env.BOT_CONTROL.idFromName("flyyab-bale-global-control-v1");
   const response = await env.BOT_CONTROL.get(id).fetch("https://bot-control/mode");
@@ -8591,7 +8612,7 @@ function independentJobsForTick(scheduledNow = new Date()) {
   return jobs.map((job) => ({ ...job, scheduledTime: scheduledNow.toISOString(), tehranTime, date }));
 }
 async function runIndependentJob(env, job, scheduledNow = new Date()) {
-  const productionEnv = withFlyYabExecutionScope(withAiProvider(env), "production");
+  const productionEnv = withFlyYabExecutionScope(withAiProvider({ ...env, __FLYYAB_AUTOMATION_RUN:true }), "production");
   switch (job?.action) {
     case "heartbeat": return recordSchedulerHeartbeat(productionEnv, scheduledNow);
     case "public_slot": {
@@ -9039,23 +9060,28 @@ pre{white-space:pre-wrap;word-break:break-word;background:#08182f;border:1px sol
 <section class="card"><h2>اتصال بله</h2><div class="stat" id="bale">—</div><div class="row" style="margin-top:12px"><button class="btn primary" onclick="fixWebhook()">بازسازی Webhook</button></div></section>
 
 <section class="card half"><h2>مشخصات اتصال</h2><div id="connection"></div></section>
-<section class="card half"><h2>کنترل سریع</h2><div class="row"><button class="btn primary" onclick="testAll()">⚡ تست همه پست‌ها</button><button class="btn" onclick="loadHealth()">🩺 سلامت ارسال</button></div><div class="muted" style="margin-top:10px">تست‌ها در Scope مستقل اجرا می‌شوند و State اصلی را تغییر نمی‌دهند.</div></section>
+<section class="card half"><h2>هوش مصنوعی</h2><div id="aiHealth" class="muted">برای تست اتصال روی دکمه زیر بزنید.</div><div class="row" style="margin-top:12px"><button class="btn primary" onclick="checkAi()">🤖 تست Arvan + Cloudflare</button></div></section>
+<section class="card half"><h2>سلامت زیرساخت</h2><div id="readiness"></div></section>
+<section class="card half"><h2>کنترل سریع</h2><div class="row"><button class="btn primary" onclick="testAll()">⚡ تست همه پست‌ها</button><button class="btn" onclick="loadHealth()">🩺 سلامت ارسال</button></div><div class="muted" style="margin-top:10px">تمام تست‌های دستی فقط به کانال تست می‌روند. کانال اصلی برای Automation رزرو شده است.</div></section>
 
 <section class="card wide"><h2>پست‌های روزانه — تهران</h2><div id="posts" class="table"></div></section>
 <section class="card wide"><h2>Delivery Health امروز</h2><pre id="health">برای مشاهده گزارش روی «سلامت ارسال» بزنید.</pre></section>
-<section class="card wide"><h2>راهنمای عملیاتی</h2><div class="kv"><b>Automation</b><span>روشن/خاموش‌بودن انتشار زمان‌بندی‌شده با Secret/Variable کلادفلر <code>BALE_AUTOMATION_ENABLED</code> کنترل می‌شود.</span><b>حالت TEST/LIVE</b><span>از همین پنل قابل تغییر است. حتی با حالت LIVE، اگر Automation خاموش باشد Cron پست عمومی نمی‌فرستد.</span><b>کانال تست</b><span id="testHelp">—</span><b>مدیریت بازو</b><span>پنل وب مرجع اصلی مدیریت است؛ فرمان‌های داخل بازو به‌عنوان مسیر پشتیبان باقی می‌مانند.</span></div></section>
+<section class="card wide"><h2>راهنمای عملیاتی</h2><div class="kv"><b>Automation</b><span>روشن/خاموش‌بودن انتشار زمان‌بندی‌شده با Secret/Variable کلادفلر <code>BALE_AUTOMATION_ENABLED</code> کنترل می‌شود.</span><b>مقصد Automation</b><span>انتشار زمان‌بندی‌شده همیشه کانال اصلی است؛ حالت تعاملی پنل مسیر Cron را عوض نمی‌کند.</span><b>کانال تست</b><span id="testHelp">—</span><b>مدیریت بازو</b><span>پنل وب مرجع اصلی مدیریت است؛ فرمان‌های داخل بازو به‌عنوان مسیر پشتیبان باقی می‌مانند.</span></div></section>
 </div></div><div id="toast" class="toast"></div>
 <script>
 const $=id=>document.getElementById(id);
 function toast(msg){const t=$("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),3500)}
 async function api(path,opts={}){const r=await fetch(path,{headers:{"content-type":"application/json",...(opts.headers||{})},...opts});if(r.status===401){location.href="/admin";throw new Error("SESSION_EXPIRED")}const d=await r.json().catch(()=>({}));if(!r.ok||d.ok===false)throw new Error(d.error||("HTTP "+r.status));return d}
-function renderPosts(s){$("posts").innerHTML=s.schedule.map(p=>'<div class="post"><div class="time">'+p.time+'</div><div class="name">'+p.title+'</div><button class="btn" onclick="testPost(\\''+p.type+'\\')">تست</button></div>').join("")}
+function renderPosts(s){$("posts").innerHTML=s.schedule.map(p=>'<div class="post"><div class="time">'+p.time+'</div><div class="name">'+p.title+'</div><div class="row"><button class="btn" onclick="testPost(\''+p.type+'\')">تست</button><button class="btn" onclick="diagnosePost(\''+p.type+'\')">عیب‌یابی</button></div></div>').join("")}
 async function refreshAll(){try{const s=await api("/admin/api/status");$("build").textContent=s.buildId;$("mode").innerHTML=s.mode==="live"?'<span class="pill ok">🟢 اصلی</span>':'<span class="pill warn">🧪 آزمایشی</span>';$("automation").innerHTML=s.automationEnabled?'<span class="pill ok">فعال</span>':'<span class="pill bad">خاموش</span>';$("bale").innerHTML=s.baleOk?'<span class="pill ok">متصل</span>':'<span class="pill bad">خطا</span>';
-$("connection").innerHTML='<div class="kv"><b>بازو</b><span>'+esc(s.botUsername||"—")+'</span><b>کانال اصلی</b><span>'+esc(s.productionChannel)+'</span><b>کانال تست</b><span>'+esc(s.testChannel||"تعریف نشده")+'</span><b>Webhook</b><span>'+esc(s.webhookUrl||"ثبت نشده")+'</span><b>دسترسی ارسال</b><span>'+(s.canPostMessages?"✅":"❌")+'</span><b>زمان تهران</b><span>'+esc(s.tehranTime)+'</span></div>';
-$("testHelp").textContent=s.testChannel?"تست‌های پنل به کانال تست "+s.testChannel+" می‌روند.":"BALE_TEST_CHANNEL_ID تعریف نشده؛ تست‌های پنل با تأیید صریح به کانال اصلی می‌روند.";
-const w=$("testWarn"); if(!s.testChannel){w.style.display="block";w.textContent="⚠️ کانال تست جداگانه تعریف نشده است. بنابراین دکمه‌های «تست» در همین کانال اصلی بله منتشر می‌شوند."}else w.style.display="none";renderPosts(s)}catch(e){toast("خطا: "+e.message)}}
+$("connection").innerHTML='<div class="kv"><b>بازو</b><span>'+esc(s.botUsername||"—")+'</span><b>کانال اصلی</b><span>'+esc(s.productionChannel)+' '+(s.canPostMessages?"✅":"❌")+'</span><b>کانال تست</b><span>'+esc(s.testChannel||"تعریف نشده")+' '+(s.testCanPostMessages?"✅":"❌")+'</span><b>Webhook</b><span>'+esc(s.webhookUrl||"ثبت نشده")+'</span><b>زمان تهران</b><span>'+esc(s.tehranTime)+'</span></div>';
+$("readiness").innerHTML='<div class="kv">'+(s.readiness||[]).map(x=>'<b>'+esc(x.stage)+'</b><span>'+(x.ok?"✅ ":"❌ ")+esc(x.name)+'</span>').join("")+'</div>';
+$("testHelp").textContent=s.testChannel?"تمام Test/Preview/Test All فقط به کانال تست "+s.testChannel+" می‌روند.":"BALE_TEST_CHANNEL_ID تعریف نشده؛ تست‌های پنل برای ایمنی قفل هستند.";
+const w=$("testWarn"); if(!s.testChannel||!s.testCanPostMessages){w.style.display="block";w.textContent="⚠️ کانال تست آماده نیست. تا رفع این مورد هیچ تست دستی از پنل اجرا نمی‌شود."}else w.style.display="none";renderPosts(s)}catch(e){toast("خطا: "+e.message)}}
 function esc(v){return String(v??"").replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]))}
 async function setMode(mode){if(mode==="live"&&!confirm("حالت ربات روی LIVE قرار بگیرد؟"))return;try{const d=await api("/admin/api/mode",{method:"POST",body:JSON.stringify({mode})});toast("حالت ربات: "+d.mode);refreshAll()}catch(e){toast(e.message)}}
+async function checkAi(){const el=$("aiHealth");el.textContent="در حال تست واقعی هر دو Provider…";try{const d=await api("/admin/api/ai-health",{method:"POST",body:"{}"});el.innerHTML='<div class="kv"><b>Primary</b><span>'+esc(d.primary)+'</span><b>Arvan</b><span>'+(d.arvan.ok?"✅ ":"❌ ")+esc(d.arvan.model||d.arvan.error||"")+'</span><b>Cloudflare</b><span>'+(d.cloudflare.ok?"✅ ":"❌ ")+esc(d.cloudflare.model||d.cloudflare.error||"")+'</span><b>Operational</b><span>'+(d.operational?"✅ آماده":"❌ نیاز به بررسی")+'</span></div>'}catch(e){el.textContent="خطا: "+e.message}}
+async function diagnosePost(type){try{const d=await api("/admin/api/diagnose-post",{method:"POST",body:JSON.stringify({type})});const summary=(d.pipeline||[]).map(x=>(x.ok?"✅ ":"❌ ")+x.stage+" — "+(x.detail||"")).join("\n");$("health").textContent="عیب‌یابی "+type+"\n\n"+summary+(d.error?"\n\nخطا: "+d.error:"");toast(d.ready?"پیش‌نیازهای "+type+" آماده‌اند":"پیش‌نیاز ناقص است")}catch(e){toast("خطا: "+e.message)}}
 async function testPost(type){if(!confirm("پست «"+type+"» اکنون به مقصد تست فعلی ارسال شود؟"))return;try{const d=await api("/admin/api/test-post",{method:"POST",body:JSON.stringify({type})});toast("تست "+type+" پذیرفته شد → "+d.targetChannel)}catch(e){toast("خطا: "+e.message)}}
 async function testAll(){if(!confirm("تمام پست‌های قابل تست یکی‌یکی اجرا شوند؟ این کار چند پیام در کانال ایجاد می‌کند."))return;try{const d=await api("/admin/api/test-all",{method:"POST",body:"{}"});toast("تست همه پست‌ها شروع شد: "+d.count+" مورد")}catch(e){toast(e.message)}}
 async function loadHealth(){try{const d=await api("/admin/api/health");$("health").textContent=d.report||"گزارشی وجود ندارد"}catch(e){$("health").textContent="خطا: "+e.message}}
@@ -9063,6 +9089,90 @@ async function fixWebhook(){try{const d=await api("/admin/api/webhook",{method:"
 async function logout(){await fetch("/admin/logout",{method:"POST"});location.href="/admin"}
 refreshAll();setInterval(refreshAll,60000);
 </script></body></html>`;
+}
+
+async function runCloudflareAiConnectionTest(env) {
+  const ai = env.CLOUDFLARE_AI_NATIVE || env.AI;
+  if (!ai?.run) throw new Error("CLOUDFLARE_AI_BINDING_MISSING");
+  const model = String(env.CLOUDFLARE_AI_HEALTH_MODEL || "@cf/meta/llama-3.1-8b-instruct-fast");
+  const result = await ai.run(model, {
+    messages:[
+      {role:"system",content:"پاسخ تست را بسیار کوتاه بده."},
+      {role:"user",content:"فقط بنویس: اتصال Cloudflare AI موفق است"}
+    ],
+    max_tokens:48,
+    temperature:0
+  });
+  const response = String(aiResponsePayload(result) || "").trim();
+  if (!response) throw new Error("CLOUDFLARE_AI_EMPTY_RESPONSE");
+  return {ok:true,provider:"Cloudflare Workers AI",model,response:response.slice(0,180)};
+}
+async function adminWebAiHealth(env) {
+  const primary = selectedAiProvider(env);
+  const arvanConfig = {
+    apiKeyPresent:Boolean(String(env.ARVAN_AI_API_KEY || "").trim()),
+    endpointPresent:Boolean(String(env.ARVAN_AI_ENDPOINT || "").trim()),
+    model:String(env.ARVAN_AI_MODEL || ARVAN_AI_MODEL_DEFAULT)
+  };
+  const cloudflareConfig = {bindingPresent:Boolean((env.CLOUDFLARE_AI_NATIVE || env.AI)?.run)};
+  const out = {
+    ok:true,
+    primary,
+    fallback:String(env.AI_FALLBACK || "cloudflare").toLowerCase(),
+    arvan:{...arvanConfig,ok:false,tested:false},
+    cloudflare:{...cloudflareConfig,ok:false,tested:false}
+  };
+  try {
+    if (!arvanConfig.apiKeyPresent || !arvanConfig.endpointPresent) throw new Error("ARVAN_AI_CONFIG_INCOMPLETE");
+    const r = await runArvanAiConnectionTest(env);
+    out.arvan = {...out.arvan,...r,ok:true,tested:true};
+  } catch (error) {
+    out.arvan = {...out.arvan,ok:false,tested:true,error:String(error?.message || error).slice(0,320)};
+  }
+  try {
+    const r = await runCloudflareAiConnectionTest(env);
+    out.cloudflare = {...out.cloudflare,...r,ok:true,tested:true};
+  } catch (error) {
+    out.cloudflare = {...out.cloudflare,ok:false,tested:true,error:String(error?.message || error).slice(0,320)};
+  }
+  out.operational = out.primary === "arvan"
+    ? Boolean(out.arvan.ok || (out.fallback === "cloudflare" && out.cloudflare.ok))
+    : Boolean(out.cloudflare.ok);
+  return out;
+}
+function adminWebConfigReadiness(env) {
+  const requirements = [
+    ["BALE_BOT_TOKEN","BALE","secret"],
+    ["BALE_PRODUCTION_CHANNEL_ID","PRODUCTION","text"],
+    ["BALE_TEST_CHANNEL_ID","TEST","text"],
+    ["WEBHOOK_SECRET","WEBHOOK","secret"],
+    ["ARVAN_AI_API_KEY","AI_PRIMARY","secret"],
+    ["ARVAN_AI_ENDPOINT","AI_PRIMARY","secret"],
+    ["AI","AI_FALLBACK","binding"],
+    ["BOT_CONTROL","STATE","binding"],
+    ["FREE_TIER_EXECUTOR","SCHEDULER","binding"]
+  ];
+  return requirements.map(([name,stage,kind]) => ({
+    name,stage,kind,
+    ok:name === "AI" ? Boolean((env.CLOUDFLARE_AI_NATIVE || env.AI)?.run)
+      : name === "BOT_CONTROL" ? Boolean(env.BOT_CONTROL)
+      : name === "FREE_TIER_EXECUTOR" ? Boolean(env.FREE_TIER_EXECUTOR)
+      : Boolean(String(env[name] || "").trim())
+  }));
+}
+function adminWebPostConfig(env, type) {
+  const common = [
+    {stage:"BALE",ok:Boolean(String(env.BALE_BOT_TOKEN || "").trim()),detail:"توکن بازو"},
+    {stage:"TEST_CHANNEL",ok:Boolean(String(env.BALE_TEST_CHANNEL_ID || "").trim()),detail:"کانال تست"}
+  ];
+  const aiNeeded = ["article","album","heritage"].includes(String(type));
+  if (aiNeeded) {
+    common.push(
+      {stage:"AI_PRIMARY",ok:Boolean(String(env.ARVAN_AI_API_KEY || "").trim() && String(env.ARVAN_AI_ENDPOINT || "").trim()),detail:"Arvan AI"},
+      {stage:"AI_FALLBACK",ok:Boolean((env.CLOUDFLARE_AI_NATIVE || env.AI)?.run),detail:"Cloudflare AI"}
+    );
+  }
+  return common;
 }
 async function adminWebStatus(env) {
   const safe = async (method, payload={}) => {
@@ -9073,9 +9183,12 @@ async function adminWebStatus(env) {
   const production = String(productionChannel(env));
   const test = String(env.BALE_TEST_CHANNEL_ID || "").trim();
   const chat = await safe("getChat", {chat_id:production});
+  const testChat = test ? await safe("getChat", {chat_id:test}) : {ok:false};
   const botId = me?.result?.id || null;
   const member = botId ? await safe("getChatMember", {chat_id:production,user_id:botId}) : {ok:false};
+  const testMember = botId && test ? await safe("getChatMember", {chat_id:test,user_id:botId}) : {ok:false};
   const webhook = await safe("getWebhookInfo");
+  const readiness = adminWebConfigReadiness(env);
   return {
     ok:true,
     buildId:FLYYAB_BUILD_ID,
@@ -9090,12 +9203,19 @@ async function adminWebStatus(env) {
     botUsername:me?.result?.username ? `@${me.result.username}` : null,
     baleOk:Boolean(me?.ok && chat?.ok),
     canPostMessages:Boolean(member?.result?.can_post_messages || member?.result?.status === "administrator"),
+    testChannelOk:Boolean(test && testChat?.ok),
+    testCanPostMessages:Boolean(testMember?.result?.can_post_messages || testMember?.result?.status === "administrator"),
     webhookUrl:String(webhook?.result?.url || ""),
+    aiPrimary:selectedAiProvider(env),
+    aiFallback:String(env.AI_FALLBACK || "cloudflare").toLowerCase(),
+    readiness,
     schedule:ADMIN_POST_SCHEDULE
   };
 }
 function adminWebTestTarget(env) {
-  return String(env.BALE_TEST_CHANNEL_ID || productionChannel(env));
+  const channel = String(env.BALE_TEST_CHANNEL_ID || "").trim();
+  if (!channel) throw new Error("BALE_TEST_CHANNEL_ID_MISSING: تست‌های پنل برای ایمنی بدون کانال تست اجرا نمی‌شوند");
+  return channel;
 }
 async function runAdminWebTest(env, type, targetChannel) {
   const sandboxEnv = withFlyYabExecutionScope({...env, BALE_TEST_CHANNEL_ID:String(targetChannel)}, `sandbox-web-control-${type}`);
@@ -9119,6 +9239,17 @@ async function handleAdminWeb(request, env, ctx, url) {
   }
   if (url.pathname === "/admin" || url.pathname === "/admin/") return adminWebHtmlResponse(adminControlRoomHtml());
   if (url.pathname === "/admin/api/status" && request.method === "GET") return Response.json(await adminWebStatus(env),{headers:{"cache-control":"no-store"}});
+  if (url.pathname === "/admin/api/ai-health" && request.method === "POST") {
+    const result = await adminWebAiHealth(env);
+    return Response.json(result,{status:result.operational?200:503,headers:{"cache-control":"no-store"}});
+  }
+  if (url.pathname === "/admin/api/diagnose-post" && request.method === "POST") {
+    const body = await request.json().catch(()=>({}));
+    const type = String(body.type || "").toLowerCase();
+    if (!TESTABLE_POST_TYPES.has(type)) return Response.json({ok:false,error:"INVALID_POST_TYPE"},{status:400});
+    const pipeline = adminWebPostConfig(env,type);
+    return Response.json({ok:true,type,ready:pipeline.every(x=>x.ok),pipeline},{headers:{"cache-control":"no-store"}});
+  }
   if (url.pathname === "/admin/api/health" && request.method === "GET") {
     try {
       const report = await buildDailyDeliveryHealthReport(env, currentTehranIso(new Date()), new Date());
@@ -9140,12 +9271,16 @@ async function handleAdminWeb(request, env, ctx, url) {
     const body = await request.json().catch(()=>({}));
     const type = String(body.type || "").toLowerCase();
     if (!TESTABLE_POST_TYPES.has(type)) return Response.json({ok:false,error:"INVALID_POST_TYPE"},{status:400});
-    const targetChannel = adminWebTestTarget(env);
+    let targetChannel;
+    try { targetChannel = adminWebTestTarget(env); }
+    catch (error) { return Response.json({ok:false,error:String(error?.message||error)},{status:409}); }
     ctx.waitUntil(runAdminWebTest(env,type,targetChannel).catch((error)=>console.error("ADMIN_WEB_TEST_FAILED",type,error)));
     return Response.json({ok:true,accepted:true,type,targetChannel,scope:`sandbox-web-control-${type}`},{status:202});
   }
   if (url.pathname === "/admin/api/test-all" && request.method === "POST") {
-    const targetChannel = adminWebTestTarget(env);
+    let targetChannel;
+    try { targetChannel = adminWebTestTarget(env); }
+    catch (error) { return Response.json({ok:false,error:String(error?.message||error)},{status:409}); }
     const types = [...TESTABLE_POST_TYPES];
     ctx.waitUntil((async()=>{
       for (const type of types) {
