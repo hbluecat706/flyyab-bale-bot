@@ -1,9 +1,7 @@
-# FlyYab Bale Bot v1.0.4 RC3.2 — Media Upload Fix
-
-Fix:
-- sendPhoto live gate no longer asks Bale to download the Wikimedia URL directly.
-- Cloudflare Worker downloads the image and uploads the binary to Bale as multipart/form-data.
-- Photo gate errors are returned as JSON instead of Cloudflare 1101.
-
-Safety:
-- BALE_AUTOMATION_ENABLED must remain 0 during Live Gate.
+# FlyYab Bale v1.0.5 RC3.3
+Photo Live Gate is now deterministic:
+- no external image URL
+- Worker generates a small SVG itself
+- uploads it directly to Bale using multipart/form-data
+- errors return as JSON
+Keep BALE_AUTOMATION_ENABLED=0.

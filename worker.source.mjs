@@ -8721,31 +8721,38 @@ async function runBaleLiveGate(request, env, ctx, url) {
     return Response.json({ ok:true, action, messageId:baleMessageIdFromResult(result) }, { headers:{"cache-control":"no-store"} });
   }
   if (action === "photo") {
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+      <rect width="1200" height="630" fill="#0b5fff"/>
+      <circle cx="1030" cy="120" r="150" fill="#ffffff" opacity=".10"/>
+      <circle cx="110" cy="560" r="220" fill="#ffffff" opacity=".08"/>
+      <text x="600" y="275" text-anchor="middle" fill="#ffffff" font-family="Arial,sans-serif" font-size="72" font-weight="700">FlyYab</text>
+      <text x="600" y="365" text-anchor="middle" fill="#ffffff" font-family="Arial,sans-serif" font-size="38">Bale Media Gate</text>
+    </svg>`;
     try {
-      const source = await fetch(BALE_GATE_PHOTO_1, {
-        headers:{
-          "user-agent":"FlyYab-Bale-Live-Gate/1.0 (https://flyyab.ir)",
-          accept:"image/jpeg,image/png,image/webp,image/*;q=0.8"
-        }
-      });
-      if (!source.ok) throw new Error(`PHOTO_GATE_SOURCE_HTTP_${source.status}`);
-      const contentType = String(source.headers.get("content-type") || "image/jpeg").split(";")[0].trim();
-      if (!contentType.startsWith("image/")) throw new Error(`PHOTO_GATE_SOURCE_TYPE_${contentType || "unknown"}`);
-      const bytes = await source.arrayBuffer();
-      if (!bytes.byteLength) throw new Error("PHOTO_GATE_SOURCE_EMPTY");
-      const ext = heritageImageExtension(contentType);
-      const result = await sendBundledPhoto(
+      const photo = await sendBundledPhoto(
         env,
-        channel,
-        bytes,
-        `flyyab-bale-photo-gate.${ext}`,
-        "🖼 <b>FlyYab Bale Photo Gate</b>\n\nارسال فایل تصویر مستقیم از Worker به بله + کپشن فارسی + دکمه لینک.",
-        { inline_keyboard: [[{ text:"🌐 FlyYab.ir", url:"https://flyyab.ir/?utm_source=bale&utm_medium=photo_gate" }]] },
-        contentType
+        channelId,
+        new TextEncoder().encode(svg),
+        "image/svg+xml",
+        "flyyab-bale-media-gate.svg",
+        "<b>FlyYab Bale Live Gate</b>\n\nتست ارسال مستقیم فایل تصویر از Worker به بله.",
+        { reply_markup: { inline_keyboard: [[{ text: "FlyYab.ir", url: "https://flyyab.ir/" }]] } }
       );
-      return Response.json({ ok:true, action, transport:"multipart-upload", bytes:bytes.byteLength, contentType, messageId:baleMessageIdFromResult(result) }, { headers:{"cache-control":"no-store"} });
+      return json({
+        ok: true,
+        action,
+        transport: "multipart-upload",
+        source: "worker-generated-svg",
+        messageId: photo?.result?.message_id || null
+      });
     } catch (error) {
-      return Response.json({ ok:false, action, stage:"photo", error:String(error?.message || error), buildId:FLYYAB_BUILD_ID }, { status:502, headers:{"cache-control":"no-store"} });
+      return json({
+        ok: false,
+        action,
+        stage: "bale-multipart-upload",
+        error: String(error?.message || error),
+        buildId: BUILD_ID
+      }, 502);
     }
   }
   if (action === "album") {
