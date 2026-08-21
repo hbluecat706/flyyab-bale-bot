@@ -17,7 +17,7 @@ import { NIGHT_DESTINATIONS, NIGHT_DESTINATION_CATALOG_REVISION, nightDestinatio
 import { HERITAGE_CATALOG_VERSION, HERITAGE_CATALOG, heritageCatalogItem, heritageCatalogStats } from "./heritage-catalog.mjs";
 import { IRAN_WEATHER_DESTINATIONS, WEATHER_CATALOG_VERSION, weatherCatalogStats } from "./weather-catalog.mjs";
 import { WEATHER_VERSION, WEATHER_RULES, assessWeather, weatherReason as weatherReasonV2, selectWeatherPicks, candidateSeasonScore, stableWeatherHash } from "./weather-core.mjs";
-const FLYYAB_BUILD_ID = "FlyYab-Bale-1.7.0-20260820-FULL-CONTROL-ROOM-RADAR-MIRROR-V6.9.1";
+const FLYYAB_BUILD_ID = "FlyYab-Bale-1.8.0-20260821-WEATHER-PRODUCTION-DISABLED-V6.9.1";
 const INTERNATIONAL_FARES_POST_VERSION = "international-fares-v2.0-homepage-parity";
 const SCHEDULER_RESILIENCE_VERSION = "scheduler-resilience-v3.1-self-healing-coordinator";
 const FREE_TIER_DELIVERY_VERSION = "free-tier-delivery-v2.1-self-healing-coordinator";
@@ -1419,10 +1419,11 @@ async function getPublicationIncidents(env, { postType = "", date = "", limit = 
 }
 
 const DELIVERY_HEALTH_VERSION = "delivery-health-v1.5-self-healing";
+const WEATHER_PRODUCTION_DISABLED = true;
+const WEATHER_DISABLED_MESSAGE = "Weather Disabled — موتور آب‌وهوا به‌دلیل محدودیت Cloudflare Free Tier از مسیر اجرایی Production و تست‌های تجمعی غیرفعال است.";
 const DELIVERY_HEALTH_GRACE_MINUTES = 10;
 const DAILY_DELIVERY_SLOTS = Object.freeze([
   { id: "morning_0800", postType: "morning", label: "صبح‌بخیر فلای‌یاب", time: "08:00", conditional: false },
-  { id: "weather_0930", postType: "weather", label: "مقصدهای خوش‌آب‌وهوا", time: "09:30", conditional: true },
   { id: "occasion_1015", postType: "occasion", label: "مناسبت‌های امروز", time: "10:15", conditional: true },
   { id: "rates_1100", postType: "rates", label: "نرخ ارز", time: "11:00", conditional: false },
   { id: "domestic_1130", postType: "flights", label: "پرواز داخلی صبح", time: "11:30", conditional: false },
@@ -1448,7 +1449,6 @@ const DELIVERY_PREPARATION_PROTECTED_TIMES = new Set([
 const DELIVERY_SAFE_RETRY_PHASES = new Set([
   "CONTENT_BUILD",
   "CONTENT_READY",
-  "AUTO_PUBLISH_0930",
   "RECOVERY_CONTENT_BUILD",
   "RECOVERY_CONTENT_READY"
 ]);
@@ -6933,7 +6933,7 @@ async function publish(env, type, options = {}) {
   if (type === "morning") return sendMorning(env, channel, /* @__PURE__ */ new Date(), fresh);
   if (type === "rates") return sendRates(env, channel, /* @__PURE__ */ new Date(), fresh);
   if (type === "flights") return send(env, channel, await flightsMessage(), publicSiteButton("daily_domestic_fares"));
-  if (type === "weather") return sendWeather(env, channel, /* @__PURE__ */ new Date(), fresh);
+  if (type === "weather") return { disabled:true, reason:"WEATHER_DISABLED", message:WEATHER_DISABLED_MESSAGE };
   if (type === "deal") return sendTravelDeal(env, channel, requestedNow, fresh);
   if (type === "international") return sendInternationalFlights(env, channel);
   if (type === "album") return sendNightAlbum(env, channel, /* @__PURE__ */ new Date(), fresh);
@@ -7118,7 +7118,7 @@ async function executeScheduledDeliverySlot(env, slotId, now = new Date(), optio
   const retryAttempt = Math.max(0, Number(options.retryAttempt || 0));
   switch (slotId) {
     case "morning_0800": return runScheduledMorningPublication(env, now, { retryAttempt });
-    case "weather_0930": return runScheduledWeatherPublication(env, now, { retryAttempt });
+    case "weather_0930": return { disabled:true, reason:"WEATHER_DISABLED", message:WEATHER_DISABLED_MESSAGE };
     case "occasion_1015": return runScheduledOccasionPublication(env, now, { retryAttempt });
     case "rates_1100": return runScheduled(env, "rates", { slotId, now, retryAttempt, suppressThrow: true });
     case "domestic_1130": return runScheduled(env, "flights", { slotId, now, retryAttempt, suppressThrow: true });
@@ -7138,10 +7138,7 @@ async function deliverySlotHasLockedPackage(env, slotId, now = new Date()) {
     const record = await getMorningRecord(env, date).catch(() => null);
     return Boolean(record?.status === "LOCKED" && record?.locked && record?.featured?.photoUrl && String(record?.caption || "").trim());
   }
-  if (slotId === "weather_0930") {
-    const state = await getWeatherState(env).catch(() => null); const pkg = state?.preparedPackage;
-    return Boolean(pkg?.date === date && ((pkg.status === "READY" && pkg.finalLockStatus === "LOCKED") || pkg.status === "SKIPPED" || pkg.status === "PUBLISHED"));
-  }
+  if (slotId === "weather_0930") return false;
   if (slotId === "occasion_1015") {
     const record = await getOccasionRecord(env, date).catch(() => null);
     return Boolean(record && (record.status === "SKIPPED" || record.status === "PUBLISHED" || (record.status === "LOCKED" && record.locked && String(record.caption || "").trim())));
@@ -7167,18 +7164,7 @@ async function prepareRecoveryPackageForSlot(env, slotId, now = new Date()) {
     if (!(record?.status === "LOCKED" && record?.locked)) throw new Error("RECOVERY_MORNING_LOCK_FAILED");
     return record;
   }
-  if (slotId === "weather_0930") {
-    let state = await getWeatherState(env);
-    if (state.scan?.date === date && state.scan?.status === "RUNNING") await finalizeWeatherScan(env, now, { force:true, phase:"RECOVERY_CUTOFF_FINALIZE" });
-    state = await getWeatherState(env);
-    if (state.preparedPackage?.date === date && state.preparedPackage?.status === "READY" && state.preparedPackage?.finalLockStatus !== "LOCKED") {
-      await weatherFinalRevalidate(env, now, { phase:"RECOVERY_FINAL_RECHECK" });
-    }
-    state = await getWeatherState(env);
-    const pkg = state.preparedPackage;
-    if (!(pkg?.date === date && ((pkg.status === "READY" && pkg.finalLockStatus === "LOCKED") || pkg.status === "SKIPPED" || pkg.status === "PUBLISHED"))) throw new Error(`RECOVERY_WEATHER_NOT_READY:${pkg?.status || "MISSING"}:${pkg?.finalLockStatus || "NO_LOCK"}`);
-    return pkg;
-  }
+  if (slotId === "weather_0930") return { disabled:true, reason:"WEATHER_DISABLED" };
   if (slotId === "occasion_1015") {
     const record = await prepareOccasionRecord(env, date, { phase:"RECOVERY_FINAL_LOCK", lock:true, includeDetail:false, useCheckiday:true, useCalendarific:true });
     if (!(record?.status === "LOCKED" || record?.status === "SKIPPED" || record?.status === "PUBLISHED")) throw new Error(`RECOVERY_OCCASION_NOT_READY:${record?.status || "MISSING"}`);
@@ -7454,7 +7440,6 @@ function statusMessage(env, mode) {
     "\u{1F310} \u0627\u062A\u0635\u0627\u0644 \u062A\u0644\u06AF\u0631\u0627\u0645: Cloudflare Worker \u2705",
     "",
     "⏰ صبح‌بخیر: 08:00 (آماده‌سازی 07:45، قفل خودکار 07:55)",
-    "\u{1F324} \u0645\u0642\u0635\u062F\u0647\u0627\u06CC \u062E\u0648\u0634\u200C\u0622\u0628\u200C\u0648\u0647\u0648\u0627: 09:30",
     "📌 مناسبت‌های امروز: 10:15 (قفل نهایی 10:10)",
     "\u{1F4B1} \u0646\u0631\u062E \u0627\u0631\u0632: 11:00",
     "\u2708\uFE0F \u067E\u0631\u0648\u0627\u0632 \u062F\u0627\u062E\u0644\u06CC: 11:30",
@@ -7471,7 +7456,7 @@ function statusMessage(env, mode) {
     "\u{1F570} \u0645\u0646\u0637\u0642\u0647 \u0632\u0645\u0627\u0646\u06CC: \u062A\u0647\u0631\u0627\u0646"
   ] .join("\n");
 }
-var TESTABLE_POST_TYPES = /* @__PURE__ */ new Set(["morning", "weather", "rates", "flights", "deal", "international", "album", "heritage", "article", "occasion"]);
+var TESTABLE_POST_TYPES = /* @__PURE__ */ new Set(["morning", "rates", "flights", "deal", "international", "album", "heritage", "article", "occasion"]);
 var BOT_COMMANDS = [
   { command: "status", description: "\u0648\u0636\u0639\u06CC\u062A \u0631\u0628\u0627\u062A \u0648 \u0632\u0645\u0627\u0646\u200C\u0628\u0646\u062F\u06CC\u200C\u0647\u0627" },
   { command: "daily_health", description: "گزارش ارسال همه پست‌های امروز و علت خطا/عدم ارسال" },
@@ -8355,9 +8340,9 @@ async function handleCommand(env, message, workerOrigin) {
       "/international_radar_preview — آخرین فرصت دقیق تأییدشده",
       "/international_radar_test_mode — قفل مستقل روی کانال تست",
       "/international_radar_live_mode — فعال‌سازی پس از آزمون 72 ساعته",
-      "/weather_prepare — آماده‌سازی موتور آب‌وهوا بدون انتشار",
-      "/weather_status — وضعیت کاتالوگ، Cache و انتخاب‌های امروز",
-      "/weather_preview — پیش‌نمایش خصوصی پست آماده آب‌وهوا",
+      "/weather_prepare — Weather Disabled (بدون Scan/State write)",
+      "/weather_status — Weather Disabled",
+      "/weather_preview — Weather Disabled",
       "/version — نمایش نسخه فعال",
       "/menu \u2014 \u0628\u0627\u0632\u0633\u0627\u0632\u06CC \u0645\u0646\u0648\u06CC \u0641\u0631\u0645\u0627\u0646\u200C\u0647\u0627"
     ] .join("\n"));
@@ -8366,19 +8351,15 @@ async function handleCommand(env, message, workerOrigin) {
   if (command === "/button_preview") {
     return send(env, chatId, buttonPreviewText(), buttonPreviewKeyboard());
   }
-  if (command === "/weather_prepare") {
-    try {
-      const now=new Date();await startWeatherScan(env,now,{fresh:true,mode:'MANUAL'});await runWeatherScanSlice(env,now,{phase:'MANUAL_COMMAND_START',maxItems:WEATHER_RULES.manualBatchSize});
-      return send(env,chatId,`✅ <b>رصد کامل آب‌وهوا شروع شد</b>\n\nهر Batch مستقل ذخیره می‌شود و Cronهای ۵ دقیقه‌ای ادامه‌اش می‌دهند؛ نیازی نیست این فرمان را تکرار کنید.\n\n${weatherAdminReport(await getWeatherState(env))}`);
-    } catch(error){ return send(env,chatId,`❌ شروع رصد آب‌وهوا ناموفق بود.\n\nعلت: ${esc(error.message)}\nکد: <code>${esc(error.code||'WEATHER_COMMAND_ERROR')}</code>`); }
-  }
-  if (command === "/weather_status") { return send(env,chatId,weatherAdminReport(await getWeatherState(env))); }
-  if (command === "/weather_preview") {
-    try { const state=await getWeatherState(env),pkg=state.preparedPackage; if(!pkg||pkg.date!==currentTehranIso(new Date())||!['READY','PUBLISHED'].includes(pkg.status)) return send(env,chatId,`⏳ <b>پیش‌نمایش هنوز آماده نیست.</b>\n\n${weatherAdminReport(state)}`); await sendWeatherPackage(env,chatId,pkg,new Date()); return send(env,chatId,weatherAdminReport(state)); }
-    catch(error){ return send(env,chatId,`❌ پیش‌نمایش آب‌وهوا ساخته نشد.\n\nعلت: ${esc(error.message)}`); }
+  if (["/weather","/weather_prepare","/weather_status","/weather_preview"].includes(command)) {
+    return send(env, chatId, `⛔ <b>Weather Disabled</b>
+
+${esc(WEATHER_DISABLED_MESSAGE)}
+
+هیچ Scan، Prepare، Finalize یا تغییری در State آب‌وهوا انجام نشد.`);
   }
   if (command === "/version") {
-      return send(env, chatId, `🤖 <b>FlyYab Bale Bot</b>\n\nنسخه ربات: <code>${esc(BOT_VERSION)}</code>\nسامانه دکمه‌ها: <code>${esc(BUTTON_SYSTEM_VERSION)}</code>\nپست صبح: <code>${esc(MORNING_VERSION)}</code>\nماژول مناسبت: <code>${esc(OCCASION_VERSION)}</code>\nFlyYab Radar داخلی: <code>${esc(RADAR_VERSION)}</code>\nرادار پرواز خارجی: <code>${esc(INTERNATIONAL_RADAR_VERSION)}</code>\nپست پرواز خارجی: <code>${esc(INTERNATIONAL_FARES_POST_VERSION)}</code>\nمقصد امشب: <code>${esc(NIGHT_DESTINATION_VERSION)}</code>\nسفر 365: <code>${esc(HERITAGE_VERSION)}</code>\nکاتالوگ سفر 365: <code>${esc(HERITAGE_CATALOG_VERSION)}</code>\nمقاله وبلاگ: <code>${esc(ARTICLE_EDITORIAL_VERSION)}</code>\nآب‌وهوای سفر: <code>${esc(WEATHER_VERSION)}</code>\nکاتالوگ آب‌وهوا: <code>${esc(WEATHER_CATALOG_VERSION)}</code> (${weatherCatalogStats().total} مقصد)\nسلامت ارسال: <code>${esc(DELIVERY_HEALTH_VERSION)}</code>\nپایداری Scheduler: <code>${esc(SCHEDULER_RESILIENCE_VERSION)}</code>\nموتور Free Tier: <code>${esc(FREE_TIER_DELIVERY_VERSION)}</code>\nBuild: <code>${esc(FLYYAB_BUILD_ID)}</code>`);
+      return send(env, chatId, `🤖 <b>FlyYab Bale Bot</b>\n\nنسخه ربات: <code>${esc(BOT_VERSION)}</code>\nسامانه دکمه‌ها: <code>${esc(BUTTON_SYSTEM_VERSION)}</code>\nپست صبح: <code>${esc(MORNING_VERSION)}</code>\nماژول مناسبت: <code>${esc(OCCASION_VERSION)}</code>\nFlyYab Radar داخلی: <code>${esc(RADAR_VERSION)}</code>\nرادار پرواز خارجی: <code>${esc(INTERNATIONAL_RADAR_VERSION)}</code>\nپست پرواز خارجی: <code>${esc(INTERNATIONAL_FARES_POST_VERSION)}</code>\nمقصد امشب: <code>${esc(NIGHT_DESTINATION_VERSION)}</code>\nسفر 365: <code>${esc(HERITAGE_VERSION)}</code>\nکاتالوگ سفر 365: <code>${esc(HERITAGE_CATALOG_VERSION)}</code>\nمقاله وبلاگ: <code>${esc(ARTICLE_EDITORIAL_VERSION)}</code>\nآب‌وهوای سفر: <code>DISABLED</code> (Storage محفوظ، اجرای جدید صفر)\nسلامت ارسال: <code>${esc(DELIVERY_HEALTH_VERSION)}</code>\nپایداری Scheduler: <code>${esc(SCHEDULER_RESILIENCE_VERSION)}</code>\nموتور Free Tier: <code>${esc(FREE_TIER_DELIVERY_VERSION)}</code>\nBuild: <code>${esc(FLYYAB_BUILD_ID)}</code>`);
   }
   if (command === "/morning_prepare") {
     try {
@@ -8766,7 +8747,7 @@ ${await nightDestinationAdminPanel(env, pkg?.date === currentTehranIso(new Date(
       return send(env, chatId, `❌ پیش‌نمایش مقاله ساخته نشد و چیزی منتشر نشد.\n\nعلت: ${esc(error.message)}`);
     }
   }
-  const types = { "/morning": "morning", "/rates": "rates", "/flights": "flights", "/weather": "weather", "/deal": "deal", "/international": "international", "/album": "album", "/heritage": "heritage", "/article": "article", "/occasion": "occasion" };
+  const types = { "/morning": "morning", "/rates": "rates", "/flights": "flights", "/deal": "deal", "/international": "international", "/album": "album", "/heritage": "heritage", "/article": "article", "/occasion": "occasion" };
   if (types[command]) {
     try {
       const result = await publish(env, types[command], {
@@ -8783,7 +8764,6 @@ ${await nightDestinationAdminPanel(env, pkg?.date === currentTehranIso(new Date(
     await send(env, chatId, "\u23F3 \u0627\u0631\u0633\u0627\u0644 \u0622\u0632\u0645\u0627\u06CC\u0634\u06CC \u0647\u0645\u0647 \u067E\u0633\u062A\u200C\u0647\u0627 \u0622\u063A\u0627\u0632 \u0634\u062F\u2026");
     const jobs = [
       ["\u0635\u0628\u062D\u200C\u0628\u062E\u06CC\u0631 \u0633\u0627\u0639\u062A 08:00", "morning"],
-      ["\u0645\u0642\u0635\u062F\u0647\u0627\u06CC \u062E\u0648\u0634\u200C\u0622\u0628\u200C\u0648\u0647\u0648\u0627 \u0633\u0627\u0639\u062A 09:30", "weather"],
       ["مناسبت‌های امروز ساعت 10:15", "occasion"],
       ["\u0646\u0631\u062E \u0627\u0631\u0632 \u0633\u0627\u0639\u062A 11:00", "rates"],
       ["\u067E\u0631\u0648\u0627\u0632 \u062F\u0627\u062E\u0644\u06CC \u0633\u0627\u0639\u062A 11:30", "flights"],
@@ -8808,7 +8788,7 @@ ${await nightDestinationAdminPanel(env, pkg?.date === currentTehranIso(new Date(
       "",
       ...results,
       "",
-      "هر 11 پست به‌صورت مستقل اجرا می‌شوند و ممکن است با چند ثانیه فاصله در کانال دیده شوند.",
+      "هر 10 Slot رسمی باقی‌مانده به‌صورت مستقل اجرا می‌شوند و ممکن است با چند ثانیه فاصله در کانال دیده شوند.",
       "\u0627\u06AF\u0631 \u06CC\u06A9\u06CC \u0627\u0632 \u0628\u062E\u0634\u200C\u0647\u0627 \u062E\u0637\u0627 \u062F\u0627\u0634\u062A\u0647 \u0628\u0627\u0634\u062F\u060C \u06AF\u0632\u0627\u0631\u0634 \u0647\u0645\u0627\u0646 \u0628\u062E\u0634 \u062C\u062F\u0627\u06AF\u0627\u0646\u0647 \u0628\u0631\u0627\u06CC \u0645\u062F\u06CC\u0631 \u0627\u0631\u0633\u0627\u0644 \u0645\u06CC\u200C\u0634\u0648\u062F."
     ] .join("\n"));
   }
@@ -8845,7 +8825,9 @@ function independentJob(name, action, args = {}, instance = name) {
   return { name, action, args, instance };
 }
 function isPublicationGateClosed(tehranTime) {
-  return Boolean(deliverySlotAtTime(tehranTime));
+  // Preserve pre-V1.8 Radar suppression behavior at the former 09:30 Weather minute
+  // without creating a Weather slot, Health record, job or State mutation.
+  return Boolean(deliverySlotAtTime(tehranTime)) || String(tehranTime || "") === "09:30";
 }
 function independentJobsForTick(scheduledNow = new Date()) {
   const tehranTime = clock(scheduledNow);
@@ -8861,14 +8843,8 @@ function independentJobsForTick(scheduledNow = new Date()) {
   // Recovery never shares the execution budget of the original publication.
   if (isDeliveryRecoveryCheckTime(tehranTime)) add("delivery-recovery", "delivery_recovery", {}, "engine-delivery-recovery");
 
-  // Weather owns its own executor instance. All 420 catalog rows are scanned in
-  // checkpointed small batches; Radar jobs continue independently.
-  if (tehranTime >= WEATHER_SCAN_START && tehranTime <= WEATHER_SCAN_END) {
-    add("weather-scan", "weather_scan", { forceStart: tehranTime === WEATHER_SCAN_START }, "engine-weather");
-  }
-  if (["09:05","09:10","09:15","09:20","09:25"].includes(tehranTime)) {
-    add("weather-final", "weather_final", { phase: `FINAL_${tehranTime.replace(":","")}`, maxItems: 4 }, "engine-weather");
-  }
+  // Weather is intentionally disabled in Production on Cloudflare Free Tier.
+  // No scan/final/retry/prepare job is scheduled; existing Weather storage is preserved untouched.
 
   // Approved Domestic Radar cadence remains every five minutes, including while
   // Weather is scanning. On a fixed public slot it still observes the market but
@@ -8926,8 +8902,8 @@ async function runIndependentJob(env, job, scheduledNow = new Date()) {
     }
     case "delivery_recovery": return runDeliveryRecoveryTick(productionEnv, scheduledNow);
     case "delivery_watchdog": return runDailyDeliveryWatchdog(productionEnv, scheduledNow);
-    case "weather_scan": return weatherScheduledScanTick(productionEnv, scheduledNow, { forceStart:Boolean(job.args.forceStart) });
-    case "weather_final": return weatherFinalRevalidateSlice(productionEnv, scheduledNow, { phase:job.args.phase || "FINAL_RECHECK", maxItems:Number(job.args.maxItems || 4) });
+    case "weather_scan": return { disabled:true, reason:"WEATHER_DISABLED", message:WEATHER_DISABLED_MESSAGE };
+    case "weather_final": return { disabled:true, reason:"WEATHER_DISABLED", message:WEATHER_DISABLED_MESSAGE };
     case "radar_domestic": return runRadarCycle(productionEnv, scheduledNow, { suppressFlash:Boolean(job.args.suppressFlash) });
     case "radar_international": return runInternationalRadarCycle(productionEnv, scheduledNow);
     case "occasion_tomorrow": return prepareOccasionRecord(productionEnv, addIsoDays(currentTehranIso(scheduledNow),1), { phase:"NIGHT_PREPARE", includeDetail:false, useCheckiday:false, useCalendarific:true });
@@ -9183,6 +9159,7 @@ async function runBaleLiveGate(request, env, ctx, url) {
   }
   if (action === "post") {
     const type = String(url.searchParams.get("type") || "").toLowerCase();
+    if (type === "weather") return Response.json({ok:true,disabled:true,code:"WEATHER_DISABLED",message:WEATHER_DISABLED_MESSAGE,stateMutation:false},{headers:{"cache-control":"no-store"}});
     if (!TESTABLE_POST_TYPES.has(type)) return Response.json({ok:false,error:"INVALID_POST_TYPE",allowed:[...TESTABLE_POST_TYPES]}, {status:400});
     const sandboxEnv = withFlyYabExecutionScope({ ...env, BALE_TEST_CHANNEL_ID:String(channel) }, `sandbox-bale-gate-${type}`);
     ctx.waitUntil(runIndependentTest(sandboxEnv, type));
@@ -9268,7 +9245,6 @@ const ADMIN_WEB_COOKIE = "flyyab_bale_admin";
 const ADMIN_WEB_SESSION_SECONDS = 60 * 60 * 12;
 const ADMIN_POST_SCHEDULE = [
   { time:"08:00", title:"صبح‌بخیر فلای‌یاب", type:"morning", icon:"☀️", engine:"Morning" },
-  { time:"09:30", title:"مقصدهای خوش‌آب‌وهوا", type:"weather", icon:"🌤", engine:"Weather 420" },
   { time:"10:15", title:"مناسبت‌های امروز", type:"occasion", icon:"📌", engine:"Occasion + AI" },
   { time:"11:00", title:"نرخ ارز", type:"rates", icon:"💱", engine:"Navasan + Pexels" },
   { time:"11:30", title:"کمترین نرخ پروازهای داخلی", type:"flights", icon:"✈️", engine:"Domestic Fares" },
@@ -9385,7 +9361,7 @@ pre{white-space:pre-wrap;word-break:break-word;background:#08182f;border:1px sol
 <div class="sectionTitle"><div><h2 style="margin:0">🎛 مرکز مدیریت محتوای FlyYab</h2><div class="muted" style="margin-top:5px">امکانات مدیریتی مرجع تلگرام، به‌شکل وب و موبایل‌محور.</div></div><span class="pill ok">Automation مستقل</span></div>
 <div class="testCenter">
 <div class="testCard"><div><div class="tname">☀️ صبح‌بخیر</div><div class="meta">Prepare • Preview • Test</div></div><div class="actions"><button class="btn" onclick="moduleManage('morning','prepare')">آماده‌سازی</button><button class="btn" onclick="moduleManage('morning','preview')">پیش‌نمایش</button><button class="btn good" onclick="moduleManage('morning','test')">تست</button></div><div class="result" id="module-morning"></div></div>
-<div class="testCard"><div><div class="tname">🌤 Weather 420</div><div class="meta">Status • Slice • Finalize • Test</div></div><div class="actions"><button class="btn" onclick="moduleManage('weather','status')">وضعیت</button><button class="btn" onclick="moduleManage('weather','continue')">ادامه Scan</button><button class="btn" onclick="moduleManage('weather','finalize')">Finalize</button><button class="btn good" onclick="moduleManage('weather','test')">تست</button></div><div class="result" id="module-weather"></div></div>
+<div class="testCard"><div><div class="tname">🌤 Weather 420 — غیرفعال</div><div class="meta">Weather Disabled • Free Tier protection • State محفوظ</div></div><div class="actions"><button class="btn" onclick="moduleManage('weather','status')">جزئیات غیرفعال‌سازی</button></div><div class="result" id="module-weather"></div></div>
 <div class="testCard"><div><div class="tname">📌 مناسبت امروز</div><div class="meta">Prepare • Refresh • Preview • Lock • Test</div></div><div class="actions"><button class="btn" onclick="moduleManage('occasion','prepare')">آماده‌سازی</button><button class="btn" onclick="moduleManage('occasion','refresh')">نوسازی</button><button class="btn" onclick="moduleManage('occasion','preview')">پیش‌نمایش</button><button class="btn warn" onclick="moduleManage('occasion','lock')">Lock</button><button class="btn good" onclick="moduleManage('occasion','test')">تست</button></div><div class="result" id="module-occasion"></div></div>
 <div class="testCard"><div><div class="tname">📡 Radar داخلی</div><div class="meta">Status • Probe • Scan • Preview • Mode</div></div><div class="actions"><button class="btn" onclick="moduleManage('radar','status')">وضعیت</button><button class="btn" onclick="moduleManage('radar','probe')">Probe</button><button class="btn" onclick="moduleManage('radar','scan')">Scan</button><button class="btn" onclick="moduleManage('radar','preview')">Preview</button><button class="btn warn" onclick="moduleManage('radar','test_mode')">TEST</button><button class="btn good" onclick="moduleManage('radar','live_mode')">LIVE</button></div><div class="result" id="module-radar"></div></div>
 <div class="testCard"><div><div class="tname">🌐 Radar خارجی</div><div class="meta">خودکار: Production اول + Mirror به Test</div></div><div class="actions"><button class="btn" onclick="moduleManage('international-radar','status')">وضعیت</button><button class="btn" onclick="moduleManage('international-radar','probe')">Probe</button><button class="btn" onclick="moduleManage('international-radar','scan')">Scan دستی</button><button class="btn" onclick="moduleManage('international-radar','preview')">Preview</button><button class="btn warn" onclick="moduleManage('international-radar','test_mode')">TEST دستی</button><button class="btn good" onclick="moduleManage('international-radar','live_mode')">LIVE دستی</button></div><div class="result" id="module-international-radar"></div></div>
@@ -9803,28 +9779,7 @@ async function adminMorningManage(env, action) {
   throw new Error("INVALID_MORNING_ACTION");
 }
 async function adminWeatherManage(env, action) {
-  const sandbox=withFlyYabExecutionScope({...env,BALE_TEST_CHANNEL_ID:String(adminWebTestTarget(env))},"sandbox-web-control-weather");
-  const now=new Date();
-  if (action==="status") {
-    const state=await getWeatherState(sandbox), p=weatherScanProgress(state?.scan||{});
-    return {ok:true,action,state:{scanStatus:state?.scan?.status||"NOT_STARTED",processed:p.processed||0,total:p.total||WEATHER_RULES.targetForecasts,coveragePct:p.coveragePct||0,packageStatus:state?.preparedPackage?.status||"NOT_PREPARED",picks:state?.preparedPackage?.picks?.length||0}};
-  }
-  if (action==="start" || action==="continue") {
-    if (action==="start") await startWeatherScan(sandbox,now,{fresh:false,mode:"WEB_ADMIN"});
-    await runWeatherScanSlice(sandbox,now,{phase:"WEB_ADMIN_SLICE",maxItems:WEATHER_RULES.manualBatchSize});
-    return adminWeatherManage(env,"status");
-  }
-  if (action==="finalize") {
-    await finalizeWeatherScan(sandbox,now,{force:true,phase:"WEB_ADMIN_FINALIZE"});
-    return adminWeatherManage(env,"status");
-  }
-  if (action==="test") {
-    const state=await getWeatherState(sandbox), pkg=state?.preparedPackage;
-    if (!pkg?.picks?.length) return {ok:false,error:"WEATHER_PACKAGE_NOT_READY",state:(await adminWeatherManage(env,"status")).state};
-    const result=await sendWeatherPackage(sandbox,adminWebTestTarget(env),pkg,now);
-    return {ok:true,action,messageId:baleMessageIdFromResult(result),state:(await adminWeatherManage(env,"status")).state};
-  }
-  throw new Error("INVALID_WEATHER_ACTION");
+  return {ok:true,disabled:true,action:String(action||"status"),code:"WEATHER_DISABLED",message:WEATHER_DISABLED_MESSAGE,stateMutation:false,durableObjectMutation:false};
 }
 async function adminOccasionManage(env, action) {
   const sandbox=withFlyYabExecutionScope({...env,BALE_TEST_CHANNEL_ID:String(adminWebTestTarget(env))},"sandbox-web-control-occasion");
@@ -10232,9 +10187,9 @@ async function handleAdminWeb(request, env, ctx, url) {
   if (url.pathname === "/admin/api/diagnose-post" && request.method === "POST") {
     const body = await request.json().catch(()=>({}));
     const type = String(body.type || "").toLowerCase();
+    if (type === "weather") return Response.json({ok:true,disabled:true,code:"WEATHER_DISABLED",message:WEATHER_DISABLED_MESSAGE,stateMutation:false},{status:200,headers:{"cache-control":"no-store"}});
     if (!TESTABLE_POST_TYPES.has(type)) return Response.json({ok:false,error:"INVALID_POST_TYPE"},{status:400});
     if (type === "rates") return Response.json(await adminWebRatesDiagnostic(env),{headers:{"cache-control":"no-store"}});
-    if (type === "weather") return Response.json(await adminWebWeatherDiagnostic(env),{headers:{"cache-control":"no-store"}});
     if (type === "album") return Response.json(await adminWebNightDiagnostic(env),{headers:{"cache-control":"no-store"}});
     if (type === "heritage") return Response.json(await adminWebHeritageDiagnostic(env),{headers:{"cache-control":"no-store"}});
     const pipeline = adminWebPostConfig(env,type);
@@ -10260,6 +10215,7 @@ async function handleAdminWeb(request, env, ctx, url) {
   if (url.pathname === "/admin/api/test-post" && request.method === "POST") {
     const body = await request.json().catch(()=>({}));
     const type = String(body.type || "").toLowerCase();
+    if (type === "weather") return Response.json({ok:true,disabled:true,code:"WEATHER_DISABLED",message:WEATHER_DISABLED_MESSAGE,stateMutation:false},{status:200,headers:{"cache-control":"no-store"}});
     if (!TESTABLE_POST_TYPES.has(type)) return Response.json({ok:false,error:"INVALID_POST_TYPE"},{status:400});
     let targetChannel;
     try { targetChannel = adminWebTestTarget(env); }
@@ -10291,37 +10247,7 @@ async function handleAdminWeb(request, env, ctx, url) {
       }
     }
 
-    if (type === "weather") {
-      try {
-        const sandboxEnv = withFlyYabExecutionScope({...env,BALE_TEST_CHANNEL_ID:String(targetChannel)}, "sandbox-web-control-weather");
-        const state = await getWeatherState(sandboxEnv);
-        const pkg = state?.preparedPackage;
-        if (pkg?.date===currentTehranIso(new Date()) && ["READY","PUBLISHED"].includes(pkg?.status) && pkg?.picks?.length) {
-          const startedAt = Date.now();
-          const result = await sendWeatherPackage(sandboxEnv,targetChannel,pkg,new Date());
-          return Response.json({
-            ...adminWebManualTestResult(type,targetChannel,result,startedAt),
-            delivered:true,
-            action:"WEATHER_READY_PACKAGE_SENT"
-          },{headers:{"cache-control":"no-store"}});
-        }
-        await startWeatherScan(sandboxEnv,new Date(),{fresh:!state?.scan || state.scan?.date!==currentTehranIso(new Date()),mode:"MANUAL_WEB"});
-        const latest = await getWeatherState(sandboxEnv);
-        const p = weatherScanProgress(latest?.scan || {});
-        return Response.json({
-          ok:true,accepted:true,delivered:false,type,targetChannel,
-          status:"PREPARING",
-          action:"WEATHER_SCAN_STARTED_OR_RESUMED",
-          scanStatus:String(latest?.scan?.status||"RUNNING"),
-          processed:p.processed||0,total:p.total||WEATHER_RULES.targetForecasts,coveragePct:p.coveragePct||0,
-          message:"Weather معماری Batch دارد؛ اسکن/آماده‌سازی در Sandbox شروع یا ادامه داده شد."
-        },{status:202,headers:{"cache-control":"no-store"}});
-      } catch (error) {
-        return Response.json({ok:false,type,targetChannel,status:"FAILED",error:String(error?.message||error),code:String(error?.code||"WEATHER_TEST_FAILED")},{status:502,headers:{"cache-control":"no-store"}});
-      }
-    }
-
-    const startedAt = Date.now();
+const startedAt = Date.now();
     try {
       const result = await runAdminWebTest(env,type,targetChannel);
       return Response.json({

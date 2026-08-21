@@ -1,2 +1,2 @@
-FlyYab-Bale-1.7.0-20260820-FULL-CONTROL-ROOM-RADAR-MIRROR-V6.9.1
-Full Control Room + International Radar automatic Production-first/Test-mirror.
+FlyYab-Bale-1.8.0-20260821-WEATHER-PRODUCTION-DISABLED-V6.9.1
+Weather Production fully disabled; existing Weather storage preserved.

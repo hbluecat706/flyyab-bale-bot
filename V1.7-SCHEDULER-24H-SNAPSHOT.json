@@ -1,0 +1,7777 @@
+{
+  "slots": [
+    {
+      "id": "morning_0800",
+      "postType": "morning",
+      "label": "صبح‌بخیر فلای‌یاب",
+      "time": "08:00",
+      "conditional": false
+    },
+    {
+      "id": "weather_0930",
+      "postType": "weather",
+      "label": "مقصدهای خوش‌آب‌وهوا",
+      "time": "09:30",
+      "conditional": true
+    },
+    {
+      "id": "occasion_1015",
+      "postType": "occasion",
+      "label": "مناسبت‌های امروز",
+      "time": "10:15",
+      "conditional": true
+    },
+    {
+      "id": "rates_1100",
+      "postType": "rates",
+      "label": "نرخ ارز",
+      "time": "11:00",
+      "conditional": false
+    },
+    {
+      "id": "domestic_1130",
+      "postType": "flights",
+      "label": "پرواز داخلی صبح",
+      "time": "11:30",
+      "conditional": false
+    },
+    {
+      "id": "deal_1330",
+      "postType": "deal",
+      "label": "Radar | فرصت‌های خرید داخلی",
+      "time": "13:30",
+      "conditional": true
+    },
+    {
+      "id": "international_1600",
+      "postType": "international",
+      "label": "پرواز خارجی",
+      "time": "16:00",
+      "conditional": false
+    },
+    {
+      "id": "domestic_1800",
+      "postType": "flights",
+      "label": "پرواز داخلی عصر",
+      "time": "18:00",
+      "conditional": false
+    },
+    {
+      "id": "article_1915",
+      "postType": "article",
+      "label": "خواندنی امروز از مجله",
+      "time": "19:15",
+      "conditional": false
+    },
+    {
+      "id": "night_destination_2030",
+      "postType": "night_destination",
+      "label": "مقصد امشب فلای‌یاب",
+      "time": "20:30",
+      "conditional": false
+    },
+    {
+      "id": "heritage_2100",
+      "postType": "heritage",
+      "label": "سفر 365 | میراث جهان",
+      "time": "21:00",
+      "conditional": false
+    }
+  ],
+  "rows": [
+    {
+      "time": "00:00",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "delivery-watchdog",
+          "action": "delivery_watchdog",
+          "instance": "engine-delivery-health",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "00:05",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "00:10",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "night-plan",
+          "action": "night_plan",
+          "instance": "prep-night-plan",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "00:15",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "00:20",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "00:25",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "00:30",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": true
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "delivery-watchdog",
+          "action": "delivery_watchdog",
+          "instance": "engine-delivery-health",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "00:35",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "00:40",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "00:45",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "00:50",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "00:55",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "01:00",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "delivery-watchdog",
+          "action": "delivery_watchdog",
+          "instance": "engine-delivery-health",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "01:05",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "01:10",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "01:15",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "01:20",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "01:25",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "01:30",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "delivery-watchdog",
+          "action": "delivery_watchdog",
+          "instance": "engine-delivery-health",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "01:35",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "01:40",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "01:45",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "01:50",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "01:55",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "02:00",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "delivery-watchdog",
+          "action": "delivery_watchdog",
+          "instance": "engine-delivery-health",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "02:05",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "02:10",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "02:15",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "02:20",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "02:25",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "02:30",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "delivery-watchdog",
+          "action": "delivery_watchdog",
+          "instance": "engine-delivery-health",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "02:35",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "02:40",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "02:45",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "02:50",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "02:55",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "03:00",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "delivery-watchdog",
+          "action": "delivery_watchdog",
+          "instance": "engine-delivery-health",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "03:05",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "03:10",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "03:15",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "03:20",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "03:25",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "03:30",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "delivery-watchdog",
+          "action": "delivery_watchdog",
+          "instance": "engine-delivery-health",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "03:35",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "03:40",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "03:45",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "03:50",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "03:55",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "04:00",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "delivery-watchdog",
+          "action": "delivery_watchdog",
+          "instance": "engine-delivery-health",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "04:05",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "04:10",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "04:15",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "04:20",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "04:25",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "04:30",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "delivery-watchdog",
+          "action": "delivery_watchdog",
+          "instance": "engine-delivery-health",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "04:35",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "04:40",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "04:45",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "04:50",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "04:55",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "05:00",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "delivery-watchdog",
+          "action": "delivery_watchdog",
+          "instance": "engine-delivery-health",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "05:05",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "05:10",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "05:15",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "05:20",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "05:25",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "05:30",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "delivery-watchdog",
+          "action": "delivery_watchdog",
+          "instance": "engine-delivery-health",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "05:35",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "05:40",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "05:45",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "05:50",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "05:55",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "06:00",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "delivery-watchdog",
+          "action": "delivery_watchdog",
+          "instance": "engine-delivery-health",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "06:05",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "06:10",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "06:15",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "06:20",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "06:25",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "06:30",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "delivery-watchdog",
+          "action": "delivery_watchdog",
+          "instance": "engine-delivery-health",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "06:35",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "06:40",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "06:45",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "06:50",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "06:55",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "07:00",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "delivery-watchdog",
+          "action": "delivery_watchdog",
+          "instance": "engine-delivery-health",
+          "args": {}
+        },
+        {
+          "name": "occasion-morning",
+          "action": "occasion_morning",
+          "instance": "prep-occasion",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "07:05",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "07:10",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "07:15",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "07:20",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "07:25",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "07:30",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "delivery-watchdog",
+          "action": "delivery_watchdog",
+          "instance": "engine-delivery-health",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "07:35",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        },
+        {
+          "name": "morning-prepare",
+          "action": "morning_prepare",
+          "instance": "prep-morning",
+          "args": {
+            "phase": "AUTO_PREPARE_0735"
+          }
+        }
+      ]
+    },
+    {
+      "time": "07:40",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "07:45",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "morning-prepare",
+          "action": "morning_prepare",
+          "instance": "prep-morning",
+          "args": {
+            "phase": "AUTO_PREPARE_0745"
+          }
+        }
+      ]
+    },
+    {
+      "time": "07:50",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        },
+        {
+          "name": "morning-lock",
+          "action": "morning_lock",
+          "instance": "prep-morning",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "07:55",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "morning-lock",
+          "action": "morning_lock",
+          "instance": "prep-morning",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "08:00",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "slot:morning_0800",
+          "action": "public_slot",
+          "instance": "slot-morning_0800",
+          "args": {
+            "slotId": "morning_0800"
+          }
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": true
+          }
+        },
+        {
+          "name": "delivery-watchdog",
+          "action": "delivery_watchdog",
+          "instance": "engine-delivery-health",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "08:05",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "delivery-recovery",
+          "action": "delivery_recovery",
+          "instance": "engine-delivery-recovery",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        },
+        {
+          "name": "morning-watchdog",
+          "action": "morning_watchdog",
+          "instance": "engine-morning-watchdog",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "08:10",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "delivery-recovery",
+          "action": "delivery_recovery",
+          "instance": "engine-delivery-recovery",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "08:15",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "08:20",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "08:25",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "08:30",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "delivery-watchdog",
+          "action": "delivery_watchdog",
+          "instance": "engine-delivery-health",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "08:35",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "08:40",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "08:45",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "08:50",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "08:55",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "09:00",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-scan",
+          "action": "weather_scan",
+          "instance": "engine-weather",
+          "args": {
+            "forceStart": false
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "delivery-watchdog",
+          "action": "delivery_watchdog",
+          "instance": "engine-delivery-health",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "09:05",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-final",
+          "action": "weather_final",
+          "instance": "engine-weather",
+          "args": {
+            "phase": "FINAL_0905",
+            "maxItems": 4
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "09:10",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-final",
+          "action": "weather_final",
+          "instance": "engine-weather",
+          "args": {
+            "phase": "FINAL_0910",
+            "maxItems": 4
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "09:15",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-final",
+          "action": "weather_final",
+          "instance": "engine-weather",
+          "args": {
+            "phase": "FINAL_0915",
+            "maxItems": 4
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "09:20",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-final",
+          "action": "weather_final",
+          "instance": "engine-weather",
+          "args": {
+            "phase": "FINAL_0920",
+            "maxItems": 4
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "09:25",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "weather-final",
+          "action": "weather_final",
+          "instance": "engine-weather",
+          "args": {
+            "phase": "FINAL_0925",
+            "maxItems": 4
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "09:30",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "slot:weather_0930",
+          "action": "public_slot",
+          "instance": "slot-weather_0930",
+          "args": {
+            "slotId": "weather_0930"
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": true
+          }
+        },
+        {
+          "name": "delivery-watchdog",
+          "action": "delivery_watchdog",
+          "instance": "engine-delivery-health",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "09:35",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "delivery-recovery",
+          "action": "delivery_recovery",
+          "instance": "engine-delivery-recovery",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "09:40",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "delivery-recovery",
+          "action": "delivery_recovery",
+          "instance": "engine-delivery-recovery",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "09:45",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "occasion-verify",
+          "action": "occasion_verify",
+          "instance": "prep-occasion",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "09:50",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "09:55",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "10:00",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "delivery-watchdog",
+          "action": "delivery_watchdog",
+          "instance": "engine-delivery-health",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "10:05",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "10:10",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "occasion-lock",
+          "action": "occasion_lock",
+          "instance": "prep-occasion",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "10:15",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "slot:occasion_1015",
+          "action": "public_slot",
+          "instance": "slot-occasion_1015",
+          "args": {
+            "slotId": "occasion_1015"
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": true
+          }
+        }
+      ]
+    },
+    {
+      "time": "10:20",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "delivery-recovery",
+          "action": "delivery_recovery",
+          "instance": "engine-delivery-recovery",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "10:25",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "delivery-recovery",
+          "action": "delivery_recovery",
+          "instance": "engine-delivery-recovery",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "10:30",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "delivery-watchdog",
+          "action": "delivery_watchdog",
+          "instance": "engine-delivery-health",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "10:35",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "10:40",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "10:45",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "rates-prepare",
+          "action": "package_prepare",
+          "instance": "prep-rates",
+          "args": {
+            "slotId": "rates_1100"
+          }
+        }
+      ]
+    },
+    {
+      "time": "10:50",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        },
+        {
+          "name": "rates-prepare",
+          "action": "package_prepare",
+          "instance": "prep-rates",
+          "args": {
+            "slotId": "rates_1100"
+          }
+        }
+      ]
+    },
+    {
+      "time": "10:55",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "rates-prepare",
+          "action": "package_prepare",
+          "instance": "prep-rates",
+          "args": {
+            "slotId": "rates_1100"
+          }
+        }
+      ]
+    },
+    {
+      "time": "11:00",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "slot:rates_1100",
+          "action": "public_slot",
+          "instance": "slot-rates_1100",
+          "args": {
+            "slotId": "rates_1100"
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": true
+          }
+        },
+        {
+          "name": "delivery-watchdog",
+          "action": "delivery_watchdog",
+          "instance": "engine-delivery-health",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "11:05",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "delivery-recovery",
+          "action": "delivery_recovery",
+          "instance": "engine-delivery-recovery",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "11:10",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "delivery-recovery",
+          "action": "delivery_recovery",
+          "instance": "engine-delivery-recovery",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "11:15",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "11:20",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        },
+        {
+          "name": "domestic-am-prepare",
+          "action": "package_prepare",
+          "instance": "prep-domestic-am",
+          "args": {
+            "slotId": "domestic_1130"
+          }
+        }
+      ]
+    },
+    {
+      "time": "11:25",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "domestic-am-prepare",
+          "action": "package_prepare",
+          "instance": "prep-domestic-am",
+          "args": {
+            "slotId": "domestic_1130"
+          }
+        }
+      ]
+    },
+    {
+      "time": "11:30",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "slot:domestic_1130",
+          "action": "public_slot",
+          "instance": "slot-domestic_1130",
+          "args": {
+            "slotId": "domestic_1130"
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": true
+          }
+        },
+        {
+          "name": "delivery-watchdog",
+          "action": "delivery_watchdog",
+          "instance": "engine-delivery-health",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "11:35",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "delivery-recovery",
+          "action": "delivery_recovery",
+          "instance": "engine-delivery-recovery",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "11:40",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "delivery-recovery",
+          "action": "delivery_recovery",
+          "instance": "engine-delivery-recovery",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "11:45",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "11:50",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "11:55",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "12:00",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "delivery-watchdog",
+          "action": "delivery_watchdog",
+          "instance": "engine-delivery-health",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "12:05",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "12:10",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "12:15",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "12:20",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "12:25",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "12:30",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "delivery-watchdog",
+          "action": "delivery_watchdog",
+          "instance": "engine-delivery-health",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "12:35",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "12:40",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "12:45",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "12:50",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "12:55",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-board-start",
+          "action": "board_start",
+          "instance": "engine-radar-board",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "13:00",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "delivery-watchdog",
+          "action": "delivery_watchdog",
+          "instance": "engine-delivery-health",
+          "args": {}
+        },
+        {
+          "name": "radar-board-verify",
+          "action": "board_verify",
+          "instance": "engine-radar-board",
+          "args": {
+            "maxItems": 6
+          }
+        }
+      ]
+    },
+    {
+      "time": "13:05",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        },
+        {
+          "name": "radar-board-verify",
+          "action": "board_verify",
+          "instance": "engine-radar-board",
+          "args": {
+            "maxItems": 6
+          }
+        }
+      ]
+    },
+    {
+      "time": "13:10",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-board-verify",
+          "action": "board_verify",
+          "instance": "engine-radar-board",
+          "args": {
+            "maxItems": 6
+          }
+        }
+      ]
+    },
+    {
+      "time": "13:15",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-board-verify",
+          "action": "board_verify",
+          "instance": "engine-radar-board",
+          "args": {
+            "maxItems": 6
+          }
+        }
+      ]
+    },
+    {
+      "time": "13:20",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        },
+        {
+          "name": "radar-board-final",
+          "action": "board_final",
+          "instance": "engine-radar-board",
+          "args": {
+            "maxItems": 6
+          }
+        }
+      ]
+    },
+    {
+      "time": "13:25",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-board-final",
+          "action": "board_final",
+          "instance": "engine-radar-board",
+          "args": {
+            "maxItems": 6
+          }
+        }
+      ]
+    },
+    {
+      "time": "13:30",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "slot:deal_1330",
+          "action": "public_slot",
+          "instance": "slot-deal_1330",
+          "args": {
+            "slotId": "deal_1330"
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": true
+          }
+        },
+        {
+          "name": "delivery-watchdog",
+          "action": "delivery_watchdog",
+          "instance": "engine-delivery-health",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "13:35",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "delivery-recovery",
+          "action": "delivery_recovery",
+          "instance": "engine-delivery-recovery",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "13:40",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "delivery-recovery",
+          "action": "delivery_recovery",
+          "instance": "engine-delivery-recovery",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "13:45",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "13:50",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "13:55",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "14:00",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "delivery-watchdog",
+          "action": "delivery_watchdog",
+          "instance": "engine-delivery-health",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "14:05",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "14:10",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "14:15",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "14:20",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "14:25",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "14:30",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "delivery-watchdog",
+          "action": "delivery_watchdog",
+          "instance": "engine-delivery-health",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "14:35",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "14:40",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "14:45",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "14:50",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "14:55",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "15:00",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "delivery-watchdog",
+          "action": "delivery_watchdog",
+          "instance": "engine-delivery-health",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "15:05",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "15:10",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "15:15",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "15:20",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "15:25",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "15:30",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "delivery-watchdog",
+          "action": "delivery_watchdog",
+          "instance": "engine-delivery-health",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "15:35",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "15:40",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "international-catalog",
+          "action": "international_catalog",
+          "instance": "prep-international-catalog",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "15:45",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "international-backup",
+          "action": "package_prepare",
+          "instance": "prep-international",
+          "args": {
+            "slotId": "international_1600"
+          }
+        }
+      ]
+    },
+    {
+      "time": "15:50",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        },
+        {
+          "name": "international-catalog",
+          "action": "international_catalog",
+          "instance": "prep-international-catalog",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "15:55",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "international-final",
+          "action": "package_prepare",
+          "instance": "prep-international",
+          "args": {
+            "slotId": "international_1600",
+            "force": true
+          }
+        }
+      ]
+    },
+    {
+      "time": "16:00",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "slot:international_1600",
+          "action": "public_slot",
+          "instance": "slot-international_1600",
+          "args": {
+            "slotId": "international_1600"
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": true
+          }
+        },
+        {
+          "name": "delivery-watchdog",
+          "action": "delivery_watchdog",
+          "instance": "engine-delivery-health",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "16:05",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "delivery-recovery",
+          "action": "delivery_recovery",
+          "instance": "engine-delivery-recovery",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "16:10",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "delivery-recovery",
+          "action": "delivery_recovery",
+          "instance": "engine-delivery-recovery",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "16:15",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "16:20",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "16:25",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "16:30",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "delivery-watchdog",
+          "action": "delivery_watchdog",
+          "instance": "engine-delivery-health",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "16:35",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "16:40",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "16:45",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "16:50",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "16:55",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "17:00",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "delivery-watchdog",
+          "action": "delivery_watchdog",
+          "instance": "engine-delivery-health",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "17:05",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "17:10",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "17:15",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "17:20",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "17:25",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "17:30",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "delivery-watchdog",
+          "action": "delivery_watchdog",
+          "instance": "engine-delivery-health",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "17:35",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "17:40",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "17:45",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "17:50",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        },
+        {
+          "name": "domestic-pm-prepare",
+          "action": "package_prepare",
+          "instance": "prep-domestic-pm",
+          "args": {
+            "slotId": "domestic_1800"
+          }
+        }
+      ]
+    },
+    {
+      "time": "17:55",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "domestic-pm-prepare",
+          "action": "package_prepare",
+          "instance": "prep-domestic-pm",
+          "args": {
+            "slotId": "domestic_1800"
+          }
+        }
+      ]
+    },
+    {
+      "time": "18:00",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "slot:domestic_1800",
+          "action": "public_slot",
+          "instance": "slot-domestic_1800",
+          "args": {
+            "slotId": "domestic_1800"
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": true
+          }
+        },
+        {
+          "name": "delivery-watchdog",
+          "action": "delivery_watchdog",
+          "instance": "engine-delivery-health",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "18:05",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "delivery-recovery",
+          "action": "delivery_recovery",
+          "instance": "engine-delivery-recovery",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "18:10",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "delivery-recovery",
+          "action": "delivery_recovery",
+          "instance": "engine-delivery-recovery",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "18:15",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "18:20",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "18:25",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "18:30",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "delivery-watchdog",
+          "action": "delivery_watchdog",
+          "instance": "engine-delivery-health",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "18:35",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        },
+        {
+          "name": "article-prepare",
+          "action": "article_prepare",
+          "instance": "prep-article",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "18:40",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "18:45",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "18:50",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        },
+        {
+          "name": "article-prepare",
+          "action": "article_prepare",
+          "instance": "prep-article",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "18:55",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "19:00",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "delivery-watchdog",
+          "action": "delivery_watchdog",
+          "instance": "engine-delivery-health",
+          "args": {}
+        },
+        {
+          "name": "article-prepare",
+          "action": "article_prepare",
+          "instance": "prep-article",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "19:05",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "19:10",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "article-prepare",
+          "action": "article_prepare",
+          "instance": "prep-article",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "19:15",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "slot:article_1915",
+          "action": "public_slot",
+          "instance": "slot-article_1915",
+          "args": {
+            "slotId": "article_1915"
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": true
+          }
+        }
+      ]
+    },
+    {
+      "time": "19:20",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "delivery-recovery",
+          "action": "delivery_recovery",
+          "instance": "engine-delivery-recovery",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "19:25",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "delivery-recovery",
+          "action": "delivery_recovery",
+          "instance": "engine-delivery-recovery",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "19:30",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "delivery-watchdog",
+          "action": "delivery_watchdog",
+          "instance": "engine-delivery-health",
+          "args": {}
+        },
+        {
+          "name": "night-prepare",
+          "action": "night_prepare",
+          "instance": "prep-night",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "19:35",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "19:40",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "19:45",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "night-prepare",
+          "action": "night_prepare",
+          "instance": "prep-night",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "19:50",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "19:55",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "20:00",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "delivery-watchdog",
+          "action": "delivery_watchdog",
+          "instance": "engine-delivery-health",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "20:05",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "20:10",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "20:15",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "20:20",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        },
+        {
+          "name": "night-lock",
+          "action": "night_lock",
+          "instance": "prep-night",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "20:25",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "night-lock",
+          "action": "night_lock",
+          "instance": "prep-night",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "20:30",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "slot:night_destination_2030",
+          "action": "public_slot",
+          "instance": "slot-night_destination_2030",
+          "args": {
+            "slotId": "night_destination_2030"
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": true
+          }
+        },
+        {
+          "name": "delivery-watchdog",
+          "action": "delivery_watchdog",
+          "instance": "engine-delivery-health",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "20:35",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "delivery-recovery",
+          "action": "delivery_recovery",
+          "instance": "engine-delivery-recovery",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        },
+        {
+          "name": "heritage-prepare",
+          "action": "heritage_prepare",
+          "instance": "prep-heritage",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "20:40",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "delivery-recovery",
+          "action": "delivery_recovery",
+          "instance": "engine-delivery-recovery",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "20:45",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "heritage-prepare",
+          "action": "heritage_prepare",
+          "instance": "prep-heritage",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "20:50",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "20:55",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "21:00",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "slot:heritage_2100",
+          "action": "public_slot",
+          "instance": "slot-heritage_2100",
+          "args": {
+            "slotId": "heritage_2100"
+          }
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": true
+          }
+        },
+        {
+          "name": "delivery-watchdog",
+          "action": "delivery_watchdog",
+          "instance": "engine-delivery-health",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "21:05",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "delivery-recovery",
+          "action": "delivery_recovery",
+          "instance": "engine-delivery-recovery",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "21:10",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "delivery-recovery",
+          "action": "delivery_recovery",
+          "instance": "engine-delivery-recovery",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "delivery-summary",
+          "action": "delivery_summary",
+          "instance": "engine-delivery-summary",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "21:15",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "21:20",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "21:25",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "21:30",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "delivery-watchdog",
+          "action": "delivery_watchdog",
+          "instance": "engine-delivery-health",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "21:35",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "21:40",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "21:45",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "21:50",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "21:55",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "22:00",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "delivery-watchdog",
+          "action": "delivery_watchdog",
+          "instance": "engine-delivery-health",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "22:05",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "22:10",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "22:15",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "22:20",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "22:25",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "22:30",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "delivery-watchdog",
+          "action": "delivery_watchdog",
+          "instance": "engine-delivery-health",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "22:35",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "22:40",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "22:45",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "22:50",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "22:55",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "23:00",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "delivery-watchdog",
+          "action": "delivery_watchdog",
+          "instance": "engine-delivery-health",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "23:05",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "23:10",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "23:15",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "23:20",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "23:25",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "23:30",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "delivery-watchdog",
+          "action": "delivery_watchdog",
+          "instance": "engine-delivery-health",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "23:35",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "23:40",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    },
+    {
+      "time": "23:45",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "occasion-tomorrow",
+          "action": "occasion_tomorrow",
+          "instance": "prep-occasion",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "23:50",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        },
+        {
+          "name": "radar-international",
+          "action": "radar_international",
+          "instance": "engine-radar-international",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "time": "23:55",
+      "jobs": [
+        {
+          "name": "heartbeat",
+          "action": "heartbeat",
+          "instance": "engine-heartbeat",
+          "args": {}
+        },
+        {
+          "name": "radar-domestic",
+          "action": "radar_domestic",
+          "instance": "engine-radar-domestic",
+          "args": {
+            "suppressFlash": false
+          }
+        }
+      ]
+    }
+  ]
+}
