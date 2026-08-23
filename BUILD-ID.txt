@@ -1,2 +1,0 @@
-FlyYab-Bale-1.8.0-20260821-WEATHER-PRODUCTION-DISABLED-V6.9.1
-Weather Production fully disabled; existing Weather storage preserved.
